@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/0xPolygon/silencer/tx"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
@@ -20,6 +21,7 @@ type ClientFactoryInterface interface {
 type ClientInterface interface {
 	SendTx(signedTx tx.SignedTx) (common.Hash, error)
 	GetTxStatus(hash common.Hash) (ethtxmanager.MonitoredTxStatus, error)
+	WaitTxToBeMined(hash common.Hash, timeout time.Duration) error
 }
 
 // ClientFactory is the implementation of the data committee client factory
@@ -78,4 +80,30 @@ func (c *Client) GetTxStatus(hash common.Hash) (ethtxmanager.MonitoredTxStatus, 
 	}
 
 	return result, nil
+}
+
+func (c *Client) WaitTxToBeMined(hash common.Hash, timeout time.Duration) error {
+	start := time.Now()
+	for {
+		response, err := client.JSONRPCCall(c.url, "interop_getTx", hash)
+		if err != nil {
+			return err
+		}
+
+		if response.Error != nil {
+			return fmt.Errorf("%v %v", response.Error.Code, response.Error.Message)
+		}
+
+		var result ethtxmanager.MonitoredTxStatus
+		err = json.Unmarshal(response.Result, &result)
+		if err != nil {
+			return err
+		}
+		if result == ethtxmanager.MonitoredTxStatusDone {
+			return nil
+		}
+		if timeout > time.Since(start) {
+			return fmt.Errorf("timeout exceeded")
+		}
+	}
 }
