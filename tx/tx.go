@@ -15,19 +15,19 @@ import (
 // 	Validium L1Concensus = "validium"
 // )
 
-type Proof struct {
-	NewStateRoot     types.ArgHash
-	NewLocalExitRoot types.ArgHash
-	Proof            types.ArgBytes
+type ZKP struct {
+	NewStateRoot     types.ArgHash  `json:"newStateRoot"`
+	NewLocalExitRoot types.ArgHash  `json:"newLovalExitRoot"`
+	Proof            types.ArgBytes `json:"proof"`
 }
 
 type Tx struct {
-	L1Contract common.Address
+	L1Contract common.Address `json:"l1Contract"`
 	// L1Concensus      L1Con census
 	// Batches          []types.Batch
-	LastVerifiedBatch types.ArgUint64
-	NewVerifiedBatch  types.ArgUint64
-	ZKP               Proof
+	LastVerifiedBatch types.ArgUint64 `json:"lastVerifiedBatch"`
+	NewVerifiedBatch  types.ArgUint64 `json:"newVerifiedBatch"`
+	ZKP               ZKP             `json:"ZKP"`
 }
 
 // Hash returns a hash that uniquely identifies the tx

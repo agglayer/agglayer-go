@@ -48,7 +48,7 @@ func (e *Etherman) GetSequencerAddr(l1Contract common.Address) (common.Address, 
 	return contract.TrustedSequencer(&bind.CallOpts{Pending: false})
 }
 
-func (e *Etherman) BuildTrustedVerifyBatchesTxData(l1Contract common.Address, lastVerifiedBatch, newVerifiedBatch uint64, proof tx.Proof) (data []byte, err error) {
+func (e *Etherman) BuildTrustedVerifyBatchesTxData(l1Contract common.Address, lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
 	opts, contract, err := e.contractCaller(l1Contract)
 	if err != nil {
 		return nil, err

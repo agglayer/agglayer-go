@@ -1,5 +1,6 @@
 # TODOs
 
+- Setup defaults for testing
 - Etherman has a lot of methods that are copy/pasted from Etherman from zkevm-node, would be nice to decouple those so we can re-use
 - Go stateless (don't require full nodes)
 - decouple JSON RPC, also needed for DAC
