@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/0xPolygon/silencer/tx"
 	"github.com/0xPolygonHermez/zkevm-node/encoding"
 	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonzkevm"
-	ethmanTypes "github.com/0xPolygonHermez/zkevm-node/etherman/types"
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/0xPolygonHermez/zkevm-node/state"
 	"github.com/0xPolygonHermez/zkevm-node/test/operations"
@@ -48,18 +48,18 @@ func (e *Etherman) GetSequencerAddr(l1Contract common.Address) (common.Address, 
 	return contract.TrustedSequencer(&bind.CallOpts{Pending: false})
 }
 
-func (e *Etherman) BuildTrustedVerifyBatchesTxData(l1Contract common.Address, lastVerifiedBatch, newVerifiedBatch uint64, inputs *ethmanTypes.FinalProofInputs) (data []byte, err error) {
+func (e *Etherman) BuildTrustedVerifyBatchesTxData(l1Contract common.Address, lastVerifiedBatch, newVerifiedBatch uint64, proof tx.Proof) (data []byte, err error) {
 	opts, contract, err := e.contractCaller(l1Contract)
 	if err != nil {
 		return nil, err
 	}
 	var newLocalExitRoot [32]byte
-	copy(newLocalExitRoot[:], inputs.NewLocalExitRoot)
+	copy(newLocalExitRoot[:], proof.NewLocalExitRoot.Hash().Bytes())
 	var newStateRoot [32]byte
-	copy(newStateRoot[:], inputs.NewStateRoot)
-	proof, err := ConvertProof(inputs.FinalProof.Proof)
+	copy(newStateRoot[:], proof.NewStateRoot.Hash().Bytes())
+	finalProof, err := ConvertProof(proof.Proof.Hex())
 	if err != nil {
-		log.Errorf("error converting proof. Error: %v, Proof: %s", err, inputs.FinalProof.Proof)
+		log.Errorf("error converting proof. Error: %v, Proof: %s", err, proof.Proof)
 		return nil, err
 	}
 
@@ -71,7 +71,7 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(l1Contract common.Address, la
 		newVerifiedBatch,
 		newLocalExitRoot,
 		newStateRoot,
-		proof,
+		finalProof,
 	)
 	if err != nil {
 		if parsedErr, ok := tryParseError(err); ok {

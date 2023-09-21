@@ -59,7 +59,7 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 		signedTx.Tx.L1Contract,
 		uint64(signedTx.Tx.LastVerifiedBatch),
 		uint64(signedTx.Tx.NewVerifiedBatch),
-		&signedTx.Tx.ZKP,
+		signedTx.Tx.ZKP,
 	)
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to build verify ZKP tx: %s", err))
@@ -98,12 +98,12 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to get batch from our node, error: %s", err))
 	}
-	if batch.StateRoot != signedTx.Tx.NewStateRoot.Hash() || batch.LocalExitRoot != signedTx.Tx.NewLocalExitRoot.Hash() {
+	if batch.StateRoot != signedTx.Tx.ZKP.NewStateRoot.Hash() || batch.LocalExitRoot != signedTx.Tx.ZKP.NewLocalExitRoot.Hash() {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf(
 			"Missmatch detected,  expected local exit root: %s actual: %s. expected state root: %s actual: %s",
-			signedTx.Tx.NewLocalExitRoot.Hash().Hex(),
+			signedTx.Tx.ZKP.NewLocalExitRoot.Hash().Hex(),
 			batch.LocalExitRoot.Hex(),
-			signedTx.Tx.NewStateRoot.Hash().Hex(),
+			signedTx.Tx.ZKP.NewStateRoot.Hash().Hex(),
 			batch.StateRoot.Hex(),
 		))
 	}

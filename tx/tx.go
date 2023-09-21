@@ -3,7 +3,6 @@ package tx
 import (
 	"crypto/ecdsa"
 
-	ethmanTypes "github.com/0xPolygonHermez/zkevm-node/etherman/types"
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -16,15 +15,19 @@ import (
 // 	Validium L1Concensus = "validium"
 // )
 
+type Proof struct {
+	NewStateRoot     types.ArgHash
+	NewLocalExitRoot types.ArgHash
+	Proof            types.ArgBytes
+}
+
 type Tx struct {
 	L1Contract common.Address
 	// L1Concensus      L1Con census
 	// Batches          []types.Batch
 	LastVerifiedBatch types.ArgUint64
 	NewVerifiedBatch  types.ArgUint64
-	ZKP               ethmanTypes.FinalProofInputs
-	NewStateRoot      types.ArgHash
-	NewLocalExitRoot  types.ArgHash
+	ZKP               Proof
 }
 
 // Hash returns a hash that uniquely identifies the tx
@@ -32,9 +35,9 @@ func (t *Tx) Hash() common.Hash {
 	return common.BytesToHash(crypto.Keccak256(
 		[]byte(t.LastVerifiedBatch.Hex()),
 		[]byte(t.NewVerifiedBatch.Hex()),
-		[]byte(t.ZKP.FinalProof.Proof),
-		t.NewStateRoot[:],
-		t.NewLocalExitRoot[:],
+		t.ZKP.NewStateRoot[:],
+		t.ZKP.NewLocalExitRoot[:],
+		[]byte(t.ZKP.Proof.Hex()),
 	))
 }
 
