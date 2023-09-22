@@ -85,7 +85,7 @@ func (c *Client) GetTxStatus(hash common.Hash) (ethtxmanager.MonitoredTxStatus, 
 func (c *Client) WaitTxToBeMined(hash common.Hash, timeout time.Duration) error {
 	start := time.Now()
 	for {
-		response, err := client.JSONRPCCall(c.url, "interop_getTx", hash)
+		response, err := client.JSONRPCCall(c.url, "interop_getTxStatus", hash)
 		if err != nil {
 			return err
 		}
