@@ -115,7 +115,13 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 	}
 	err = i.ethTxManager.Add(ctx, ethTxManOwner, signedTx.Tx.Hash().Hex(), i.interopAdminAddr, &signedTx.Tx.L1Contract, nil, l1TxData, dbTx)
 	if err != nil {
+		if errRollback := dbTx.Rollback(ctx); errRollback != nil {
+			log.Error("rollback err: ", errRollback)
+		}
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to add tx to ethTxMan, error: %s", err))
+	}
+	if err := dbTx.Commit(ctx); err != nil {
+		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to commit dbTx, error: %s", err))
 	}
 	log.Debugf("successfuly added tx %s to ethTxMan", signedTx.Tx.Hash().Hex())
 	return signedTx.Tx.Hash(), nil
@@ -124,6 +130,7 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (interface{}, types.Error) {
 	ctx := context.TODO()
 	dbTx, err := i.db.BeginStateTransaction(ctx)
+	defer dbTx.Rollback(ctx)
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", err))
 	}
