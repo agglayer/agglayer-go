@@ -56,7 +56,6 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 
 	// Verify ZKP using eth_call
 	l1TxData, err := i.etherman.BuildTrustedVerifyBatchesTxData(
-		signedTx.Tx.L1Contract,
 		uint64(signedTx.Tx.LastVerifiedBatch),
 		uint64(signedTx.Tx.NewVerifiedBatch),
 		signedTx.Tx.ZKP,
@@ -93,7 +92,7 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 	zkEVMClient := client.NewClient(i.fullNodeRPCs[signedTx.Tx.L1Contract])
 	batch, err := zkEVMClient.BatchByNumber(
 		ctx,
-		big.NewInt(int64(signedTx.Tx.LastVerifiedBatch)),
+		big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
 	)
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to get batch from our node, error: %s", err))

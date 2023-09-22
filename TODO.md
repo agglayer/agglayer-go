@@ -6,6 +6,8 @@
 - decouple JSON RPC, also needed for DAC
 - decouple tx tracing for users from the DB table of the eth tx man => more flexibility and control
 - Run ethtxman in a separate process, so we can scale the RPC horizontaly
+- Improve rpc ctx
+- Imporve logging
 - Add GHA:
     - build & push docker images
     - lint

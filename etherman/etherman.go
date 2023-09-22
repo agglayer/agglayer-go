@@ -41,18 +41,14 @@ func New(url string, auth bind.TransactOpts) (Etherman, error) {
 }
 
 func (e *Etherman) GetSequencerAddr(l1Contract common.Address) (common.Address, error) {
-	_, contract, err := e.contractCaller(l1Contract)
+	_, contract, err := e.contractCaller(common.Address{}, l1Contract)
 	if err != nil {
 		return common.Address{}, err
 	}
 	return contract.TrustedSequencer(&bind.CallOpts{Pending: false})
 }
 
-func (e *Etherman) BuildTrustedVerifyBatchesTxData(l1Contract common.Address, lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
-	opts, contract, err := e.contractCaller(l1Contract)
-	if err != nil {
-		return nil, err
-	}
+func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
 	var newLocalExitRoot [32]byte
 	copy(newLocalExitRoot[:], proof.NewLocalExitRoot.Bytes())
 	var newStateRoot [32]byte
@@ -63,9 +59,14 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(l1Contract common.Address, la
 		return nil, err
 	}
 
-	const pendStateNum = 0 // TODO hardcoded for now until we implement the pending state feature
-	tx, err := contract.VerifyBatchesTrustedAggregator(
-		opts,
+	const pendStateNum uint64 = 0 // TODO hardcoded for now until we implement the pending state feature
+	abi, err := cdkvalidium.CdkvalidiumMetaData.GetAbi()
+	if err != nil {
+		log.Errorf("error geting ABI: %v, Proof: %s", err)
+		return nil, err
+	}
+	return abi.Pack(
+		"verifyBatchesTrustedAggregator",
 		pendStateNum,
 		lastVerifiedBatch,
 		newVerifiedBatch,
@@ -73,14 +74,6 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(l1Contract common.Address, la
 		newStateRoot,
 		finalProof,
 	)
-	if err != nil {
-		if parsedErr, ok := tryParseError(err); ok {
-			err = parsedErr
-		}
-		return nil, err
-	}
-
-	return tx.Data(), nil
 }
 
 func (e *Etherman) CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) ([]byte, error) {
@@ -88,8 +81,9 @@ func (e *Etherman) CallContract(ctx context.Context, call ethereum.CallMsg, bloc
 }
 
 func ConvertProof(p string) ([24][32]byte, error) {
-	if len(p) != 24*32*2+2 {
-		return [24][32]byte{}, fmt.Errorf("invalid proof length. Length: %d", len(p))
+	const expectedLength = 24*32*2 + 2
+	if len(p) != expectedLength {
+		return [24][32]byte{}, fmt.Errorf("invalid proof length. Expected length: %d, Actual length %d", expectedLength, len(p))
 	}
 	p = strings.TrimPrefix(p, "0x")
 	proof := [24][32]byte{}
@@ -106,8 +100,9 @@ func ConvertProof(p string) ([24][32]byte, error) {
 	return proof, nil
 }
 
-func (e *Etherman) contractCaller(to common.Address) (*bind.TransactOpts, *cdkvalidium.Cdkvalidium, error) {
+func (e *Etherman) contractCaller(from, to common.Address) (*bind.TransactOpts, *cdkvalidium.Cdkvalidium, error) {
 	opts := bind.TransactOpts{}
+	opts.From = from
 	opts.NoSend = true
 	// force nonce, gas limit and gas price to avoid querying it from the chain
 	opts.Nonce = big.NewInt(1)

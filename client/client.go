@@ -64,7 +64,7 @@ func (c *Client) SendTx(signedTx tx.SignedTx) (common.Hash, error) {
 }
 
 func (c *Client) GetTxStatus(hash common.Hash) (ethtxmanager.MonitoredTxStatus, error) {
-	response, err := client.JSONRPCCall(c.url, "interop_getTx", hash)
+	response, err := client.JSONRPCCall(c.url, "interop_getTxStatus", hash)
 	if err != nil {
 		return ethtxmanager.MonitoredTxStatus(""), err
 	}
