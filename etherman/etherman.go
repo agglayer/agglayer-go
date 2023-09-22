@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/0xPolygon/cdk-validium-node/encoding"
+	"github.com/0xPolygon/cdk-validium-node/etherman/smartcontracts/cdkvalidium"
+	"github.com/0xPolygon/cdk-validium-node/log"
+	"github.com/0xPolygon/cdk-validium-node/state"
+	"github.com/0xPolygon/cdk-validium-node/test/operations"
 	"github.com/0xPolygon/silencer/tx"
-	"github.com/0xPolygonHermez/zkevm-node/encoding"
-	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonzkevm"
-	"github.com/0xPolygonHermez/zkevm-node/log"
-	"github.com/0xPolygonHermez/zkevm-node/state"
-	"github.com/0xPolygonHermez/zkevm-node/test/operations"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -106,14 +106,14 @@ func ConvertProof(p string) ([24][32]byte, error) {
 	return proof, nil
 }
 
-func (e *Etherman) contractCaller(to common.Address) (*bind.TransactOpts, *polygonzkevm.Polygonzkevm, error) {
+func (e *Etherman) contractCaller(to common.Address) (*bind.TransactOpts, *cdkvalidium.Cdkvalidium, error) {
 	opts := bind.TransactOpts{}
 	opts.NoSend = true
 	// force nonce, gas limit and gas price to avoid querying it from the chain
 	opts.Nonce = big.NewInt(1)
 	opts.GasLimit = uint64(1)
 	opts.GasPrice = big.NewInt(1)
-	contract, err := polygonzkevm.NewPolygonzkevm(to, e.ethClient)
+	contract, err := cdkvalidium.NewCdkvalidium(to, e.ethClient)
 	if err != nil {
 		log.Errorf("error instantiating contract: %s", err)
 		return nil, nil, err

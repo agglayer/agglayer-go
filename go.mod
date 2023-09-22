@@ -3,10 +3,10 @@ module github.com/0xPolygon/silencer
 go 1.20
 
 require (
-	github.com/0xPolygonHermez/zkevm-node v0.3.0
+	github.com/0xPolygon/cdk-data-availability v0.0.0-20230920141507-405e1d638f0b
+	github.com/0xPolygon/cdk-validium-node v0.0.1
 	github.com/ethereum/go-ethereum v1.12.0
 	github.com/gobuffalo/packr/v2 v2.8.3
-	github.com/gorilla/websocket v1.5.0
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/rubenv/sql-migrate v1.5.2
@@ -17,7 +17,6 @@ require (
 
 require (
 	github.com/DataDog/zstd v1.5.2 // indirect
-	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
 	github.com/VictoriaMetrics/fastcache v1.6.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -50,6 +49,7 @@ require (
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hermeznetwork/tracerr v0.3.2 // indirect
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect

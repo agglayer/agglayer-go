@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
+	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
 	"github.com/0xPolygon/silencer/rpc/types"
 	"github.com/0xPolygon/silencer/tx"
-	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
-	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
 	"github.com/ethereum/go-ethereum/common"
 )
 
