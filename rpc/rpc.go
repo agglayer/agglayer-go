@@ -98,12 +98,12 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to get batch from our node, error: %s", err))
 	}
-	if batch.StateRoot != signedTx.Tx.ZKP.NewStateRoot.Hash() || batch.LocalExitRoot != signedTx.Tx.ZKP.NewLocalExitRoot.Hash() {
+	if batch.StateRoot != signedTx.Tx.ZKP.NewStateRoot || batch.LocalExitRoot != signedTx.Tx.ZKP.NewLocalExitRoot {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf(
 			"Missmatch detected,  expected local exit root: %s actual: %s. expected state root: %s actual: %s",
-			signedTx.Tx.ZKP.NewLocalExitRoot.Hash().Hex(),
+			signedTx.Tx.ZKP.NewLocalExitRoot.Hex(),
 			batch.LocalExitRoot.Hex(),
-			signedTx.Tx.ZKP.NewStateRoot.Hash().Hex(),
+			signedTx.Tx.ZKP.NewStateRoot.Hex(),
 			batch.StateRoot.Hex(),
 		))
 	}

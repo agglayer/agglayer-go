@@ -16,8 +16,8 @@ import (
 // )
 
 type ZKP struct {
-	NewStateRoot     types.ArgHash  `json:"newStateRoot"`
-	NewLocalExitRoot types.ArgHash  `json:"newLocalExitRoot"`
+	NewStateRoot     common.Hash    `json:"newStateRoot"`
+	NewLocalExitRoot common.Hash    `json:"newLocalExitRoot"`
 	Proof            types.ArgBytes `json:"proof"`
 }
 

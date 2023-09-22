@@ -54,9 +54,9 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(l1Contract common.Address, la
 		return nil, err
 	}
 	var newLocalExitRoot [32]byte
-	copy(newLocalExitRoot[:], proof.NewLocalExitRoot.Hash().Bytes())
+	copy(newLocalExitRoot[:], proof.NewLocalExitRoot.Bytes())
 	var newStateRoot [32]byte
-	copy(newStateRoot[:], proof.NewStateRoot.Hash().Bytes())
+	copy(newStateRoot[:], proof.NewStateRoot.Bytes())
 	finalProof, err := ConvertProof(proof.Proof.Hex())
 	if err != nil {
 		log.Errorf("error converting proof. Error: %v, Proof: %s", err, proof.Proof)
