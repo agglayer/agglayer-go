@@ -4,9 +4,9 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/0xPolygon/silencer/rpc/types"
 	"github.com/0xPolygon/silencer/tx"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
-	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jackc/pgx/v4"

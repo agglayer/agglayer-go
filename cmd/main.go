@@ -10,6 +10,7 @@ import (
 	"github.com/0xPolygon/silencer"
 	"github.com/0xPolygon/silencer/config"
 	"github.com/0xPolygon/silencer/db"
+	"github.com/0xPolygon/silencer/dummyinterfaces"
 	"github.com/0xPolygon/silencer/etherman"
 	"github.com/0xPolygon/silencer/rpc"
 	dbConf "github.com/0xPolygonHermez/zkevm-node/db"
@@ -62,7 +63,7 @@ func start(cliCtx *cli.Context) error {
 	setupLog(c.Log)
 
 	// Load private key
-	pk, err := config.NewKeyFromKeystore(c.PrivateKey)
+	pk, err := config.NewKeyFromKeystore(c.EthTxManager.PrivateKeys[0])
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -100,9 +101,9 @@ func start(cliCtx *cli.Context) error {
 	server := jsonrpc.NewServer(
 		c.RPC,
 		0,
-		nil,
-		nil,
-		nil,
+		&dummyinterfaces.DummyPool{},
+		&dummyinterfaces.DummyState{},
+		&dummyinterfaces.DummyStorage{},
 		[]jsonrpc.Service{
 			{
 				Name:    rpc.INTEROP,
