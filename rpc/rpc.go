@@ -7,6 +7,7 @@ import (
 
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
+	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/0xPolygon/silencer/tx"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -116,16 +117,17 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to add tx to ethTxMan, error: %s", err))
 	}
-	return signedTx.Tx.Hash().Hex(), nil
+	log.Debugf("successfuly added tx %s to ethTxMan", signedTx.Tx.Hash().Hex())
+	return signedTx.Tx.Hash(), nil
 }
 
-func (i *InteropEndpoints) GetTxStatus(hash types.ArgHash) (interface{}, types.Error) {
+func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (interface{}, types.Error) {
 	ctx := context.TODO()
 	dbTx, err := i.db.BeginStateTransaction(ctx)
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", err))
 	}
-	res, err := i.ethTxManager.Result(ctx, ethTxManOwner, hash.Hash().Hex(), dbTx)
+	res, err := i.ethTxManager.Result(ctx, ethTxManOwner, hash.Hex(), dbTx)
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", err))
 	}
