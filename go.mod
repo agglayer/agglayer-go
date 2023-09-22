@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/0xPolygon/cdk-data-availability v0.0.0-20230920141507-405e1d638f0b
-	github.com/0xPolygon/cdk-validium-node v0.0.1
+	github.com/0xPolygon/cdk-validium-node v0.0.2-0.20230922123231-07ce723e6268
 	github.com/ethereum/go-ethereum v1.12.0
 	github.com/gobuffalo/packr/v2 v2.8.3
 	github.com/jackc/pgx/v4 v4.18.1
