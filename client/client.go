@@ -103,9 +103,10 @@ func (c *Client) WaitTxToBeMined(hash common.Hash, timeout time.Duration) error 
 		if result == ethtxmanager.MonitoredTxStatusDone {
 			return nil
 		}
-		log.Debugf("timeout exceeded. current status %s. Timeout %v. Elapsed time %v", result, timeout, time.Since(start))
 		if timeout < time.Since(start) {
 			return fmt.Errorf("timeout exceeded. current status %s. Timeout %v. Elapsed time %v", result, timeout, time.Since(start))
 		}
+		log.Debugf("current status %s. Timeout %v. Elapsed time %v", result, timeout, time.Since(start))
+		time.Sleep(time.Second)
 	}
 }
