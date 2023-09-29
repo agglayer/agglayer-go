@@ -113,11 +113,13 @@ func start(cliCtx *cli.Context) error {
 	)
 
 	// Run RPC
-	if err := server.Start(); err != nil {
-		log.Fatal(err)
-	}
+	go func() {
+		if err := server.Start(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 	// Run EthTxMan
-	etm.Start()
+	go etm.Start()
 
 	waitSignal(cancelFuncs)
 	return nil

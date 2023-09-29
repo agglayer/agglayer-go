@@ -23,7 +23,11 @@ EnableLog = false
 MaxConns = 200
 
 [EthTxManager]
+FrequencyToMonitorTxs = "1s"
+WaitTxToBeMined = "2m"
 ForcedGas = 0
+GasPriceMarginFactor = 1
+MaxGasPriceLimit = 0
 PrivateKeys = [
 	{Path = "/pk/interop.keystore", Password = "testonly"},
 ]
