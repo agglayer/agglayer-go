@@ -21,12 +21,13 @@ func TestEthTransfer(t *testing.T) {
 		t.Skip()
 	}
 	ctx := context.Background()
-	startCmd := exec.Command("make", "run")
-	stopCmd := exec.Command("make", "stop")
-	defer func() { stopCmd.Run() }()
-	msg, err := stopCmd.CombinedOutput()
+	defer func() {
+		msg, err := exec.Command("make", "stop").CombinedOutput()
+		require.NoError(t, err, string(msg))
+	}()
+	msg, err := exec.Command("make", "stop").CombinedOutput()
 	require.NoError(t, err, string(msg))
-	msg, err = startCmd.CombinedOutput()
+	msg, err = exec.Command("make", "run").CombinedOutput()
 	require.NoError(t, err, string(msg))
 	time.Sleep(5 * time.Second)
 
