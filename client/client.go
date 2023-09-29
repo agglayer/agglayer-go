@@ -8,6 +8,7 @@ import (
 	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
+	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/0xPolygon/silencer/tx"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -102,6 +103,7 @@ func (c *Client) WaitTxToBeMined(hash common.Hash, timeout time.Duration) error 
 		if result == ethtxmanager.MonitoredTxStatusDone {
 			return nil
 		}
+		log.Debugf("current status %s. Timeout %v. Elapsed time %v", result, timeout, time.Since(start))
 		if timeout > time.Since(start) {
 			return fmt.Errorf("timeout exceeded")
 		}
