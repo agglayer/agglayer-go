@@ -1,6 +1,6 @@
-module github.com/0xPolygon/silencer
+module github.com/0xPolygon/beethoven
 
-go 1.20
+go 1.21
 
 require (
 	github.com/0xPolygon/cdk-data-availability v0.0.0-20230920141507-405e1d638f0b

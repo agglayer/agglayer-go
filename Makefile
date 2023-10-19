@@ -44,10 +44,10 @@ GOENVVARS := GOBIN=$(GOBIN) CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(ARCH)
 GOBINARY := silencer
 GOCMD := $(GOBASE)/cmd
 
-LDFLAGS += -X 'github.com/0xPolygon/silencer.Version=$(VERSION)'
-LDFLAGS += -X 'github.com/0xPolygon/silencer.GitRev=$(GITREV)'
-LDFLAGS += -X 'github.com/0xPolygon/silencer.GitBranch=$(GITBRANCH)'
-LDFLAGS += -X 'github.com/0xPolygon/silencer.BuildDate=$(DATE)'
+LDFLAGS += -X 'github.com/0xPolygon/beethoven.Version=$(VERSION)'
+LDFLAGS += -X 'github.com/0xPolygon/beethoven.GitRev=$(GITREV)'
+LDFLAGS += -X 'github.com/0xPolygon/beethoven.GitBranch=$(GITBRANCH)'
+LDFLAGS += -X 'github.com/0xPolygon/beethoven.BuildDate=$(DATE)'
 
 .PHONY: build
 build: ## Builds the binary locally into ./dist

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/0xPolygon/beethoven/tx"
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
 	"github.com/0xPolygon/cdk-validium-node/log"
-	"github.com/0xPolygon/silencer/tx"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 )

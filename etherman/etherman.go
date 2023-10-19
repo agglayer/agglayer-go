@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/0xPolygon/beethoven/tx"
 	"github.com/0xPolygon/cdk-validium-node/encoding"
 	"github.com/0xPolygon/cdk-validium-node/etherman/smartcontracts/cdkvalidium"
 	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/0xPolygon/cdk-validium-node/state"
 	"github.com/0xPolygon/cdk-validium-node/test/operations"
-	"github.com/0xPolygon/silencer/tx"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"

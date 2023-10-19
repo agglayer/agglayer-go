@@ -6,12 +6,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/0xPolygon/beethoven/rpc"
 	"github.com/0xPolygon/cdk-validium-node/config/types"
 	"github.com/0xPolygon/cdk-validium-node/db"
 	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc"
 	"github.com/0xPolygon/cdk-validium-node/log"
-	"github.com/0xPolygon/silencer/rpc"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
