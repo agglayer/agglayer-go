@@ -3,13 +3,10 @@ package etherman
 import (
 	"context"
 	"errors"
-	"fmt"
 	"math/big"
-	"strings"
 	"time"
 
 	"github.com/0xPolygon/beethoven/tx"
-	"github.com/0xPolygon/cdk-validium-node/encoding"
 	"github.com/0xPolygon/cdk-validium-node/etherman/smartcontracts/cdkvalidium"
 	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/0xPolygon/cdk-validium-node/state"
@@ -78,26 +75,6 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifie
 
 func (e *Etherman) CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) ([]byte, error) {
 	return e.ethClient.CallContract(ctx, call, blockNumber)
-}
-
-func ConvertProof(p string) ([24][32]byte, error) {
-	const expectedLength = 24*32*2 + 2
-	if len(p) != expectedLength {
-		return [24][32]byte{}, fmt.Errorf("invalid proof length. Expected length: %d, Actual length %d", expectedLength, len(p))
-	}
-	p = strings.TrimPrefix(p, "0x")
-	proof := [24][32]byte{}
-	for i := 0; i < 24; i++ {
-		data := p[i*64 : (i+1)*64]
-		p, err := encoding.DecodeBytes(&data)
-		if err != nil {
-			return [24][32]byte{}, fmt.Errorf("failed to decode proof, err: %w", err)
-		}
-		var aux [32]byte
-		copy(aux[:], p)
-		proof[i] = aux
-	}
-	return proof, nil
 }
 
 func (e *Etherman) contractCaller(from, to common.Address) (*bind.TransactOpts, *cdkvalidium.Cdkvalidium, error) {
