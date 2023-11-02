@@ -27,7 +27,8 @@ services:
     ports:
       - '8444:8444'
     volumes:
-      - ../pk:/pk
+      - ../data/pk:/pk
+      - ../data/config:/config
     networks:
       - beethoven-localnet
     restart: always
