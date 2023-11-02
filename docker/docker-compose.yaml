@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+  interop-db:
+    image: postgres:16.0-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: interop_user
+      POSTGRES_PASSWORD: interop_password
+      POSTGRES_DB: interop_db
+    networks:
+      - beethoven-localnet
+    restart: always
+
+  beethoven:
+    image: beethoven:local-${ARCH}
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+      args:
+        ARCH: $ARCH
+    depends_on:
+      interop-db:
+        condition: service_healthy
+    ports:
+      - '8444:8444'
+    volumes:
+      - ../pk:/pk
+    networks:
+      - beethoven-localnet
+    restart: always
+
+networks:
+  beethoven-localnet:
+    driver: bridge

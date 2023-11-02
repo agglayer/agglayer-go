@@ -7,11 +7,11 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/0xPolygon/silencer"
-	"github.com/0xPolygon/silencer/config"
-	"github.com/0xPolygon/silencer/db"
-	"github.com/0xPolygon/silencer/etherman"
-	"github.com/0xPolygon/silencer/rpc"
+	"github.com/0xPolygon/beethoven"
+	"github.com/0xPolygon/beethoven/config"
+	"github.com/0xPolygon/beethoven/db"
+	"github.com/0xPolygon/beethoven/etherman"
+	"github.com/0xPolygon/beethoven/rpc"
 	dbConf "github.com/0xPolygonHermez/zkevm-node/db"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc"
@@ -21,7 +21,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const appName = "cdk-silencer"
+const appName = "cdk-beethoven"
 
 var (
 	configFileFlag = cli.StringFlag{
@@ -35,7 +35,7 @@ var (
 func main() {
 	app := cli.NewApp()
 	app.Name = appName
-	app.Version = silencer.Version
+	app.Version = beethoven.Version
 	app.Commands = []*cli.Command{
 		{
 			Name:    "run",
