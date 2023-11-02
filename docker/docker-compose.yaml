@@ -20,9 +20,10 @@ services:
       dockerfile: ./docker/Dockerfile
       args:
         ARCH: $ARCH
+    command: [ 'run' ]
     depends_on:
       interop-db:
-        condition: service_healthy
+        condition: service_started
     ports:
       - '8444:8444'
     volumes:

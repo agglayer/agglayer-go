@@ -22,4 +22,4 @@ COPY --from=build /go/src/github.com/0xPolygon/beethoven/dist/beethoven /app/bee
 
 EXPOSE 8444
 
-CMD ["/bin/sh", "-c", "/app/beethoven run"]
+ENTRYPOINT ["/app/beethoven"]
