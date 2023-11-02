@@ -36,8 +36,8 @@ services:
       - POSTGRES_DB=pool_db
     command: ["postgres", "-N", "500"]
 
-  silencer-db:
-    container_name: silencer-db
+  beethoven-db:
+    container_name: beethoven-db
     image: postgres
     deploy:
       resources:
@@ -48,14 +48,14 @@ services:
     ports:
       - 5435:5432
     environment:
-      - POSTGRES_USER=silencer_user
-      - POSTGRES_PASSWORD=silencer_password
-      - POSTGRES_DB=silencer_db
+      - POSTGRES_USER=beethoven_user
+      - POSTGRES_PASSWORD=beethoven_password
+      - POSTGRES_DB=beethoven_db
     command: ["postgres", "-N", "500"]
 
   zkevm-node:
     container_name: zkevm-node
-    image: hermeznetwork/cdk-validium-node:silencer
+    image: hermeznetwork/cdk-validium-node:beethoven
     ports:
       - 8123:8123
       - 61090:61090
@@ -110,15 +110,15 @@ services:
     command: >
       zkProver -c /usr/src/app/config.json
 
-  silencer:
-    container_name: silencer
-    image: silencer
+  beethoven:
+    container_name: beethoven
+    image: beethoven
     ports:
       - 4444:4444
     volumes:
       - ./config/interop.keystore:/pk/interop.keystore
-      - ./config/silencer.toml:/app/config.toml
+      - ./config/beethoven.toml:/app/config.toml
     command:
       - "/bin/sh"
       - "-c"
-      - "/app/silencer run --cfg /app/config.toml"
+      - "/app/beethoven run --cfg /app/config.toml"

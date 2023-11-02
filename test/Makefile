@@ -1,8 +1,8 @@
 .PHONY: run
 run: stop ## Run all the services needed to perform an E2E test
-	docker compose up -d zkevm-state-db zkevm-pool-db silencer-db l1
+	docker compose up -d zkevm-state-db zkevm-pool-db beethoven-db l1
 	sleep 1
-	docker compose up -d zkevm-prover silencer
+	docker compose up -d zkevm-prover beethoven
 	sleep 3
 	docker compose up -d zkevm-node
 

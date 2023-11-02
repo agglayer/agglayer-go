@@ -1,4 +1,4 @@
-package silencer
+package beethoven
 
 import (
 	"fmt"

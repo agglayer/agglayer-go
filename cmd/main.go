@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/signal"
 
-	silencer "github.com/0xPolygon/beethoven"
+	beethoven "github.com/0xPolygon/beethoven"
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/db"
 	"github.com/0xPolygon/beethoven/etherman"
@@ -22,7 +22,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const appName = "cdk-silencer"
+const appName = "cdk-beethoven"
 
 var (
 	configFileFlag = cli.StringFlag{
@@ -36,7 +36,7 @@ var (
 func main() {
 	app := cli.NewApp()
 	app.Name = appName
-	app.Version = silencer.Version
+	app.Version = beethoven.Version
 	app.Commands = []*cli.Command{
 		{
 			Name:    "run",

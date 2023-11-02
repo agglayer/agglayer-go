@@ -41,7 +41,7 @@ GOBASE := $(shell pwd)
 GOBIN := $(GOBASE)/dist
 GOOS := $(shell uname -s  | tr '[:upper:]' '[:lower:]')
 GOENVVARS := GOBIN=$(GOBIN) CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(ARCH)
-GOBINARY := silencer
+GOBINARY := beethoven
 GOCMD := $(GOBASE)/cmd
 
 LDFLAGS += -X 'github.com/0xPolygon/beethoven.Version=$(VERSION)'
@@ -54,12 +54,12 @@ build: ## Builds the binary locally into ./dist
 	$(GOENVVARS) go build -ldflags "all=$(LDFLAGS)" -o $(GOBIN)/$(GOBINARY) $(GOCMD)
 
 .PHONY: build-docker
-build-docker: ## Builds a docker image with the silencer binary
-	docker build -t silencer -f ./Dockerfile .
+build-docker: ## Builds a docker image with the beethoven binary
+	docker build -t beethoven -f ./Dockerfile .
 
 .PHONY: build-docker-nc
-build-docker-nc: ## Builds a docker image with the silencer binary - but without build cache
-	docker build --no-cache=true -t silencer -f ./Dockerfile .
+build-docker-nc: ## Builds a docker image with the beethoven binary - but without build cache
+	docker build --no-cache=true -t beethoven -f ./Dockerfile .
 
 .PHONY: install-linter
 install-linter: ## Installs the linter

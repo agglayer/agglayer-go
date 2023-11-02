@@ -25,10 +25,10 @@ Level = "debug"
 Outputs = ["stderr"]
 
 [DB]
-User = "silencer_user"
-Password = "silencer_password"
-Name = "silencer_db"
-Host = "silencer-db"
+User = "beethoven_user"
+Password = "beethoven_password"
+Name = "beethoven_db"
+Host = "beethoven-db"
 Port = "5432"
 EnableLog = false
 MaxConns = 200
