@@ -97,7 +97,6 @@ func start(cliCtx *cli.Context) error {
 	etm := ethtxmanager.New(c.EthTxManager, &ethMan, ethTxManagerStorage, &ethMan)
 
 	// Register services
-	var cancelFuncs []context.CancelFunc
 	server := jsonrpc.NewServer(
 		c.RPC,
 		0,
@@ -121,7 +120,7 @@ func start(cliCtx *cli.Context) error {
 	// Run EthTxMan
 	go etm.Start()
 
-	waitSignal(cancelFuncs)
+	waitSignal(nil)
 	return nil
 }
 
