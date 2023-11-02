@@ -1,13 +1,16 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"time"
 
-	"github.com/0xPolygon/silencer/tx"
-	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
-	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
-	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
+	"github.com/0xPolygon/beethoven/tx"
+	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
+	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
+	"github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -20,6 +23,7 @@ type ClientFactoryInterface interface {
 type ClientInterface interface {
 	SendTx(signedTx tx.SignedTx) (common.Hash, error)
 	GetTxStatus(hash common.Hash) (ethtxmanager.MonitoredTxStatus, error)
+	WaitTxToBeMined(hash common.Hash, ctx context.Context) error
 }
 
 // ClientFactory is the implementation of the data committee client factory
@@ -62,7 +66,7 @@ func (c *Client) SendTx(signedTx tx.SignedTx) (common.Hash, error) {
 }
 
 func (c *Client) GetTxStatus(hash common.Hash) (ethtxmanager.MonitoredTxStatus, error) {
-	response, err := client.JSONRPCCall(c.url, "interop_getTx", hash)
+	response, err := client.JSONRPCCall(c.url, "interop_getTxStatus", hash)
 	if err != nil {
 		return ethtxmanager.MonitoredTxStatus(""), err
 	}
@@ -78,4 +82,32 @@ func (c *Client) GetTxStatus(hash common.Hash) (ethtxmanager.MonitoredTxStatus, 
 	}
 
 	return result, nil
+}
+
+func (c *Client) WaitTxToBeMined(hash common.Hash, ctx context.Context) error {
+	ticker := time.NewTicker(time.Second)
+	for {
+		select {
+		case <-ctx.Done():
+			return errors.New("context finished before tx was mined")
+		case <-ticker.C:
+			response, err := client.JSONRPCCall(c.url, "interop_getTxStatus", hash)
+			if err != nil {
+				return err
+			}
+
+			if response.Error != nil {
+				return fmt.Errorf("%v %v", response.Error.Code, response.Error.Message)
+			}
+
+			var result ethtxmanager.MonitoredTxStatus
+			err = json.Unmarshal(response.Result, &result)
+			if err != nil {
+				return err
+			}
+			if result == ethtxmanager.MonitoredTxStatusDone {
+				return nil
+			}
+		}
+	}
 }
