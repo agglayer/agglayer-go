@@ -1,7 +1,9 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,7 +11,6 @@ import (
 	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
-	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -83,30 +84,30 @@ func (c *Client) GetTxStatus(hash common.Hash) (ethtxmanager.MonitoredTxStatus, 
 	return result, nil
 }
 
-func (c *Client) WaitTxToBeMined(hash common.Hash, timeout time.Duration) error {
-	start := time.Now()
+func (c *Client) WaitTxToBeMined(hash common.Hash, ctx context.Context) error {
+	ticker := time.NewTicker(time.Second)
 	for {
-		response, err := client.JSONRPCCall(c.url, "interop_getTxStatus", hash)
-		if err != nil {
-			return err
-		}
+		select {
+		case <-ctx.Done():
+			return errors.New("context finished before tx was mined")
+		case <-ticker.C:
+			response, err := client.JSONRPCCall(c.url, "interop_getTxStatus", hash)
+			if err != nil {
+				return err
+			}
 
-		if response.Error != nil {
-			return fmt.Errorf("%v %v", response.Error.Code, response.Error.Message)
-		}
+			if response.Error != nil {
+				return fmt.Errorf("%v %v", response.Error.Code, response.Error.Message)
+			}
 
-		var result ethtxmanager.MonitoredTxStatus
-		err = json.Unmarshal(response.Result, &result)
-		if err != nil {
-			return err
+			var result ethtxmanager.MonitoredTxStatus
+			err = json.Unmarshal(response.Result, &result)
+			if err != nil {
+				return err
+			}
+			if result == ethtxmanager.MonitoredTxStatusDone {
+				return nil
+			}
 		}
-		if result == ethtxmanager.MonitoredTxStatusDone {
-			return nil
-		}
-		if timeout < time.Since(start) {
-			return fmt.Errorf("timeout exceeded. current status %s. Timeout %v. Elapsed time %v", result, timeout, time.Since(start))
-		}
-		log.Debugf("current status %s. Timeout %v. Elapsed time %v", result, timeout, time.Since(start))
-		time.Sleep(time.Second)
 	}
 }
