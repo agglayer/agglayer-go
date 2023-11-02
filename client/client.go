@@ -23,7 +23,7 @@ type ClientFactoryInterface interface {
 type ClientInterface interface {
 	SendTx(signedTx tx.SignedTx) (common.Hash, error)
 	GetTxStatus(hash common.Hash) (ethtxmanager.MonitoredTxStatus, error)
-	WaitTxToBeMined(hash common.Hash, timeout time.Duration) error
+	WaitTxToBeMined(hash common.Hash, ctx context.Context) error
 }
 
 // ClientFactory is the implementation of the data committee client factory
