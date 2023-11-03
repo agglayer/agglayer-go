@@ -1,34 +1,38 @@
 version: '3.9'
 
 services:
-  interop-db:
+  beethoven-db:
     image: postgres:16.0-alpine
     ports:
       - '5432:5432'
     environment:
-      POSTGRES_USER: interop_user
-      POSTGRES_PASSWORD: interop_password
-      POSTGRES_DB: interop_db
+      POSTGRES_USER: beethoven_user
+      POSTGRES_PASSWORD: beethoven_password
+      POSTGRES_DB: beethoven_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "beethoven_db" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 10s
     networks:
       - beethoven-localnet
     restart: always
 
   beethoven:
-    image: beethoven:local-${ARCH}
+    image: beethoven:local
     build:
       context: ../
       dockerfile: ./docker/Dockerfile
-      args:
-        ARCH: $ARCH
-    command: [ 'run' ]
+    command: [ 'run', '--cfg', '/config/beethoven.toml' ]
     depends_on:
-      interop-db:
-        condition: service_started
+      beethoven-db:
+        condition: service_healthy
     ports:
       - '8444:8444'
     volumes:
-      - ../data/pk:/pk
-      - ../data/config:/config
+      - ./data/pk:/pk
+      - ./data/config:/config
     networks:
       - beethoven-localnet
     restart: always

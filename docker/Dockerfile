@@ -1,5 +1,5 @@
 # CONTAINER FOR BUILDING BINARY
-FROM golang:1.20 AS build
+FROM golang:1.21 AS build
 
 WORKDIR /go/src/github.com/0xPolygon/beethoven
 
