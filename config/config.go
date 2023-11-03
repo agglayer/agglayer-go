@@ -7,11 +7,11 @@ import (
 	"strings"
 
 	"github.com/0xPolygon/beethoven/rpc"
-	"github.com/0xPolygonHermez/zkevm-node/config/types"
-	"github.com/0xPolygonHermez/zkevm-node/db"
-	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
-	"github.com/0xPolygonHermez/zkevm-node/jsonrpc"
-	"github.com/0xPolygonHermez/zkevm-node/log"
+	"github.com/0xPolygon/cdk-validium-node/config/types"
+	"github.com/0xPolygon/cdk-validium-node/db"
+	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
+	"github.com/0xPolygon/cdk-validium-node/jsonrpc"
+	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
@@ -25,13 +25,12 @@ const (
 
 // Config represents the full configuration of the data node
 type Config struct {
-	PrivateKey   types.KeystoreFileConfig
-	FullNodeRPCs rpc.FullNodeRPCs
-	RPC          jsonrpc.Config
-	Log          log.Config
-	DB           db.Config
-	EthTxManager ethtxmanager.Config
-	L1           L1Config
+	FullNodeRPCs rpc.FullNodeRPCs    `mapstructure:"FullNodeRPCs"`
+	RPC          jsonrpc.Config      `mapstructure:"RPC"`
+	Log          log.Config          `mapstructure:"Log"`
+	DB           db.Config           `mapstructure:"DB"`
+	EthTxManager ethtxmanager.Config `mapstructure:"EthTxManager"`
+	L1           L1Config            `mapstructure:"L1"`
 }
 
 type L1Config struct {

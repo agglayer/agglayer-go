@@ -1,7 +1,10 @@
 -- +migrate Down
 DROP SCHEMA IF EXISTS state CASCADE;
 
--- +migrate UpCREATE TABLE state.monitored_txs
+-- +migrate Up
+CREATE SCHEMA state;
+
+CREATE TABLE state.monitored_txs
 (
     owner      VARCHAR NOT NULL,
     id         VARCHAR NOT NULL,

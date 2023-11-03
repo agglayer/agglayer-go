@@ -3,17 +3,14 @@ package etherman
 import (
 	"context"
 	"errors"
-	"fmt"
 	"math/big"
-	"strings"
 	"time"
 
-	"github.com/0xPolygonHermez/zkevm-node/encoding"
-	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonzkevm"
-	ethmanTypes "github.com/0xPolygonHermez/zkevm-node/etherman/types"
-	"github.com/0xPolygonHermez/zkevm-node/log"
-	"github.com/0xPolygonHermez/zkevm-node/state"
-	"github.com/0xPolygonHermez/zkevm-node/test/operations"
+	"github.com/0xPolygon/beethoven/tx"
+	"github.com/0xPolygon/cdk-validium-node/etherman/smartcontracts/cdkvalidium"
+	"github.com/0xPolygon/cdk-validium-node/log"
+	"github.com/0xPolygon/cdk-validium-node/state"
+	"github.com/0xPolygon/cdk-validium-node/test/operations"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -41,79 +38,54 @@ func New(url string, auth bind.TransactOpts) (Etherman, error) {
 }
 
 func (e *Etherman) GetSequencerAddr(l1Contract common.Address) (common.Address, error) {
-	_, contract, err := e.contractCaller(l1Contract)
+	_, contract, err := e.contractCaller(common.Address{}, l1Contract)
 	if err != nil {
 		return common.Address{}, err
 	}
 	return contract.TrustedSequencer(&bind.CallOpts{Pending: false})
 }
 
-func (e *Etherman) BuildTrustedVerifyBatchesTxData(l1Contract common.Address, lastVerifiedBatch, newVerifiedBatch uint64, inputs *ethmanTypes.FinalProofInputs) (data []byte, err error) {
-	opts, contract, err := e.contractCaller(l1Contract)
-	if err != nil {
-		return nil, err
-	}
+func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
 	var newLocalExitRoot [32]byte
-	copy(newLocalExitRoot[:], inputs.NewLocalExitRoot)
+	copy(newLocalExitRoot[:], proof.NewLocalExitRoot.Bytes())
 	var newStateRoot [32]byte
-	copy(newStateRoot[:], inputs.NewStateRoot)
-	proof, err := ConvertProof(inputs.FinalProof.Proof)
+	copy(newStateRoot[:], proof.NewStateRoot.Bytes())
+	finalProof, err := ConvertProof(proof.Proof.Hex())
 	if err != nil {
-		log.Errorf("error converting proof. Error: %v, Proof: %s", err, inputs.FinalProof.Proof)
+		log.Errorf("error converting proof. Error: %v, Proof: %s", err, proof.Proof)
 		return nil, err
 	}
 
-	const pendStateNum = 0 // TODO hardcoded for now until we implement the pending state feature
-	tx, err := contract.VerifyBatchesTrustedAggregator(
-		opts,
+	const pendStateNum uint64 = 0 // TODO hardcoded for now until we implement the pending state feature
+	abi, err := cdkvalidium.CdkvalidiumMetaData.GetAbi()
+	if err != nil {
+		log.Errorf("error geting ABI: %v, Proof: %s", err)
+		return nil, err
+	}
+	return abi.Pack(
+		"verifyBatchesTrustedAggregator",
 		pendStateNum,
 		lastVerifiedBatch,
 		newVerifiedBatch,
 		newLocalExitRoot,
 		newStateRoot,
-		proof,
+		finalProof,
 	)
-	if err != nil {
-		if parsedErr, ok := tryParseError(err); ok {
-			err = parsedErr
-		}
-		return nil, err
-	}
-
-	return tx.Data(), nil
 }
 
 func (e *Etherman) CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) ([]byte, error) {
 	return e.ethClient.CallContract(ctx, call, blockNumber)
 }
 
-func ConvertProof(p string) ([24][32]byte, error) {
-	if len(p) != 24*32*2+2 {
-		return [24][32]byte{}, fmt.Errorf("invalid proof length. Length: %d", len(p))
-	}
-	p = strings.TrimPrefix(p, "0x")
-	proof := [24][32]byte{}
-	for i := 0; i < 24; i++ {
-		data := p[i*64 : (i+1)*64]
-		p, err := encoding.DecodeBytes(&data)
-		if err != nil {
-			return [24][32]byte{}, fmt.Errorf("failed to decode proof, err: %w", err)
-		}
-		var aux [32]byte
-		copy(aux[:], p)
-		proof[i] = aux
-	}
-	return proof, nil
-}
-
-func (e *Etherman) contractCaller(to common.Address) (*bind.TransactOpts, *polygonzkevm.Polygonzkevm, error) {
+func (e *Etherman) contractCaller(from, to common.Address) (*bind.TransactOpts, *cdkvalidium.Cdkvalidium, error) {
 	opts := bind.TransactOpts{}
+	opts.From = from
 	opts.NoSend = true
 	// force nonce, gas limit and gas price to avoid querying it from the chain
 	opts.Nonce = big.NewInt(1)
 	opts.GasLimit = uint64(1)
 	opts.GasPrice = big.NewInt(1)
-	contract, err := polygonzkevm.NewPolygonzkevm(to, e.ethClient)
+	contract, err := cdkvalidium.NewCdkvalidium(to, e.ethClient)
 	if err != nil {
 		log.Errorf("error instantiating contract: %s", err)
 		return nil, nil, err

@@ -7,15 +7,16 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/0xPolygon/beethoven"
+	beethoven "github.com/0xPolygon/beethoven"
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/db"
 	"github.com/0xPolygon/beethoven/etherman"
 	"github.com/0xPolygon/beethoven/rpc"
-	dbConf "github.com/0xPolygonHermez/zkevm-node/db"
-	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
-	"github.com/0xPolygonHermez/zkevm-node/jsonrpc"
-	"github.com/0xPolygonHermez/zkevm-node/log"
+	"github.com/0xPolygon/cdk-data-availability/dummyinterfaces"
+	dbConf "github.com/0xPolygon/cdk-validium-node/db"
+	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
+	"github.com/0xPolygon/cdk-validium-node/jsonrpc"
+	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/urfave/cli/v2"
@@ -62,7 +63,7 @@ func start(cliCtx *cli.Context) error {
 	setupLog(c.Log)
 
 	// Load private key
-	pk, err := config.NewKeyFromKeystore(c.PrivateKey)
+	pk, err := config.NewKeyFromKeystore(c.EthTxManager.PrivateKeys[0])
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,13 +97,12 @@ func start(cliCtx *cli.Context) error {
 	etm := ethtxmanager.New(c.EthTxManager, &ethMan, ethTxManagerStorage, &ethMan)
 
 	// Register services
-	var cancelFuncs []context.CancelFunc
 	server := jsonrpc.NewServer(
 		c.RPC,
 		0,
-		nil,
-		nil,
-		nil,
+		&dummyinterfaces.DummyPool{},
+		&dummyinterfaces.DummyState{},
+		&dummyinterfaces.DummyStorage{},
 		[]jsonrpc.Service{
 			{
 				Name:    rpc.INTEROP,
@@ -112,13 +112,15 @@ func start(cliCtx *cli.Context) error {
 	)
 
 	// Run RPC
-	if err := server.Start(); err != nil {
-		log.Fatal(err)
-	}
+	go func() {
+		if err := server.Start(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 	// Run EthTxMan
-	etm.Start()
+	go etm.Start()
 
-	waitSignal(cancelFuncs)
+	waitSignal(nil)
 	return nil
 }
 

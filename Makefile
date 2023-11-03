@@ -55,11 +55,11 @@ build: ## Builds the binary locally into ./dist
 
 .PHONY: build-docker
 build-docker: ## Builds a docker image with the beethoven binary
-	docker build -t beethoven -f ./docker/Dockerfile .
+	docker build -t beethoven -f ./Dockerfile .
 
 .PHONY: build-docker-nc
 build-docker-nc: ## Builds a docker image with the beethoven binary - but without build cache
-	docker build --no-cache=true -t beethoven -f ./docker/Dockerfile .
+	docker build --no-cache=true -t beethoven -f ./Dockerfile .
 
 .PHONY: install-linter
 install-linter: ## Installs the linter

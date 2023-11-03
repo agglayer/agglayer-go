@@ -6,8 +6,9 @@ import (
 	"math/big"
 
 	"github.com/0xPolygon/beethoven/tx"
-	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
-	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
+	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
+	"github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
+	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -56,10 +57,9 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 
 	// Verify ZKP using eth_call
 	l1TxData, err := i.etherman.BuildTrustedVerifyBatchesTxData(
-		signedTx.Tx.L1Contract,
 		uint64(signedTx.Tx.LastVerifiedBatch),
 		uint64(signedTx.Tx.NewVerifiedBatch),
-		&signedTx.Tx.ZKP,
+		signedTx.Tx.ZKP,
 	)
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to build verify ZKP tx: %s", err))
@@ -93,17 +93,17 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 	zkEVMClient := client.NewClient(i.fullNodeRPCs[signedTx.Tx.L1Contract])
 	batch, err := zkEVMClient.BatchByNumber(
 		ctx,
-		big.NewInt(int64(signedTx.Tx.LastVerifiedBatch)),
+		big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
 	)
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to get batch from our node, error: %s", err))
 	}
-	if batch.StateRoot != signedTx.Tx.NewStateRoot.Hash() || batch.LocalExitRoot != signedTx.Tx.NewLocalExitRoot.Hash() {
+	if batch.StateRoot != signedTx.Tx.ZKP.NewStateRoot || batch.LocalExitRoot != signedTx.Tx.ZKP.NewLocalExitRoot {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf(
 			"Missmatch detected,  expected local exit root: %s actual: %s. expected state root: %s actual: %s",
-			signedTx.Tx.NewLocalExitRoot.Hash().Hex(),
+			signedTx.Tx.ZKP.NewLocalExitRoot.Hex(),
 			batch.LocalExitRoot.Hex(),
-			signedTx.Tx.NewStateRoot.Hash().Hex(),
+			signedTx.Tx.ZKP.NewStateRoot.Hex(),
 			batch.StateRoot.Hex(),
 		))
 	}
@@ -115,18 +115,26 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 	}
 	err = i.ethTxManager.Add(ctx, ethTxManOwner, signedTx.Tx.Hash().Hex(), i.interopAdminAddr, &signedTx.Tx.L1Contract, nil, l1TxData, dbTx)
 	if err != nil {
+		if errRollback := dbTx.Rollback(ctx); errRollback != nil {
+			log.Error("rollback err: ", errRollback)
+		}
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to add tx to ethTxMan, error: %s", err))
 	}
-	return signedTx.Tx.Hash().Hex(), nil
+	if err := dbTx.Commit(ctx); err != nil {
+		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to commit dbTx, error: %s", err))
+	}
+	log.Debugf("successfuly added tx %s to ethTxMan", signedTx.Tx.Hash().Hex())
+	return signedTx.Tx.Hash(), nil
 }
 
-func (i *InteropEndpoints) GetTxStatus(hash types.ArgHash) (interface{}, types.Error) {
+func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (interface{}, types.Error) {
 	ctx := context.TODO()
 	dbTx, err := i.db.BeginStateTransaction(ctx)
+	defer dbTx.Rollback(ctx)
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", err))
 	}
-	res, err := i.ethTxManager.Result(ctx, ethTxManOwner, hash.Hash().Hex(), dbTx)
+	res, err := i.ethTxManager.Result(ctx, ethTxManOwner, hash.Hex(), dbTx)
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", err))
 	}
