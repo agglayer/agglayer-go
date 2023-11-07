@@ -25,6 +25,7 @@ build: check-go
 build-docker: check-docker
 build-docker-nc: check-docker
 run-docker: check-docker
+run-docker-bo: run-docker-bo
 stop-docker: check-docker
 destroy-docker: check-docker
 install-linter: check-go check-curl
@@ -67,6 +68,10 @@ build-docker-nc: ## Builds a docker image with the beethoven binary - but withou
 .PHONY: run-docker
 run-docker: ## Builds and runs beethoven with the default list of required services such as l1 and zkevm node
 	docker compose -f ./docker/docker-compose.yaml up -d l1 zkevm-prover zkevm-node
+	docker compose -f ./docker/docker-compose.yaml up -d --build beethoven
+
+.PHONY: run-docker-bo
+run-docker-bo: ## Builds and runs beethoven only
 	docker compose -f ./docker/docker-compose.yaml up -d --build beethoven
 
 .PHONY: stop-docker
