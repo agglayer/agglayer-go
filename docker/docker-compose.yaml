@@ -4,7 +4,7 @@ services:
   beethoven-db:
     image: postgres:16.0-alpine
     ports:
-      - '5432:5432'
+      - '5434:5432'
     environment:
       POSTGRES_USER: beethoven_user
       POSTGRES_PASSWORD: beethoven_password
@@ -31,12 +31,16 @@ services:
     ports:
       - '8444:8444'
     volumes:
-      - ./data/pk:/pk
-      - ./data/config:/config
+      - ./data/beethoven/beethoven.keystore:/pk/beethoven.keystore
+      - ./data/beethoven/beethoven.toml:/config/beethoven.toml
     networks:
       - beethoven-localnet
+      - zkevm-localnet
     restart: always
 
 networks:
   beethoven-localnet:
     driver: bridge
+  zkevm-localnet:
+    name: zkevm-localnet
+    external: true
