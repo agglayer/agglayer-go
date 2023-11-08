@@ -79,10 +79,12 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, "failed to get signer")
 	}
+
 	sequencer, err := i.etherman.GetSequencerAddr(signedTx.Tx.L1Contract)
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, "failed to get admin from L1")
 	}
+
 	if sequencer != signer {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, "unexpected signer")
 	}
@@ -98,6 +100,7 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to get batch from our node, error: %s", err))
 	}
+
 	if batch.StateRoot != signedTx.Tx.ZKP.NewStateRoot || batch.LocalExitRoot != signedTx.Tx.ZKP.NewLocalExitRoot {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf(
 			"Missmatch detected,  expected local exit root: %s actual: %s. expected state root: %s actual: %s",

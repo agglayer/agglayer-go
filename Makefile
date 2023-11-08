@@ -24,6 +24,10 @@ endif
 build: check-go
 build-docker: check-docker
 build-docker-nc: check-docker
+run-docker: check-docker
+run-docker-bo: run-docker-bo
+stop-docker: check-docker
+destroy-docker: check-docker
 install-linter: check-go check-curl
 lint: check-go
 
@@ -55,11 +59,28 @@ build: ## Builds the binary locally into ./dist
 
 .PHONY: build-docker
 build-docker: ## Builds a docker image with the beethoven binary
-	docker build -t beethoven -f ./Dockerfile .
+	docker compose -f ./docker/docker-compose.yaml build beethoven
 
 .PHONY: build-docker-nc
 build-docker-nc: ## Builds a docker image with the beethoven binary - but without build cache
-	docker build --no-cache=true -t beethoven -f ./Dockerfile .
+	docker compose -f ./docker/docker-compose.yaml build --no-cache beethoven
+
+.PHONY: run-docker
+run-docker: ## Builds and runs beethoven with the default list of required services such as l1 and zkevm node
+	docker compose -f ./docker/docker-compose.yaml up -d l1 zkevm-prover zkevm-node
+	docker compose -f ./docker/docker-compose.yaml up -d --build beethoven
+
+.PHONY: run-docker-bo
+run-docker-bo: ## Builds and runs beethoven only
+	docker compose -f ./docker/docker-compose.yaml up -d --build beethoven
+
+.PHONY: stop-docker
+stop-docker: ## Stops beethoven container and other side services without removing state
+	docker compose -f ./docker/docker-compose.yaml stop
+
+.PHONY: destroy-docker
+destroy-docker: ## Stops and removes beethoven container and other side services
+	docker compose -f ./docker/docker-compose.yaml down
 
 .PHONY: install-linter
 install-linter: ## Installs the linter

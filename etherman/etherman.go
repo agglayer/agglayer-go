@@ -24,13 +24,20 @@ type Etherman struct {
 	auth      bind.TransactOpts
 }
 
-func New(url string, auth bind.TransactOpts) (Etherman, error) {
+func New(ctx context.Context, url string, auth bind.TransactOpts) (Etherman, error) {
 	// Connect to ethereum node
-	ethClient, err := ethclient.Dial(url)
+	ethClient, err := ethclient.DialContext(ctx, url)
 	if err != nil {
 		log.Errorf("error connecting to %s: %+v", url, err)
 		return Etherman{}, err
 	}
+
+	// Make sure the connection is okay
+	if _, err = ethClient.ChainID(ctx); err != nil {
+		log.Errorf("error getting chain ID from l1 with %s address: %+v", url, err)
+		return Etherman{}, err
+	}
+
 	return Etherman{
 		ethClient: ethClient,
 		auth:      auth,

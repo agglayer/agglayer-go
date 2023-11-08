@@ -1,0 +1,154 @@
+version: '3.9'
+
+services:
+  l1:
+    container_name: l1
+    image: hermeznetwork/geth-cdk-validium-contracts:v0.0.1
+    command: [
+      "--http",
+      "--http.api", "admin,eth,debug,miner,net,txpool,personal,web3",
+      "--http.addr", "0.0.0.0",
+      "--http.corsdomain", "*",
+      "--http.vhosts", "*",
+      "--ws",
+      "--ws.origins", "*",
+      "--ws.addr", "0.0.0.0",
+      "--dev",
+      "--dev.period", "1",
+      "--datadir", "/geth_data",
+      "--syncmode", "full",
+      "--rpc.allow-unprotected-txs"
+    ]
+    ports:
+      - '8545:8545'
+      - '8546:8546'
+    networks:
+      - beethoven-localnet
+
+  zkevm-state-db:
+    image: postgres:16.0-alpine
+    command: [ "postgres", "-N", "500" ]
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: state_user
+      POSTGRES_PASSWORD: state_password
+      POSTGRES_DB: state_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "prover_db" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - ./data/zkevm/init_prover_db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - beethoven-localnet
+
+  zkevm-pool-db:
+    image: postgres:16.0-alpine
+    command: [ "postgres", "-N", "500" ]
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_USER: pool_user
+      POSTGRES_PASSWORD: pool_password
+      POSTGRES_DB: pool_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "pool_db" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 10s
+    networks:
+      - beethoven-localnet
+
+  zkevm-prover:
+    image: hermeznetwork/zkevm-prover:v2.2.0
+    command: [
+      "zkProver",
+      "-c",
+      "/usr/src/app/config.json"
+    ]
+    depends_on:
+      zkevm-state-db:
+        condition: service_healthy
+    ports:
+      - '50061:50061' # MT
+      - '50071:50071' # Executor
+    volumes:
+      - ./data/zkevm/prover.json:/usr/src/app/config.json
+    networks:
+      - beethoven-localnet
+
+  zkevm-node:
+    image: hermeznetwork/cdk-validium-node:beethoven
+    command:
+      - "/bin/sh"
+      - "-c"
+      - "/app/cdk-validium-node approve --network custom --custom-network-file /app/genesis.json --am 115792089237316195423570985008687907853269984665640564039457584007913129639935 -y --cfg /app/config.toml --key-store-path /pk/sequencer.keystore --password testonly &&
+         /app/cdk-validium-node run --network custom --custom-network-file /app/genesis.json --cfg /app/config.toml --components \"synchronizer,rpc,sequencer,sequence-sender,aggregator,eth-tx-manager,l2gaspricer\""
+    ports:
+      - '8123:8123'
+      - '61090:61090'
+    depends_on:
+      zkevm-state-db:
+        condition: service_healthy
+      zkevm-pool-db:
+        condition: service_healthy
+      zkevm-prover:
+        condition: service_started
+      l1:
+        condition: service_started
+    volumes:
+      - ./data/zkevm/sequencer.keystore:/pk/sequencer.keystore
+      - ./data/zkevm/node.toml:/app/config.toml
+      - ./data/zkevm/genesis.json:/app/genesis.json
+    networks:
+      - beethoven-localnet
+
+  beethoven-db:
+    image: postgres:16.0-alpine
+    ports:
+      - '5434:5432'
+    environment:
+      POSTGRES_USER: beethoven_user
+      POSTGRES_PASSWORD: beethoven_password
+      POSTGRES_DB: beethoven_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "beethoven_db" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 10s
+    networks:
+      - beethoven-localnet
+    restart: always
+
+  # beethoven requires L1 working and available. The config file "./data/beethoven/beethoven.toml"
+  # has "l1" (see above) service defined as L1 so make sure "l1" service is started before running beethoven.
+  # Same point with "zkevm-node" service.
+  # In order to run "beethoven" attached to an external L1 and zkevm node, the config file should be
+  # updated accordingly.
+  beethoven:
+    image: beethoven:local
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    command: [ 'run', '--cfg', '/config/beethoven.toml' ]
+    depends_on:
+      beethoven-db:
+        condition: service_healthy
+    ports:
+      - '8444:8444'
+    volumes:
+      - ./data/beethoven/beethoven.keystore:/pk/beethoven.keystore
+      - ./data/beethoven/beethoven.toml:/config/beethoven.toml
+    networks:
+      - beethoven-localnet
+    restart: always
+
+networks:
+  beethoven-localnet:
+    driver: bridge
+

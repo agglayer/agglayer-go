@@ -84,7 +84,7 @@ func start(cliCtx *cli.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ethMan, err := etherman.New(c.L1.NodeURL, *auth)
+	ethMan, err := etherman.New(cliCtx.Context, c.L1.NodeURL, *auth)
 	if err != nil {
 		log.Fatal(err)
 	}
