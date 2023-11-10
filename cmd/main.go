@@ -164,8 +164,6 @@ func runPrometheusServer(c *config.Config) (func(), error) {
 		return nil, err
 	}
 
-	// TODO: Setup metrics tool here
-
 	srv := &http.Server{
 		Addr: addr.String(),
 		Handler: promhttp.InstrumentMetricHandler(
