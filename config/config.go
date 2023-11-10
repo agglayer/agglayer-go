@@ -31,11 +31,16 @@ type Config struct {
 	DB           db.Config           `mapstructure:"DB"`
 	EthTxManager ethtxmanager.Config `mapstructure:"EthTxManager"`
 	L1           L1Config            `mapstructure:"L1"`
+	Telemetry    Telemetry           `mapstructure:"Telemetry"`
 }
 
 type L1Config struct {
 	ChainID int64
 	NodeURL string
+}
+
+type Telemetry struct {
+	PrometheusAddr string
 }
 
 // Load loads the configuration baseed on the cli context

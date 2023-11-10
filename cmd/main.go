@@ -2,16 +2,15 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
+	"net/http"
 	"os"
 	"os/signal"
+	"time"
 
 	beethoven "github.com/0xPolygon/beethoven"
-	"github.com/0xPolygon/beethoven/config"
-	"github.com/0xPolygon/beethoven/db"
-	"github.com/0xPolygon/beethoven/etherman"
-	"github.com/0xPolygon/beethoven/rpc"
 	"github.com/0xPolygon/cdk-data-availability/dummyinterfaces"
 	dbConf "github.com/0xPolygon/cdk-validium-node/db"
 	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
@@ -19,7 +18,15 @@ import (
 	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/urfave/cli/v2"
+
+	"github.com/0xPolygon/beethoven/config"
+	"github.com/0xPolygon/beethoven/db"
+	"github.com/0xPolygon/beethoven/etherman"
+	"github.com/0xPolygon/beethoven/pkg/network"
+	"github.com/0xPolygon/beethoven/rpc"
 )
 
 const appName = "cdk-beethoven"
@@ -60,6 +67,7 @@ func start(cliCtx *cli.Context) error {
 	if err != nil {
 		panic(err)
 	}
+
 	setupLog(c.Log)
 
 	// Load private key
@@ -74,7 +82,7 @@ func start(cliCtx *cli.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := db.RunMigrationsUp(pg); err != nil {
+	if err = db.RunMigrationsUp(pg); err != nil {
 		log.Fatal(err)
 	}
 	storage := db.New(pg)
@@ -117,15 +125,73 @@ func start(cliCtx *cli.Context) error {
 			log.Fatal(err)
 		}
 	}()
+
 	// Run EthTxMan
 	go etm.Start()
 
-	waitSignal(nil)
+	// Run prometheus server
+	closePrometheus, err := runPrometheusServer(c)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Stop services
+	waitSignal([]context.CancelFunc{
+		etm.Stop,
+		func() {
+			if err := server.Stop(); err != nil {
+				log.Error(err)
+			}
+		},
+		ethTxManagerStorage.Close,
+		closePrometheus,
+	})
+
 	return nil
 }
 
 func setupLog(c log.Config) {
 	log.Init(c)
+}
+
+func runPrometheusServer(c *config.Config) (func(), error) {
+	if c.Telemetry.PrometheusAddr == "" {
+		return nil, nil
+	}
+
+	addr, err := network.ResolveAddr(c.Telemetry.PrometheusAddr, network.AllInterfacesBinding)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Setup metrics tool here
+
+	srv := &http.Server{
+		Addr: addr.String(),
+		Handler: promhttp.InstrumentMetricHandler(
+			prometheus.DefaultRegisterer, promhttp.HandlerFor(
+				prometheus.DefaultGatherer,
+				promhttp.HandlerOpts{},
+			),
+		),
+		ReadHeaderTimeout: 60 * time.Second,
+	}
+
+	log.Infof("prometheus server started: %s", addr)
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			if !errors.Is(err, http.ErrServerClosed) {
+				log.Errorf("prometheus HTTP server ListenAndServe: %w", err)
+			}
+		}
+	}()
+
+	return func() {
+		if err := srv.Close(); err != nil {
+			log.Errorf("prometheus HTTP server closing failed: %w", err)
+		}
+	}, nil
 }
 
 func waitSignal(cancelFuncs []context.CancelFunc) {
@@ -139,7 +205,9 @@ func waitSignal(cancelFuncs []context.CancelFunc) {
 
 			exitStatus := 0
 			for _, cancel := range cancelFuncs {
-				cancel()
+				if cancel != nil {
+					cancel()
+				}
 			}
 			os.Exit(exitStatus)
 		}

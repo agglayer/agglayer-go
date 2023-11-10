@@ -141,6 +141,7 @@ services:
         condition: service_healthy
     ports:
       - '8444:8444'
+      - '2223:2223'
     volumes:
       - ./data/beethoven/beethoven.keystore:/pk/beethoven.keystore
       - ./data/beethoven/beethoven.toml:/config/beethoven.toml
