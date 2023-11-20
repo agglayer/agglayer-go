@@ -6,11 +6,12 @@ import (
 	"path/filepath"
 )
 
-// testCluster represents abstraction that enables management of Docker containers
+// testCluster represents abstraction that enables Docker containers management
 type testCluster struct {
 	path string
 }
 
+// newTestCluster is a constructor function for testCluster instance
 func newTestCluster(path string) (*testCluster, error) {
 	if path == "" {
 		workDir, err := os.Getwd()
