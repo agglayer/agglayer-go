@@ -9,10 +9,10 @@ on: # yamllint disable-line rule:truthy
     outputs:
       workflow_output:
         description: "E2E output"
-        value: ${{ jobs.build.outputs.run_e2e_failure }}
+        value: ${{ jobs.execution.outputs.run_e2e_failure }}
 
 jobs:
-  build:
+  execution:
     runs-on: ubuntu-latest
     env:
       CI_VERBOSE: true
