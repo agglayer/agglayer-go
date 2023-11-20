@@ -2,7 +2,6 @@ package etherman
 
 import (
 	"errors"
-	"strings"
 )
 
 var (
@@ -22,27 +21,4 @@ var (
 	ErrNoSigner = errors.New("no signer to authorize the transaction with")
 	// ErrMissingTrieNode means that a node is missing on the trie
 	ErrMissingTrieNode = errors.New("missing trie node")
-
-	errorsCache = map[string]error{
-		ErrGasRequiredExceedsAllowance.Error():             ErrGasRequiredExceedsAllowance,
-		ErrContentLengthTooLarge.Error():                   ErrContentLengthTooLarge,
-		ErrTimestampMustBeInsideRange.Error():              ErrTimestampMustBeInsideRange,
-		ErrInsufficientAllowance.Error():                   ErrInsufficientAllowance,
-		ErrBothGasPriceAndMaxFeeGasAreSpecified.Error():    ErrBothGasPriceAndMaxFeeGasAreSpecified,
-		ErrMaxFeeGasAreSpecifiedButLondonNotActive.Error(): ErrMaxFeeGasAreSpecifiedButLondonNotActive,
-		ErrNoSigner.Error():                                ErrNoSigner,
-		ErrMissingTrieNode.Error():                         ErrMissingTrieNode,
-	}
 )
-
-func tryParseError(err error) (error, bool) {
-	parsedError, exists := errorsCache[err.Error()]
-	if !exists {
-		for errStr, actualErr := range errorsCache {
-			if strings.Contains(err.Error(), errStr) {
-				return actualErr, true
-			}
-		}
-	}
-	return parsedError, exists
-}
