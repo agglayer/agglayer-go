@@ -7,8 +7,8 @@ import (
 )
 
 type testCluster struct {
-	path            string
-	originalWorkDir string
+	path        string
+	origWorkDir string
 }
 
 func newTestCluster(path string) (*testCluster, error) {
@@ -18,15 +18,16 @@ func newTestCluster(path string) (*testCluster, error) {
 	}
 
 	if path == "" {
-		parentDir := filepath.Dir(workDir)
-		if err := os.Chdir(parentDir); err != nil {
-			return nil, err
-		}
+		path = filepath.Dir(workDir)
+	}
+
+	if err := os.Chdir(path); err != nil {
+		return nil, err
 	}
 
 	return &testCluster{
-		path:            path,
-		originalWorkDir: workDir,
+		path:        path,
+		origWorkDir: workDir,
 	}, nil
 }
 
@@ -39,5 +40,5 @@ func (t *testCluster) stop() ([]byte, error) {
 }
 
 func (t *testCluster) reset() error {
-	return os.Chdir(t.originalWorkDir)
+	return os.Chdir(t.origWorkDir)
 }
