@@ -103,7 +103,7 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 
 	if batch.StateRoot != signedTx.Tx.ZKP.NewStateRoot || batch.LocalExitRoot != signedTx.Tx.ZKP.NewLocalExitRoot {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf(
-			"Missmatch detected,  expected local exit root: %s actual: %s. expected state root: %s actual: %s",
+			"Mismatch detected, expected local exit root: %s actual: %s. expected state root: %s actual: %s",
 			signedTx.Tx.ZKP.NewLocalExitRoot.Hex(),
 			batch.LocalExitRoot.Hex(),
 			signedTx.Tx.ZKP.NewStateRoot.Hex(),
@@ -135,21 +135,25 @@ func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, er
 	dbTx, innerErr := i.db.BeginStateTransaction(ctx)
 	if innerErr != nil {
 		result = "0x0"
-		err = types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", err))
-	}
+		err = types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", innerErr))
 
-	res, innerErr := i.ethTxManager.Result(ctx, ethTxManOwner, hash.Hex(), dbTx)
-	if innerErr != nil {
-		result = "0x0"
-		err = types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", err))
+		return
 	}
 
 	defer func() {
 		if innerErr := dbTx.Rollback(ctx); innerErr != nil {
 			result = "0x0"
-			err = types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to rollback dbTx, error: %s", err))
+			err = types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to rollback dbTx, error: %s", innerErr))
 		}
 	}()
+
+	res, innerErr := i.ethTxManager.Result(ctx, ethTxManOwner, hash.Hex(), dbTx)
+	if innerErr != nil {
+		result = "0x0"
+		err = types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", innerErr))
+
+		return
+	}
 
 	result = res.Status.String()
 
