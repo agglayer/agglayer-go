@@ -27,7 +27,6 @@ func TestEthTransfer(t *testing.T) {
 	defer func() {
 		msg, err := cluster.stop()
 		require.NoError(t, err, string(msg))
-		require.NoError(t, cluster.reset())
 	}()
 
 	log.Info("restarting docker containers for the test")

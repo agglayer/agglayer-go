@@ -6,18 +6,17 @@ import (
 	"path/filepath"
 )
 
+// testCluster represents abstraction that enables management of Docker containers
 type testCluster struct {
-	path        string
-	origWorkDir string
+	path string
 }
 
 func newTestCluster(path string) (*testCluster, error) {
-	workDir, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-
 	if path == "" {
+		workDir, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
 		path = filepath.Dir(workDir)
 	}
 
@@ -25,20 +24,15 @@ func newTestCluster(path string) (*testCluster, error) {
 		return nil, err
 	}
 
-	return &testCluster{
-		path:        path,
-		origWorkDir: workDir,
-	}, nil
+	return &testCluster{path: path}, nil
 }
 
+// start starts required Docker containers
 func (t *testCluster) start() ([]byte, error) {
 	return exec.Command("make", "run-docker").CombinedOutput()
 }
 
+// stop stop and destroys running Docker containers
 func (t *testCluster) stop() ([]byte, error) {
 	return exec.Command("make", "stop-docker").CombinedOutput()
-}
-
-func (t *testCluster) reset() error {
-	return os.Chdir(t.origWorkDir)
 }
