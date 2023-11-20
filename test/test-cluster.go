@@ -34,5 +34,5 @@ func (t *testCluster) start() ([]byte, error) {
 
 // stop stop and destroys running Docker containers
 func (t *testCluster) stop() ([]byte, error) {
-	return exec.Command("make", "stop-docker").CombinedOutput()
+	return exec.Command("make", "destroy-docker").CombinedOutput()
 }

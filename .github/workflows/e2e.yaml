@@ -30,10 +30,11 @@ jobs:
         id: run_e2e_failure
         run: echo "test_output=false" >> $GITHUB_OUTPUT
 
-      - name: Archive test logs
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: e2e-logs
-          path: e2e-logs-*/
-          retention-days: 30
+      # TODO: Uncomment when we establish writing to log files in E2E framework
+      # - name: Archive test logs
+      #   if: always()
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: e2e-logs
+      #     path: e2e-logs-*/
+      #     retention-days: 30
