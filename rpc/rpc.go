@@ -130,16 +130,28 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 	return signedTx.Tx.Hash(), nil
 }
 
-func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (interface{}, types.Error) {
+func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, err types.Error) {
 	ctx := context.TODO()
-	dbTx, err := i.db.BeginStateTransaction(ctx)
-	defer dbTx.Rollback(ctx)
-	if err != nil {
-		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", err))
+	dbTx, innerErr := i.db.BeginStateTransaction(ctx)
+	if innerErr != nil {
+		result = "0x0"
+		err = types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", err))
 	}
-	res, err := i.ethTxManager.Result(ctx, ethTxManOwner, hash.Hex(), dbTx)
-	if err != nil {
-		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", err))
+
+	res, innerErr := i.ethTxManager.Result(ctx, ethTxManOwner, hash.Hex(), dbTx)
+	if innerErr != nil {
+		result = "0x0"
+		err = types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", err))
 	}
-	return res.Status.String(), nil
+
+	defer func() {
+		if innerErr := dbTx.Rollback(ctx); innerErr != nil {
+			result = "0x0"
+			err = types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to rollback dbTx, error: %s", err))
+		}
+	}()
+
+	result = res.Status.String()
+
+	return result, err
 }
