@@ -46,6 +46,9 @@ PrivateKeys = [
 [L1]
 ChainID = 1337
 NodeURL = "http://l1:8545"
+
+[Telemetry]
+PrometheusAddr = "0.0.0.0:2223"
 `
 
 // Default parses the default configuration values.
