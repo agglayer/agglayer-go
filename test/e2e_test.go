@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 	"math/big"
-	"os/exec"
 	"testing"
 	"time"
 
@@ -20,15 +19,20 @@ func TestEthTransfer(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
+
+	cluster, err := newTestCluster("")
+	require.NoError(t, err)
+
 	ctx := context.Background()
 	defer func() {
-		msg, err := exec.Command("make", "stop").CombinedOutput()
+		msg, err := cluster.stop()
 		require.NoError(t, err, string(msg))
 	}()
+
 	log.Info("restarting docker containers for the test")
-	msg, err := exec.Command("make", "stop").CombinedOutput()
+	msg, err := cluster.stop()
 	require.NoError(t, err, string(msg))
-	msg, err = exec.Command("make", "run").CombinedOutput()
+	msg, err = cluster.start()
 	require.NoError(t, err, string(msg))
 	time.Sleep(5 * time.Second)
 

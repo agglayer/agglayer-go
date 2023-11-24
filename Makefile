@@ -96,7 +96,11 @@ lint: ## Runs the linter
 .DEFAULT_GOAL := help
 
 .PHONY: help
-help: ## Prints this help
+help: ## Prints the help
 		@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| sort \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: e2e-tests
+e2e-tests: ## Runs E2E tests
+	go test -v -timeout=30m github.com/0xPolygon/beethoven/test
