@@ -10,6 +10,8 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	beethoven "github.com/0xPolygon/beethoven"
 	"github.com/0xPolygon/cdk-data-availability/dummyinterfaces"
 	dbConf "github.com/0xPolygon/cdk-validium-node/db"
@@ -18,9 +20,9 @@ import (
 	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/urfave/cli/v2"
+	"go.opentelemetry.io/otel/exporters/prometheus"
+	"go.opentelemetry.io/otel/sdk/metric"
 
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/db"
@@ -104,6 +106,12 @@ func start(cliCtx *cli.Context) error {
 	}
 	etm := ethtxmanager.New(c.EthTxManager, &ethMan, ethTxManagerStorage, &ethMan)
 
+	// Create opentelemetry metric provider
+	metricProvider, err := createMetricProvider()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Register services
 	server := jsonrpc.NewServer(
 		c.RPC,
@@ -145,6 +153,11 @@ func start(cliCtx *cli.Context) error {
 		},
 		ethTxManagerStorage.Close,
 		closePrometheus,
+		func() {
+			if err := metricProvider.Shutdown(cliCtx.Context); err != nil {
+				log.Error(err)
+			}
+		},
 	})
 
 	return nil
@@ -152,6 +165,18 @@ func start(cliCtx *cli.Context) error {
 
 func setupLog(c log.Config) {
 	log.Init(c)
+}
+
+func createMetricProvider() (*metric.MeterProvider, error) {
+	// The exporter embeds a default OpenTelemetry Reader and
+	// implements prometheus.Collector, allowing it to be used as
+	// both a Reader and Collector.
+	exporter, err := prometheus.New()
+	if err != nil {
+		return nil, err
+	}
+
+	return metric.NewMeterProvider(metric.WithReader(exporter)), nil
 }
 
 func runPrometheusServer(c *config.Config) (func(), error) {
@@ -165,13 +190,8 @@ func runPrometheusServer(c *config.Config) (func(), error) {
 	}
 
 	srv := &http.Server{
-		Addr: addr.String(),
-		Handler: promhttp.InstrumentMetricHandler(
-			prometheus.DefaultRegisterer, promhttp.HandlerFor(
-				prometheus.DefaultGatherer,
-				promhttp.HandlerOpts{},
-			),
-		),
+		Addr:              addr.String(),
+		Handler:           promhttp.Handler(),
 		ReadHeaderTimeout: 60 * time.Second,
 	}
 
