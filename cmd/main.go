@@ -10,8 +10,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-
 	beethoven "github.com/0xPolygon/beethoven"
 	"github.com/0xPolygon/cdk-data-availability/dummyinterfaces"
 	dbConf "github.com/0xPolygon/cdk-validium-node/db"
@@ -20,6 +18,7 @@ import (
 	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/urfave/cli/v2"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/sdk/metric"
