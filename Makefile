@@ -107,4 +107,4 @@ help: ## Prints the help
 e2e-tests: ## Runs E2E tests
 .PHONY: unit-tests
 unit-tests: ## Runs unit tests
-	go test $(go list ./... | grep -v ./test) -v -timeout=5m
+	go test -v `go list ./... | grep -v test`
