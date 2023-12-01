@@ -105,6 +105,7 @@ help: ## Prints the help
 
 .PHONY: e2e-tests
 e2e-tests: ## Runs E2E tests
+
 .PHONY: unit-tests
 unit-tests: ## Runs unit tests
 	go test -v -timeout=5m -race -shuffle=on -coverprofile coverage.out `go list ./... | grep -v test`
