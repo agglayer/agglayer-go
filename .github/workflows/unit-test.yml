@@ -1,0 +1,38 @@
+name: Unit Tests
+on:
+  push:
+    branches:
+        - main
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    outputs:
+        workflow_output:
+            description: "Unit tests output"
+            value: ${{ jobs.go_test.outputs.test_output_failure }}
+
+jobs:
+  go_test:
+    name: Execution
+    runs-on: ubuntu-latest
+    outputs:
+      test_output_failure: ${{ steps.run_tests_failure.outputs.test_output }}
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.21.x
+
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+      - name: Run Go Test
+        run: make unit-tests
+
+      - name: Run Go Test Failed
+        if: failure()
+        id: run_tests_failure
+        run: echo "test_output=false" >> $GITHUB_OUTPUT
