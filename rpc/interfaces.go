@@ -33,3 +33,7 @@ type EthTxManager interface {
 type ZkEVMClientInterface interface {
 	BatchByNumber(ctx context.Context, number *big.Int) (*types.Batch, error)
 }
+
+type ZkEVMClientClientCreator interface {
+	NewClient(rpc string) ZkEVMClientInterface
+}

@@ -21,13 +21,22 @@ const (
 
 type FullNodeRPCs map[common.Address]string
 
+var _ ZkEVMClientClientCreator = (*zkEVMClientCreator)(nil)
+
+type zkEVMClientCreator struct{}
+
+func (zc *zkEVMClientCreator) NewClient(rpc string) ZkEVMClientInterface {
+	return client.NewClient(rpc)
+}
+
 // InteropEndpoints contains implementations for the "interop" RPC endpoints
 type InteropEndpoints struct {
-	db               DBInterface
-	etherman         EthermanInterface
-	interopAdminAddr common.Address
-	fullNodeRPCs     FullNodeRPCs
-	ethTxManager     EthTxManager
+	db                 DBInterface
+	etherman           EthermanInterface
+	interopAdminAddr   common.Address
+	fullNodeRPCs       FullNodeRPCs
+	ethTxManager       EthTxManager
+	zkEVMClientCreator ZkEVMClientClientCreator
 }
 
 // NewInteropEndpoints returns InteropEndpoints
@@ -39,11 +48,12 @@ func NewInteropEndpoints(
 	ethTxManager EthTxManager,
 ) *InteropEndpoints {
 	return &InteropEndpoints{
-		db:               db,
-		interopAdminAddr: interopAdminAddr,
-		etherman:         etherman,
-		fullNodeRPCs:     fullNodeRPCs,
-		ethTxManager:     ethTxManager,
+		db:                 db,
+		interopAdminAddr:   interopAdminAddr,
+		etherman:           etherman,
+		fullNodeRPCs:       fullNodeRPCs,
+		ethTxManager:       ethTxManager,
+		zkEVMClientCreator: &zkEVMClientCreator{},
 	}
 }
 
@@ -92,7 +102,7 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 	// Check expected root vs root from the managed full node
 	// TODO: go stateless, depends on https://github.com/0xPolygonHermez/zkevm-prover/issues/581
 	// when this happens we should go async from here, since processing all the batches could take a lot of time
-	zkEVMClient := client.NewClient(i.fullNodeRPCs[signedTx.Tx.L1Contract])
+	zkEVMClient := i.zkEVMClientCreator.NewClient(i.fullNodeRPCs[signedTx.Tx.L1Contract])
 	batch, err := zkEVMClient.BatchByNumber(
 		ctx,
 		big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
