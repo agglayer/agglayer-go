@@ -105,6 +105,7 @@ help: ## Prints the help
 
 .PHONY: e2e-tests
 e2e-tests: ## Runs E2E tests
+	go test -v -timeout=30m github.com/0xPolygon/beethoven/test
 
 .PHONY: unit-tests
 unit-tests: ## Runs unit tests
