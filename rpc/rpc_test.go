@@ -156,7 +156,7 @@ func (tx *txMock) Conn() *pgx.Conn {
 	return nil
 }
 
-func TestInteropEndpoints_GetTxStatus(t *testing.T) {
+func TestInteropEndpointsGetTxStatus(t *testing.T) {
 	t.Parallel()
 
 	t.Run("BeginStateTransaction returns an error", func(t *testing.T) {
@@ -258,8 +258,43 @@ func TestInteropEndpoints_GetTxStatus(t *testing.T) {
 	})
 }
 
-func TestInteropEndpoints_SendTx(t *testing.T) {
+func TestInteropEndpointsSendTx(t *testing.T) {
 	t.Parallel()
+
+	testWithError := func(ethermanMockFn func(tx.Tx) *ethermanMock,
+		shouldSignTx bool,
+		expectedError string) {
+		fullNodeRPCs := FullNodeRPCs{
+			common.BytesToAddress([]byte{1, 2, 3, 4}): "someRPC",
+		}
+		tnx := tx.Tx{
+			L1Contract:        common.BytesToAddress([]byte{1, 2, 3, 4}),
+			LastVerifiedBatch: validiumTypes.ArgUint64(1),
+			NewVerifiedBatch:  *validiumTypes.ArgUint64Ptr(2),
+		}
+
+		signedTx := &tx.SignedTx{Tx: tnx}
+		if shouldSignTx {
+			privateKey, err := crypto.GenerateKey()
+			require.NoError(t, err)
+
+			stx, err := tnx.Sign(privateKey)
+			require.NoError(t, err)
+
+			signedTx = stx
+		}
+
+		ethermanMock := ethermanMockFn(tnx)
+
+		i := NewInteropEndpoints(common.HexToAddress("0xadmin"), nil, ethermanMock, fullNodeRPCs, nil)
+
+		result, err := i.SendTx(*signedTx)
+
+		require.Equal(t, "0x0", result)
+		require.ErrorContains(t, err, expectedError)
+
+		ethermanMock.AssertExpectations(t)
+	}
 
 	t.Run("don't have given contract in map", func(t *testing.T) {
 		t.Parallel()
@@ -279,155 +314,75 @@ func TestInteropEndpoints_SendTx(t *testing.T) {
 	t.Run("could not build verified ZKP tx data", func(t *testing.T) {
 		t.Parallel()
 
-		fullNodeRPCs := FullNodeRPCs{
-			common.BytesToAddress([]byte{1, 2, 3, 4}): "someRPC",
-		}
-		tnx := tx.Tx{
-			L1Contract:        common.BytesToAddress([]byte{1, 2, 3, 4}),
-			LastVerifiedBatch: validiumTypes.ArgUint64(1),
-			NewVerifiedBatch:  *validiumTypes.ArgUint64Ptr(2),
-		}
+		testWithError(func(tnx tx.Tx) *ethermanMock {
+			ethermanMock := new(ethermanMock)
+			ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+				uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
+				Return([]byte{}, errors.New("error")).Once()
 
-		ethermanMock := new(ethermanMock)
-		ethermanMock.On("BuildTrustedVerifyBatchesTxData",
-			uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
-			Return([]byte{}, errors.New("error")).Once()
-
-		i := NewInteropEndpoints(common.HexToAddress("0xadmin"), nil, ethermanMock, fullNodeRPCs, nil)
-
-		result, err := i.SendTx(tx.SignedTx{Tx: tnx})
-
-		require.Equal(t, "0x0", result)
-		require.ErrorContains(t, err, "failed to build verify ZKP tx")
-
-		ethermanMock.AssertExpectations(t)
+			return ethermanMock
+		}, false, "failed to build verify ZKP tx")
 	})
 
 	t.Run("could not verified ZKP", func(t *testing.T) {
 		t.Parallel()
 
-		fullNodeRPCs := FullNodeRPCs{
-			common.BytesToAddress([]byte{1, 2, 3, 4}): "someRPC",
-		}
-		tnx := tx.Tx{
-			L1Contract:        common.BytesToAddress([]byte{1, 2, 3, 4}),
-			LastVerifiedBatch: validiumTypes.ArgUint64(1),
-			NewVerifiedBatch:  *validiumTypes.ArgUint64Ptr(2),
-		}
+		testWithError(func(tnx tx.Tx) *ethermanMock {
+			ethermanMock := new(ethermanMock)
+			ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+				uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
+				Return([]byte{1, 2}, nil).Once()
+			ethermanMock.On("CallContract", mock.Anything, mock.Anything, mock.Anything).
+				Return([]byte{}, errors.New("error")).Once()
 
-		ethermanMock := new(ethermanMock)
-		ethermanMock.On("BuildTrustedVerifyBatchesTxData",
-			uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
-			Return([]byte{1, 2}, nil).Once()
-		ethermanMock.On("CallContract", mock.Anything, mock.Anything, mock.Anything).
-			Return([]byte{}, errors.New("error")).Once()
-
-		i := NewInteropEndpoints(common.HexToAddress("0xadmin"), nil, ethermanMock, fullNodeRPCs, nil)
-
-		result, err := i.SendTx(tx.SignedTx{Tx: tnx})
-
-		require.Equal(t, "0x0", result)
-		require.ErrorContains(t, err, "failed to call verify ZKP response")
-
-		ethermanMock.AssertExpectations(t)
+			return ethermanMock
+		}, false, "failed to call verify ZKP response")
 	})
 
 	t.Run("could not get signer", func(t *testing.T) {
 		t.Parallel()
 
-		fullNodeRPCs := FullNodeRPCs{
-			common.BytesToAddress([]byte{1, 2, 3, 4}): "someRPC",
-		}
-		tnx := tx.Tx{
-			L1Contract:        common.BytesToAddress([]byte{1, 2, 3, 4}),
-			LastVerifiedBatch: validiumTypes.ArgUint64(1),
-			NewVerifiedBatch:  *validiumTypes.ArgUint64Ptr(2),
-		}
+		testWithError(func(tnx tx.Tx) *ethermanMock {
+			ethermanMock := new(ethermanMock)
+			ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+				uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
+				Return([]byte{1, 2}, nil).Once()
+			ethermanMock.On("CallContract", mock.Anything, mock.Anything, mock.Anything).
+				Return([]byte{1, 2}, nil).Once()
 
-		ethermanMock := new(ethermanMock)
-		ethermanMock.On("BuildTrustedVerifyBatchesTxData",
-			uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
-			Return([]byte{1, 2}, nil).Once()
-		ethermanMock.On("CallContract", mock.Anything, mock.Anything, mock.Anything).
-			Return([]byte{1, 2}, nil).Once()
-
-		i := NewInteropEndpoints(common.HexToAddress("0xadmin"), nil, ethermanMock, fullNodeRPCs, nil)
-
-		result, err := i.SendTx(tx.SignedTx{Tx: tnx})
-
-		require.Equal(t, "0x0", result)
-		require.ErrorContains(t, err, "failed to get signer")
-
-		ethermanMock.AssertExpectations(t)
+			return ethermanMock
+		}, false, "failed to get signer")
 	})
 
 	t.Run("failed to get admin from L1", func(t *testing.T) {
 		t.Parallel()
 
-		privateKey, err := crypto.GenerateKey()
-		require.NoError(t, err)
+		testWithError(func(tnx tx.Tx) *ethermanMock {
+			ethermanMock := new(ethermanMock)
+			ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+				uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
+				Return([]byte{1, 2}, nil).Once()
+			ethermanMock.On("CallContract", mock.Anything, mock.Anything, mock.Anything).
+				Return([]byte{1, 2}, nil).Once()
+			ethermanMock.On("GetSequencerAddr", tnx.L1Contract).Return(common.Address{}, errors.New("error")).Once()
 
-		fullNodeRPCs := FullNodeRPCs{
-			common.BytesToAddress([]byte{1, 2, 3, 4}): "someRPC",
-		}
-		tr := tx.Tx{
-			L1Contract:        common.BytesToAddress([]byte{1, 2, 3, 4}),
-			LastVerifiedBatch: validiumTypes.ArgUint64(1),
-			NewVerifiedBatch:  *validiumTypes.ArgUint64Ptr(2),
-		}
-		signedTx, err := tr.Sign(privateKey)
-		require.NoError(t, err)
-
-		ethermanMock := new(ethermanMock)
-		ethermanMock.On("BuildTrustedVerifyBatchesTxData",
-			uint64(tr.LastVerifiedBatch), uint64(tr.NewVerifiedBatch), mock.Anything).
-			Return([]byte{1, 2}, nil).Once()
-		ethermanMock.On("CallContract", mock.Anything, mock.Anything, mock.Anything).
-			Return([]byte{1, 2}, nil).Once()
-		ethermanMock.On("GetSequencerAddr", tr.L1Contract).Return(common.Address{}, errors.New("error")).Once()
-
-		i := NewInteropEndpoints(common.HexToAddress("0xadmin"), nil, ethermanMock, fullNodeRPCs, nil)
-
-		result, err := i.SendTx(*signedTx)
-
-		require.Equal(t, "0x0", result)
-		require.ErrorContains(t, err, "failed to get admin from L1")
-
-		ethermanMock.AssertExpectations(t)
+			return ethermanMock
+		}, true, "failed to get admin from L1")
 	})
 
 	t.Run("unexpected signer", func(t *testing.T) {
 		t.Parallel()
 
-		privateKey, err := crypto.GenerateKey()
-		require.NoError(t, err)
+		testWithError(func(tnx tx.Tx) *ethermanMock {
+			ethermanMock := new(ethermanMock)
+			ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+				uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
+				Return([]byte{1, 2}, nil).Once()
+			ethermanMock.On("CallContract", mock.Anything, mock.Anything, mock.Anything).
+				Return([]byte{1, 2}, nil).Once()
+			ethermanMock.On("GetSequencerAddr", tnx.L1Contract).Return(common.BytesToAddress([]byte{2, 3, 4}), nil).Once()
 
-		fullNodeRPCs := FullNodeRPCs{
-			common.BytesToAddress([]byte{1, 2, 3, 4}): "someRPC",
-		}
-		tr := tx.Tx{
-			L1Contract:        common.BytesToAddress([]byte{1, 2, 3, 4}),
-			LastVerifiedBatch: validiumTypes.ArgUint64(1),
-			NewVerifiedBatch:  *validiumTypes.ArgUint64Ptr(2),
-		}
-		signedTx, err := tr.Sign(privateKey)
-		require.NoError(t, err)
-
-		ethermanMock := new(ethermanMock)
-		ethermanMock.On("BuildTrustedVerifyBatchesTxData",
-			uint64(tr.LastVerifiedBatch), uint64(tr.NewVerifiedBatch), mock.Anything).
-			Return([]byte{1, 2}, nil).Once()
-		ethermanMock.On("CallContract", mock.Anything, mock.Anything, mock.Anything).
-			Return([]byte{1, 2}, nil).Once()
-		ethermanMock.On("GetSequencerAddr", tr.L1Contract).Return(common.BytesToAddress([]byte{2, 3, 4}), nil).Once()
-
-		i := NewInteropEndpoints(common.HexToAddress("0xadmin"), nil, ethermanMock, fullNodeRPCs, nil)
-
-		result, err := i.SendTx(*signedTx)
-
-		require.Equal(t, "0x0", result)
-		require.ErrorContains(t, err, "unexpected signer")
-
-		ethermanMock.AssertExpectations(t)
+			return ethermanMock
+		}, true, "unexpected signer")
 	})
 }
