@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_ResolveAddr(t *testing.T) {
+func TestResolveAddr(t *testing.T) {
 	t.Parallel()
 
 	tcpAddrBuilder := func(t *testing.T, address string) *net.TCPAddr {
@@ -36,7 +36,7 @@ func Test_ResolveAddr(t *testing.T) {
 		},
 		{
 			name:      "both address and port provided",
-			address:   "255.0.255.0:8080",
+			address:   "0.0.0.0:9000",
 			defaultIP: "",
 		},
 	}
