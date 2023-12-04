@@ -33,7 +33,7 @@ Currently only one instance of Beethoven can be running at the same time, so it 
    ```sh
    git clone https://github.com/0xPolygon/beethoven.git
    ```
-3. Install NPM packages
+3. Install Golang dependencies
    ```sh
    go install .
    ```
