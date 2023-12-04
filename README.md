@@ -1,8 +1,8 @@
 # Beethoven
 
-Silencer is a web service that receives ZKPs from different CDK chains and checks the soundness of them before sending the ZKP to L1 for verification.
+Beethoven is a web service that receives ZKPs from different CDK chains and checks the soundness of them before sending the ZKP to L1 for verification.
 
-To find out more about Polygon, visit the official website.
+To find out more about Polygon, visit the [official website](https://wiki.polygon.technology/docs/cdk/).
 
 WARNING: This is a work in progress so architectural changes may happen in the future. The code is still being audited, so please contact the Polygon team if you would like to use it in production.
 
