@@ -30,6 +30,8 @@ stop-docker: check-docker
 destroy-docker: check-docker
 install-linter: check-go check-curl
 lint: check-go
+unit-tests: check-go
+e2e-tests: check-go
 
 ARCH := $(shell uname -m)
 
@@ -104,3 +106,7 @@ help: ## Prints the help
 .PHONY: e2e-tests
 e2e-tests: ## Runs E2E tests
 	go test -v -timeout=30m github.com/0xPolygon/beethoven/test
+
+.PHONY: unit-tests
+unit-tests: ## Runs unit tests
+	go test -v -timeout=5m -race -shuffle=on -coverprofile coverage.out `go list ./... | grep -v test`

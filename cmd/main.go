@@ -26,7 +26,7 @@ import (
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/db"
 	"github.com/0xPolygon/beethoven/etherman"
-	"github.com/0xPolygon/beethoven/pkg/network"
+	"github.com/0xPolygon/beethoven/network"
 	"github.com/0xPolygon/beethoven/rpc"
 )
 

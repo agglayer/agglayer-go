@@ -8,6 +8,7 @@ require (
 	github.com/ethereum/go-ethereum v1.13.5
 	github.com/gobuffalo/packr/v2 v2.8.3
 	github.com/jackc/pgx/v4 v4.18.1
+	github.com/jackc/pgconn v1.14.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/prometheus/client_golang v1.17.0
 	github.com/rubenv/sql-migrate v1.5.2
@@ -72,7 +73,6 @@ require (
 	github.com/iden3/go-iden3-crypto v0.0.15 // indirect
 	github.com/invopop/jsonschema v0.7.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
-	github.com/jackc/pgconn v1.14.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.2 // indirect
