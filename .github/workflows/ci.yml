@@ -20,6 +20,7 @@ jobs:
     name: SonarCloud Scan
     uses: ./.github/workflows/sonar-scan.yml
     needs: unit-tests
+    secrets: inherit
 
   e2e-tests:
     name: E2E Tests
