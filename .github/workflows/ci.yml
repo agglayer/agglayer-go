@@ -9,14 +9,18 @@ on:
 
 jobs:
   lint:
+    name: Linter Analysis
     uses: ./.github/workflows/lint.yml
 
   unit-tests:
+    name: Unit Tests
     uses: ./.github/workflows/unit-test.yml
 
   sonar-scan:
+    name: SonarCloud Scan
     uses: ./.github/workflows/sonar-scan.yml
     needs: unit-tests
 
   e2e-tests:
+    name: E2E Tests
     uses: ./.github/workflows/e2e.yml

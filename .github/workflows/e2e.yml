@@ -9,7 +9,7 @@ on:
 
 jobs:
   execution:
-    name: "Execution"
+    name: Execution
     runs-on: ubuntu-latest
     env:
       CI_VERBOSE: true
