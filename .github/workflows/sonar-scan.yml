@@ -14,7 +14,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: coverage
-          path: .
 
       - name: SonarCloud Scan
         if: ${{ env.HAVE_SONAR_TOKEN == 'true' }}
@@ -24,5 +23,5 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-            args: > 
+            args: >
                 -X
