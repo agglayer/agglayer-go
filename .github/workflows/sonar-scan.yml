@@ -9,6 +9,12 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+      
+      - name: Download coverage results
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage
+          path: .
 
       - name: SonarCloud Scan
         if: ${{ env.HAVE_SONAR_TOKEN == 'true' }}
