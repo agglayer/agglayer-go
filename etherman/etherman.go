@@ -15,7 +15,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -24,20 +23,7 @@ type Etherman struct {
 	auth      bind.TransactOpts
 }
 
-func New(ctx context.Context, url string, auth bind.TransactOpts) (Etherman, error) {
-	// Connect to ethereum node
-	ethClient, err := ethclient.DialContext(ctx, url)
-	if err != nil {
-		log.Errorf("error connecting to %s: %+v", url, err)
-		return Etherman{}, err
-	}
-
-	// Make sure the connection is okay
-	if _, err = ethClient.ChainID(ctx); err != nil {
-		log.Errorf("error getting chain ID from l1 with %s address: %+v", url, err)
-		return Etherman{}, err
-	}
-
+func New(ethClient EthereumClient, auth bind.TransactOpts) (Etherman, error) {
 	return Etherman{
 		ethClient: ethClient,
 		auth:      auth,
@@ -49,7 +35,8 @@ func (e *Etherman) GetSequencerAddr(l1Contract common.Address) (common.Address, 
 	if err != nil {
 		return common.Address{}, err
 	}
-	return contract.TrustedSequencer(&bind.CallOpts{Pending: false})
+
+	return contract.TrustedSequencer(&bind.CallOpts{Pending: false}), nil
 }
 
 func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
@@ -69,6 +56,7 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifie
 		log.Errorf("error geting ABI: %v, Proof: %s", err)
 		return nil, err
 	}
+
 	return abi.Pack(
 		"verifyBatchesTrustedAggregator",
 		pendStateNum,

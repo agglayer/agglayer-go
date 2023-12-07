@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/urfave/cli/v2"
 	"math/big"
 	"net/http"
 	"os"
@@ -19,7 +21,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/urfave/cli/v2"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/sdk/metric"
 
@@ -93,7 +94,19 @@ func start(cliCtx *cli.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ethMan, err := etherman.New(cliCtx.Context, c.L1.NodeURL, *auth)
+
+	// Connect to ethereum node
+	ethClient, err := ethclient.DialContext(cliCtx.Context, c.L1.NodeURL)
+	if err != nil {
+		log.Fatal("error connecting to %s: %+v", url, err)
+	}
+
+	// Make sure the connection is okay
+	if _, err = ethClient.ChainID(cliCtx.Context); err != nil {
+		log.Fatal("error getting chain ID from l1 with address: %+v", err)
+	}
+
+	ethMan, err := etherman.New(ethClient, *auth)
 	if err != nil {
 		log.Fatal(err)
 	}
