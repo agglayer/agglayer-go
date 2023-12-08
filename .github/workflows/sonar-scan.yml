@@ -15,7 +15,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: coverage
-          path: coverage
 
       - name: Display structure of downloaded files
         run: ls -R
