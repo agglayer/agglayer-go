@@ -5,6 +5,7 @@ on:
 
 jobs:
   scan:
+    name: Execution
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -14,6 +15,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: coverage
+          path: coverage
+
+      - name: Display structure of downloaded files
+        run: ls -R
 
       - name: SonarCloud Scan
         if: ${{ env.HAVE_SONAR_TOKEN == 'true' }}
