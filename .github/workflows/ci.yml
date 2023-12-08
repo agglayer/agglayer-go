@@ -12,9 +12,14 @@ jobs:
     name: Linter Analysis
     uses: ./.github/workflows/lint.yml
 
+  build:
+      name: Build
+      uses: ./.github/workflows/build.yml
+
   unit-tests:
     name: Unit Tests
     uses: ./.github/workflows/unit-test.yml
+    needs: build
 
   sonar-scan:
     name: SonarCloud Scan
