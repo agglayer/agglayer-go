@@ -21,9 +21,6 @@ jobs:
         with:
           name: coverage
 
-      - name: Display structure of downloaded files
-        run: ls -R
-
       - name: SonarCloud Scan
         if: ${{ env.HAVE_SONAR_TOKEN == 'true' }}
         uses: SonarSource/sonarcloud-github-action@master
