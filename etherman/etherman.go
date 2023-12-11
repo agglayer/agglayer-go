@@ -3,11 +3,9 @@ package etherman
 import (
 	"context"
 	"errors"
-	"github.com/jackc/pgx/v4"
 	"math/big"
 	"time"
 
-	"github.com/0xPolygon/beethoven/tx"
 	"github.com/0xPolygon/cdk-validium-node/etherman/smartcontracts/cdkvalidium"
 	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/0xPolygon/cdk-validium-node/state"
@@ -16,6 +14,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/jackc/pgx/v4"
+
+	"github.com/0xPolygon/beethoven/tx"
 )
 
 type Etherman struct {
