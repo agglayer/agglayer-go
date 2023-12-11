@@ -19,6 +19,10 @@ import (
 	"github.com/0xPolygon/beethoven/tx"
 )
 
+const (
+	HashLength = 32
+)
+
 type Etherman struct {
 	ethClient EthereumClient
 	auth      bind.TransactOpts
@@ -41,9 +45,9 @@ func (e *Etherman) GetSequencerAddr(l1Contract common.Address) (common.Address, 
 }
 
 func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
-	var newLocalExitRoot [32]byte
+	var newLocalExitRoot [HashLength]byte
 	copy(newLocalExitRoot[:], proof.NewLocalExitRoot.Bytes())
-	var newStateRoot [32]byte
+	var newStateRoot [HashLength]byte
 	copy(newStateRoot[:], proof.NewStateRoot.Bytes())
 	finalProof, err := ConvertProof(proof.Proof.Hex())
 	if err != nil {

@@ -7,10 +7,10 @@ import (
 	"github.com/0xPolygon/cdk-validium-node/encoding"
 )
 
-type Proof [24][32]byte
+type Proof [24][HashLength]byte
 
 func ConvertProof(p string) (Proof, error) {
-	const expectedLength = 24*32*2 + 2
+	const expectedLength = 24*HashLength*2 + 2
 	if len(p) != expectedLength {
 		return Proof{}, fmt.Errorf("invalid proof length. Expected length: %d, Actual length %d", expectedLength, len(p))
 	}
@@ -22,7 +22,7 @@ func ConvertProof(p string) (Proof, error) {
 		if err != nil {
 			return Proof{}, fmt.Errorf("failed to decode proof, err: %w", err)
 		}
-		var aux [32]byte
+		var aux [HashLength]byte
 		copy(aux[:], p)
 		proof[i] = aux
 	}
