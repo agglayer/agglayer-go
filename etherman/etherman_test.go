@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"math/big"
@@ -764,14 +765,18 @@ func TestGetRevertMessage(t *testing.T) {
 		assert.Nil(err)
 	})
 
-	/*t.Run("Returns the expected revert reason string", func(t *testing.T) {
+	t.Run("Returns the expected revert reason string", func(t *testing.T) {
 		ethClient := new(mocks.EthereumClientMock)
 		ethman := getEtherman(ethClient)
+
+		key, _ := crypto.GenerateKey()
+		addr := crypto.PubkeyToAddress(key.PublicKey)
+		signedTx, err := types.SignTx(txData, types.NewEIP155Signer(big.NewInt(1)), key)
 
 		ethClient.On(
 			"TransactionReceipt",
 			context.TODO(),
-			txData.Hash(),
+			signedTx.Hash(),
 		).Return(
 			&types.Receipt{
 				Status:      types.ReceiptStatusFailed,
@@ -784,13 +789,13 @@ func TestGetRevertMessage(t *testing.T) {
 			"CallContract",
 			context.TODO(),
 			ethereum.CallMsg{
-				From:      common.HexToAddress("0x742d35Cc6634C0532925a3b844Bc454e4438f44e"),
+				From:      addr,
 				To:        &common.Address{},
-				Gas:       0,
+				Gas:       1,
 				GasPrice:  nil,
 				GasFeeCap: nil,
 				GasTipCap: nil,
-				Value:     nil,
+				Value:     big.NewInt(1),
 				Data:      []uint8{0xcf, 0xa8, 0xed, 0x47}, // TrustedSequencer sig
 			},
 			big.NewInt(1),
@@ -799,11 +804,11 @@ func TestGetRevertMessage(t *testing.T) {
 			nil,
 		).Once()
 
-		result, err := ethman.GetRevertMessage(context.TODO(), txData)
+		result, err := ethman.GetRevertMessage(context.TODO(), signedTx)
 
 		assert.Equal(result, "HELLO")
 		assert.Nil(err)
-	})*/
+	})
 }
 
 func TestGetLastBlock(t *testing.T) {
