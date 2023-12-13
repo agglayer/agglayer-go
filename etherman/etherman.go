@@ -20,7 +20,8 @@ import (
 )
 
 const (
-	HashLength = 32
+	HashLength  = 32
+	ProofLength = 24
 )
 
 type Etherman struct {
