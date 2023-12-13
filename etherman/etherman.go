@@ -15,7 +15,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/jackc/pgx/v4"
 )
 
 type Etherman struct {
@@ -36,7 +35,7 @@ func (e *Etherman) GetSequencerAddr(l1Contract common.Address) (common.Address, 
 		return common.Address{}, err
 	}
 
-	return contract.TrustedSequencer(&bind.CallOpts{Pending: false}), nil
+	return contract.TrustedSequencer(&bind.CallOpts{Pending: false})
 }
 
 func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
@@ -148,7 +147,7 @@ func (e *Etherman) EstimateGas(ctx context.Context, from common.Address, to *com
 }
 
 // SignTx tries to sign a transaction accordingly to the provided sender
-func (e *Etherman) SignTx(ctx context.Context, sender common.Address, tx *types.Transaction) (*types.Transaction, error) {
+func (e *Etherman) SignTx(tx *types.Transaction) (*types.Transaction, error) {
 	return e.auth.Signer(e.auth.From, tx)
 }
 
@@ -165,6 +164,7 @@ func (e *Etherman) GetRevertMessage(ctx context.Context, tx *types.Transaction) 
 
 	if receipt.Status == types.ReceiptStatusFailed {
 		revertMessage, err := operations.RevertReason(ctx, e.ethClient, tx, receipt.BlockNumber)
+
 		if err != nil {
 			return "", err
 		}
@@ -173,7 +173,7 @@ func (e *Etherman) GetRevertMessage(ctx context.Context, tx *types.Transaction) 
 	return "", nil
 }
 
-func (e *Etherman) GetLastBlock(ctx context.Context, dbTx pgx.Tx) (*state.Block, error) {
+func (e *Etherman) GetLastBlock(ctx context.Context) (*state.Block, error) {
 	block, err := e.ethClient.BlockByNumber(ctx, nil)
 	if err != nil {
 		return nil, err
