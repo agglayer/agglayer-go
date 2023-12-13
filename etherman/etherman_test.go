@@ -510,10 +510,13 @@ func TestGetTxReceipt(t *testing.T) {
 			[]byte{},
 		)
 
+		key, _ := crypto.GenerateKey()
+		signedTx, err := types.SignTx(transaction, types.NewEIP155Signer(big.NewInt(1)), key)
+
 		ethClient.On(
 			"TransactionReceipt",
 			mock.Anything,
-			transaction.Hash(),
+			signedTx.Hash(),
 		).Return(
 			&types.Receipt{},
 			nil,
@@ -521,7 +524,7 @@ func TestGetTxReceipt(t *testing.T) {
 
 		status, err := ethman.WaitTxToBeMined(
 			context.TODO(),
-			transaction,
+			signedTx,
 			time.Duration(100),
 		)
 
@@ -529,7 +532,7 @@ func TestGetTxReceipt(t *testing.T) {
 		assert.Nil(err)
 		ethClient.AssertExpectations(t)
 	})
-}*/
+} */
 
 func TestSendTx(t *testing.T) {
 	t.Parallel()
@@ -771,7 +774,7 @@ func TestGetRevertMessage(t *testing.T) {
 
 		key, _ := crypto.GenerateKey()
 		addr := crypto.PubkeyToAddress(key.PublicKey)
-		signedTx, err := types.SignTx(txData, types.NewEIP155Signer(big.NewInt(1)), key)
+		signedTx, _ := types.SignTx(txData, types.NewEIP155Signer(big.NewInt(1)), key)
 
 		ethClient.On(
 			"TransactionReceipt",
