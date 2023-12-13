@@ -21,11 +21,6 @@ const (
 	ethTxManOwner = "interop"
 )
 
-const (
-	// DefaultRPCReqTimeout is the default RPC request timeout
-	DefaultRPCReqTimeout = 10 * time.Second
-)
-
 type FullNodeRPCs map[common.Address]string
 
 var _ ZkEVMClientClientCreator = (*zkEVMClientCreator)(nil)
@@ -42,6 +37,7 @@ type InteropEndpoints struct {
 	etherman           EthermanInterface
 	interopAdminAddr   common.Address
 	fullNodeRPCs       FullNodeRPCs
+	rpcTimeout         time.Duration
 	ethTxManager       EthTxManager
 	zkEVMClientCreator ZkEVMClientClientCreator
 }
@@ -52,6 +48,7 @@ func NewInteropEndpoints(
 	db DBInterface,
 	etherman EthermanInterface,
 	fullNodeRPCs FullNodeRPCs,
+	rpcTimeout time.Duration,
 	ethTxManager EthTxManager,
 ) *InteropEndpoints {
 	return &InteropEndpoints{
@@ -59,13 +56,14 @@ func NewInteropEndpoints(
 		interopAdminAddr:   interopAdminAddr,
 		etherman:           etherman,
 		fullNodeRPCs:       fullNodeRPCs,
+		rpcTimeout:         rpcTimeout,
 		ethTxManager:       ethTxManager,
 		zkEVMClientCreator: &zkEVMClientCreator{},
 	}
 }
 
 func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Error) {
-	ctx, cancel := context.WithTimeout(context.Background(), DefaultRPCReqTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), i.rpcTimeout)
 	defer cancel()
 
 	// Check if the RPC is actually registered, if not it won't be possible to assert soundness (in the future once we are stateless won't be needed)
@@ -149,7 +147,7 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 }
 
 func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, err types.Error) {
-	ctx, cancel := context.WithTimeout(context.Background(), DefaultRPCReqTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), i.rpcTimeout)
 	defer cancel()
 
 	dbTx, innerErr := i.db.BeginStateTransaction(ctx)

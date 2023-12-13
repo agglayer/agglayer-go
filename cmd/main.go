@@ -133,8 +133,9 @@ func start(cliCtx *cli.Context) error {
 		&dummyinterfaces.DummyStorage{},
 		[]jsonrpc.Service{
 			{
-				Name:    rpc.INTEROP,
-				Service: rpc.NewInteropEndpoints(addr, storage, &ethMan, c.FullNodeRPCs, etm),
+				Name: rpc.INTEROP,
+				Service: rpc.NewInteropEndpoints(addr, storage, &ethMan,
+					c.FullNodeRPCs, c.RPC.ReadTimeout.Duration, etm),
 			},
 		},
 	)
