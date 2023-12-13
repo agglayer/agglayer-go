@@ -98,7 +98,7 @@ func start(cliCtx *cli.Context) error {
 	// Connect to ethereum node
 	ethClient, err := ethclient.DialContext(cliCtx.Context, c.L1.NodeURL)
 	if err != nil {
-		log.Fatal("error connecting to %s: %+v", url, err)
+		log.Fatal("error connecting to %s: %+v", c.L1.NodeURL, err)
 	}
 
 	// Make sure the connection is okay
