@@ -147,7 +147,7 @@ func (e *Etherman) EstimateGas(ctx context.Context, from common.Address, to *com
 }
 
 // SignTx tries to sign a transaction accordingly to the provided sender
-func (e *Etherman) SignTx(tx *types.Transaction) (*types.Transaction, error) {
+func (e *Etherman) SignTx(ctx context.Context, sender common.Address, tx *types.Transaction) (*types.Transaction, error) {
 	return e.auth.Signer(e.auth.From, tx)
 }
 

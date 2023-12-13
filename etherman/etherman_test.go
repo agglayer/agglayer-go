@@ -705,7 +705,7 @@ func TestSignTx(t *testing.T) {
 		ethClient := new(mocks.EthereumClientMock)
 		ethman := getEtherman(ethClient)
 
-		transaction, err := ethman.SignTx(txData)
+		transaction, err := ethman.SignTx(context.TODO(), common.Address{}, txData)
 
 		assert.Equal(transaction, txData)
 		assert.Nil(err)
