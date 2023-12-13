@@ -3,6 +3,7 @@ package etherman
 import (
 	"context"
 	"errors"
+	"github.com/jackc/pgx/v4"
 	"math/big"
 	"time"
 
@@ -173,7 +174,7 @@ func (e *Etherman) GetRevertMessage(ctx context.Context, tx *types.Transaction) 
 	return "", nil
 }
 
-func (e *Etherman) GetLastBlock(ctx context.Context) (*state.Block, error) {
+func (e *Etherman) GetLastBlock(ctx context.Context, dbTx pgx.Tx) (*state.Block, error) {
 	block, err := e.ethClient.BlockByNumber(ctx, nil)
 	if err != nil {
 		return nil, err

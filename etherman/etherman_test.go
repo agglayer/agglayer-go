@@ -829,7 +829,7 @@ func TestGetLastBlock(t *testing.T) {
 			nil,
 		)
 
-		result, err := ethman.GetLastBlock(context.TODO())
+		result, err := ethman.GetLastBlock(context.TODO(), new(mocks.TxMock))
 
 		assert.Equal(result.BlockNumber, uint64(0))
 		assert.Equal(result.BlockHash, common.HexToHash("0xb159a077fc2af79b9a9c748c9c0e50ff95b74c32946ed52418fcc093d0953f26"))
@@ -850,7 +850,7 @@ func TestGetLastBlock(t *testing.T) {
 			errors.New("NOOPE!"),
 		)
 
-		result, err := ethman.GetLastBlock(context.TODO())
+		result, err := ethman.GetLastBlock(context.TODO(), new(mocks.TxMock))
 
 		assert.ErrorContains(err, "NOOPE!")
 		assert.Nil(result)
