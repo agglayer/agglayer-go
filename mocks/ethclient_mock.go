@@ -14,43 +14,51 @@ type EthereumClientMock struct {
 }
 
 func (e *EthereumClientMock) BlockByHash(ctx context.Context, hash common.Hash) (*types.Block, error) {
-	//TODO implement me
-	panic("implement me")
+	args := e.Called(ctx, hash)
+
+	return args.Get(0).(*types.Block), args.Error(1)
 }
 
 func (e *EthereumClientMock) HeaderByHash(ctx context.Context, hash common.Hash) (*types.Header, error) {
-	//TODO implement me
-	panic("implement me")
+	args := e.Called(ctx, hash)
+
+	return args.Get(0).(*types.Header), args.Error(1)
 }
 
 func (e *EthereumClientMock) HeaderByNumber(ctx context.Context, number *big.Int) (*types.Header, error) {
-	//TODO implement me
-	panic("implement me")
+	args := e.Called(ctx, number)
+
+	return args.Get(0).(*types.Header), args.Error(1)
 }
 
 func (e *EthereumClientMock) TransactionCount(ctx context.Context, blockHash common.Hash) (uint, error) {
-	//TODO implement me
-	panic("implement me")
+	args := e.Called(ctx, blockHash)
+
+	return args.Get(0).(uint), args.Error(1)
 }
 
 func (e *EthereumClientMock) TransactionInBlock(ctx context.Context, blockHash common.Hash, index uint) (*types.Transaction, error) {
-	//TODO implement me
-	panic("implement me")
+	args := e.Called(ctx, blockHash)
+
+	return args.Get(0).(*types.Transaction), args.Error(1)
 }
 
 func (e *EthereumClientMock) SubscribeNewHead(ctx context.Context, ch chan<- *types.Header) (ethereum.Subscription, error) {
-	//TODO implement me
-	panic("implement me")
+	args := e.Called(ctx, ch)
+
+	return args.Get(0).(ethereum.Subscription), args.Error(1)
 }
 
 func (e *EthereumClientMock) BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
-	//TODO implement me
-	panic("implement me")
+	args := e.Called(ctx, account, blockNumber)
+
+	return args.Get(0).(*big.Int), args.Error(1)
 }
 
 func (e *EthereumClientMock) StorageAt(ctx context.Context, account common.Address, key common.Hash, blockNumber *big.Int) ([]byte, error) {
-	//TODO implement me
-	panic("implement me")
+	args := e.Called(ctx, account, key, blockNumber)
+
+	return args.Get(0).([]byte), args.Error(1)
 }
 
 func (e *EthereumClientMock) CodeAt(ctx context.Context, account common.Address, blockNumber *big.Int) ([]byte, error) {
@@ -60,28 +68,33 @@ func (e *EthereumClientMock) CodeAt(ctx context.Context, account common.Address,
 }
 
 func (e *EthereumClientMock) FilterLogs(ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {
-	//TODO implement me
-	panic("implement me")
+	args := e.Called(ctx, q)
+
+	return args.Get(0).([]types.Log), args.Error(1)
 }
 
 func (e *EthereumClientMock) SubscribeFilterLogs(ctx context.Context, q ethereum.FilterQuery, ch chan<- types.Log) (ethereum.Subscription, error) {
-	//TODO implement me
-	panic("implement me")
+	args := e.Called(ctx, q, ch)
+
+	return args.Get(0).(ethereum.Subscription), args.Error(1)
 }
 
 func (e *EthereumClientMock) PendingCodeAt(ctx context.Context, account common.Address) ([]byte, error) {
-	//TODO implement me
-	panic("implement me")
+	args := e.Called(ctx, account)
+
+	return args.Get(0).([]byte), args.Error(1)
 }
 
 func (e *EthereumClientMock) PendingNonceAt(ctx context.Context, account common.Address) (uint64, error) {
-	//TODO implement me
-	panic("implement me")
+	args := e.Called(ctx, account)
+
+	return args.Get(0).(uint64), args.Error(1)
 }
 
 func (e *EthereumClientMock) SuggestGasTipCap(ctx context.Context) (*big.Int, error) {
-	//TODO implement me
-	panic("implement me")
+	args := e.Called(ctx)
+
+	return args.Get(0).(*big.Int), args.Error(1)
 }
 
 func (e *EthereumClientMock) CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) ([]byte, error) {
