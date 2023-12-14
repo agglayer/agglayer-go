@@ -85,24 +85,20 @@ func TestGetSequencerAddr(t *testing.T) {
 			"CallContract",
 			mock.Anything,
 			ethereum.CallMsg{
-				From:      common.HexToAddress("0x0000000000000000000000000000000000000000"),
-				To:        &common.Address{},
-				Gas:       0,
-				GasPrice:  nil,
-				GasFeeCap: nil,
-				GasTipCap: nil,
-				Value:     nil,
-				Data:      []uint8{0xcf, 0xa8, 0xed, 0x47},
+				From: common.HexToAddress("0x0000000000000000000000000000000000000000"),
+				To:   &common.Address{},
+				Data: []uint8{0xcf, 0xa8, 0xed, 0x47},
 			},
 			(*big.Int)(nil),
-		).Return( // Invalid return value below to provocate error
+		).Return(
 			common.Hex2Bytes("00000000000000000000000000000000000000000000000000000000000000000"),
 			nil,
 		).Once()
 
-		returnValue, _ := ethman.GetSequencerAddr(common.HexToAddress("0x0000000000000000000000000000000000000000"))
+		returnValue, err := ethman.GetSequencerAddr(common.HexToAddress("0x0000000000000000000000000000000000000000"))
 
-		assert.Equal(returnValue, common.Address{})
+		assert.Equal(common.Address{}, returnValue)
+		assert.NoError(err)
 		ethClient.AssertExpectations(t)
 	})
 }
@@ -172,8 +168,8 @@ func TestCallContract(t *testing.T) {
 			(*big.Int)(nil),
 		)
 
-		assert.Equal(result, common.Hex2Bytes("0000000000000000000000000000000000000000000000000000000000000000"))
-		assert.Equal(err, nil)
+		assert.Equal(common.Hex2Bytes("0000000000000000000000000000000000000000000000000000000000000000"), result)
+		assert.Equal(nil, err)
 		ethClient.AssertExpectations(t)
 	})
 
@@ -215,7 +211,7 @@ func TestCallContract(t *testing.T) {
 			(*big.Int)(nil),
 		)
 
-		assert.Equal(result, []uint8{})
+		assert.Equal([]uint8{}, result)
 		assert.ErrorContains(err, "NOOOPE!")
 		ethClient.AssertExpectations(t)
 	})
@@ -283,7 +279,7 @@ func TestCheckTxWasMined(t *testing.T) {
 		status, receipt, err := ethman.CheckTxWasMined(context.TODO(), common.Hash{})
 
 		assert.True(status)
-		assert.Equal(receipt, &types.Receipt{})
+		assert.Equal(&types.Receipt{}, receipt)
 		assert.Nil(err)
 		ethClient.AssertExpectations(t)
 	})
@@ -309,7 +305,7 @@ func TestCurrentNonce(t *testing.T) {
 
 		result, err := ethman.CurrentNonce(context.TODO(), common.Address{})
 
-		assert.Equal(result, uint64(1))
+		assert.Equal(uint64(1), result)
 		assert.Nil(err)
 		ethClient.AssertExpectations(t)
 	})
@@ -330,7 +326,7 @@ func TestCurrentNonce(t *testing.T) {
 
 		result, err := ethman.CurrentNonce(context.TODO(), common.Address{})
 
-		assert.Equal(result, uint64(0))
+		assert.Equal(uint64(0), result)
 		assert.ErrorContains(err, "NA NA NA!")
 		ethClient.AssertExpectations(t)
 	})
@@ -356,7 +352,7 @@ func TestGetTx(t *testing.T) {
 
 		transaction, status, err := ethman.GetTx(context.TODO(), common.Hash{})
 
-		assert.Equal(transaction, &types.Transaction{})
+		assert.Equal(&types.Transaction{}, transaction)
 		assert.True(status)
 		assert.Nil(err)
 		ethClient.AssertExpectations(t)
@@ -378,7 +374,7 @@ func TestGetTx(t *testing.T) {
 
 		transaction, status, err := ethman.GetTx(context.TODO(), common.Hash{})
 
-		assert.Equal(transaction, &types.Transaction{})
+		assert.Equal(&types.Transaction{}, transaction)
 		assert.False(status)
 		assert.ErrorContains(err, "NOPE NOPE!")
 		ethClient.AssertExpectations(t)
@@ -404,7 +400,7 @@ func TestGetTxReceipt(t *testing.T) {
 
 		receipt, err := ethman.GetTxReceipt(context.TODO(), common.Hash{})
 
-		assert.Equal(receipt, &types.Receipt{})
+		assert.Equal(&types.Receipt{}, receipt)
 		assert.Nil(err)
 		ethClient.AssertExpectations(t)
 	})
@@ -424,115 +420,11 @@ func TestGetTxReceipt(t *testing.T) {
 
 		receipt, err := ethman.GetTxReceipt(context.TODO(), common.Hash{})
 
-		assert.Equal(receipt, &types.Receipt{})
+		assert.Equal(&types.Receipt{}, receipt)
 		assert.ErrorContains(err, "NANANA!")
 		ethClient.AssertExpectations(t)
 	})
 }
-
-/*func TestWaitTxToBeMined(t *testing.T) {
-	t.Parallel()
-	assert := assert.New(t)
-
-	t.Run("Returns expected 'DeadlineExceeded' error", func(t *testing.T) {
-		ethClient := new(mocks.EthereumClientMock)
-		ethman := getEtherman(ethClient)
-		transaction := types.NewTransaction(
-			uint64(1),
-			common.Address{},
-			big.NewInt(1),
-			uint64(1),
-			big.NewInt(1),
-			[]byte{},
-		)
-
-		ethClient.On(
-			"TransactionReceipt",
-			mock.Anything,
-			transaction.Hash(),
-		).Return(
-			&types.Receipt{},
-			context.DeadlineExceeded,
-		).Once()
-
-		status, err := ethman.WaitTxToBeMined(
-			context.TODO(),
-			transaction,
-			time.Duration(100),
-		)
-
-		assert.False(status)
-		assert.Nil(err)
-		ethClient.AssertExpectations(t)
-	})
-
-	t.Run("Returns expected error", func(t *testing.T) {
-		ethClient := new(mocks.EthereumClientMock)
-		ethman := getEtherman(ethClient)
-		transaction := types.NewTransaction(
-			uint64(1),
-			common.Address{},
-			big.NewInt(1),
-			uint64(1),
-			big.NewInt(1),
-			[]byte{},
-		)
-
-		ethClient.On(
-			"TransactionReceipt",
-			mock.Anything,
-			transaction.Hash(),
-		).Return(
-			&types.Receipt{},
-			errors.New("NANANA!"),
-		).Once()
-
-		status, err := ethman.WaitTxToBeMined(
-			context.TODO(),
-			transaction,
-			time.Duration(100000000),
-		)
-
-		assert.False(status)
-		assert.ErrorContains(err, "NANANA!")
-		ethClient.AssertExpectations(t)
-	})
-
-	t.Run("Returns expected value", func(t *testing.T) {
-		ethClient := new(mocks.EthereumClientMock)
-		ethman := getEtherman(ethClient)
-		transaction := types.NewTransaction(
-			uint64(1),
-			common.Address{},
-			big.NewInt(1),
-			uint64(1),
-			big.NewInt(1),
-			[]byte{},
-		)
-
-		key, _ := crypto.GenerateKey()
-		signedTx, err := types.SignTx(transaction, types.NewEIP155Signer(big.NewInt(1)), key)
-
-		ethClient.On(
-			"TransactionReceipt",
-			mock.Anything,
-			signedTx.Hash(),
-		).Return(
-			&types.Receipt{},
-			nil,
-		).Once()
-
-		status, err := ethman.WaitTxToBeMined(
-			context.TODO(),
-			signedTx,
-			time.Duration(100),
-		)
-
-		assert.True(status)
-		assert.Nil(err)
-		ethClient.AssertExpectations(t)
-	})
-} */
 
 func TestSendTx(t *testing.T) {
 	t.Parallel()
@@ -601,7 +493,7 @@ func TestSuggestedGasPrice(t *testing.T) {
 
 		result, err := ethman.SuggestedGasPrice(context.TODO())
 
-		assert.Equal(result, big.NewInt(1))
+		assert.Equal(big.NewInt(1), result)
 		assert.Nil(err)
 		ethClient.AssertExpectations(t)
 	})
@@ -620,7 +512,7 @@ func TestSuggestedGasPrice(t *testing.T) {
 
 		result, err := ethman.SuggestedGasPrice(context.TODO())
 
-		assert.Equal(result, (*big.Int)(nil))
+		assert.Equal((*big.Int)(nil), result)
 		assert.ErrorContains(err, "NOPE!")
 		ethClient.AssertExpectations(t)
 	})
@@ -656,7 +548,7 @@ func TestEstimateGas(t *testing.T) {
 			[]byte{},
 		)
 
-		assert.Equal(result, uint64(1))
+		assert.Equal(uint64(1), result)
 		assert.Nil(err)
 		ethclient.AssertExpectations(t)
 	})
@@ -687,7 +579,7 @@ func TestEstimateGas(t *testing.T) {
 			[]byte{},
 		)
 
-		assert.Equal(result, uint64(0))
+		assert.Equal(uint64(0), result)
 		assert.ErrorContains(err, "NOOOPE!")
 		ethclient.AssertExpectations(t)
 	})
@@ -711,7 +603,7 @@ func TestSignTx(t *testing.T) {
 
 		transaction, err := ethman.SignTx(context.TODO(), common.Address{}, txData)
 
-		assert.Equal(transaction, txData)
+		assert.Equal(txData, transaction)
 		assert.Nil(err)
 	})
 }
@@ -743,7 +635,7 @@ func TestGetRevertMessage(t *testing.T) {
 
 		result, err := ethman.GetRevertMessage(context.TODO(), txData)
 
-		assert.Equal(result, "")
+		assert.Equal("", result)
 		assert.ErrorContains(err, "NANANA!")
 	})
 
@@ -764,7 +656,7 @@ func TestGetRevertMessage(t *testing.T) {
 
 		result, err := ethman.GetRevertMessage(context.TODO(), txData)
 
-		assert.Equal(result, "")
+		assert.Equal("", result)
 		assert.Nil(err)
 	})
 
@@ -802,14 +694,14 @@ func TestGetRevertMessage(t *testing.T) {
 				Data:      []uint8{0xcf, 0xa8, 0xed, 0x47}, // TrustedSequencer sig
 			},
 			big.NewInt(1),
-		).Return( // Invalid return value below to provocate error
+		).Return(
 			common.Hex2Bytes("08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000548454c4c4f000000000000000000000000000000000000000000000000000000"),
 			nil,
 		).Once()
 
 		result, err := ethman.GetRevertMessage(context.TODO(), signedTx)
 
-		assert.Equal(result, "HELLO")
+		assert.Equal("HELLO", result)
 		assert.Nil(err)
 	})
 }
@@ -839,9 +731,9 @@ func TestGetLastBlock(t *testing.T) {
 
 		result, err := ethman.GetLastBlock(context.TODO(), new(mocks.TxMock))
 
-		assert.Equal(result.BlockNumber, uint64(0))
-		assert.Equal(result.BlockHash, common.HexToHash("0xb159a077fc2af79b9a9c748c9c0e50ff95b74c32946ed52418fcc093d0953f26"))
-		assert.Equal(result.ParentHash, common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000000"))
+		assert.Equal(uint64(0), result.BlockNumber)
+		assert.Equal(common.HexToHash("0xb159a077fc2af79b9a9c748c9c0e50ff95b74c32946ed52418fcc093d0953f26"), result.BlockHash)
+		assert.Equal(common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000000"), result.ParentHash)
 		assert.Nil(err)
 	})
 
