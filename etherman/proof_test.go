@@ -9,8 +9,7 @@ import (
 )
 
 func TestConvertProof(t *testing.T) {
-	validInputProof, err := generateProof()
-	require.NoError(t, err)
+	validInputProof := generateProof(t)
 
 	validRawProof, err := hexutil.Decode(validInputProof)
 	require.NoError(t, err)
