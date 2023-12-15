@@ -4,16 +4,15 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/stretchr/testify/require"
-
-	"github.com/0xPolygon/beethoven/common"
 )
 
 func TestConvertProof(t *testing.T) {
 	validInputProof, err := generateProof()
 	require.NoError(t, err)
 
-	validRawProof, err := common.DecodeHex(validInputProof)
+	validRawProof, err := hexutil.Decode(validInputProof)
 	require.NoError(t, err)
 
 	validProof, err := BytesToProof(validRawProof)
