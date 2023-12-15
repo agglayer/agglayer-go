@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/0xPolygon/beethoven/config"
+	"github.com/0xPolygon/beethoven/interop"
 	"github.com/0xPolygon/beethoven/tx"
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
@@ -19,37 +21,37 @@ const (
 	ethTxManOwner = "interop"
 )
 
-type FullNodeRPCs map[common.Address]string
-
-var _ ZkEVMClientClientCreator = (*zkEVMClientCreator)(nil)
+var _ interop.ZkEVMClientClientCreator = (*zkEVMClientCreator)(nil)
 
 type zkEVMClientCreator struct{}
 
-func (zc *zkEVMClientCreator) NewClient(rpc string) ZkEVMClientInterface {
+func (zc *zkEVMClientCreator) NewClient(rpc string) interop.ZkEVMClientInterface {
 	return client.NewClient(rpc)
 }
 
 // InteropEndpoints contains implementations for the "interop" RPC endpoints
 type InteropEndpoints struct {
-	db                 DBInterface
-	etherman           EthermanInterface
-	interopAdminAddr   common.Address
-	fullNodeRPCs       FullNodeRPCs
-	ethTxManager       EthTxManager
-	zkEVMClientCreator ZkEVMClientClientCreator
+	interop  *interop.Interop
+	db       interop.DBInterface
+	etherman interop.EthermanInterface
+	// interopAdminAddr   common.Address
+	fullNodeRPCs       config.FullNodeRPCs
+	ethTxManager       interop.EthTxManager
+	zkEVMClientCreator interop.ZkEVMClientClientCreator
 }
 
 // NewInteropEndpoints returns InteropEndpoints
 func NewInteropEndpoints(
-	interopAdminAddr common.Address,
-	db DBInterface,
-	etherman EthermanInterface,
-	fullNodeRPCs FullNodeRPCs,
-	ethTxManager EthTxManager,
+	interop *interop.Interop,
+	// interopAdminAddr common.Address,
+	db interop.DBInterface,
+	etherman interop.EthermanInterface,
+	fullNodeRPCs config.FullNodeRPCs,
+	ethTxManager interop.EthTxManager,
 ) *InteropEndpoints {
 	return &InteropEndpoints{
-		db:                 db,
-		interopAdminAddr:   interopAdminAddr,
+		db: db,
+		// interopAdminAddr:   interopAdminAddr,
 		etherman:           etherman,
 		fullNodeRPCs:       fullNodeRPCs,
 		ethTxManager:       ethTxManager,

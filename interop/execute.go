@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"silencer/tx"
+
+	"github.com/0xPolygon/beethoven/tx"
+	"github.com/jackc/pgx/v4"
 
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
 	"github.com/0xPolygon/cdk-validium-node/log"
@@ -19,7 +21,7 @@ func (app *Interop) Execute(signedTx tx.SignedTx) error {
 	// Check expected root vs root from the managed full node
 	// TODO: go stateless, depends on https://github.com/0xPolygonHermez/zkevm-prover/issues/581
 	// when this happens we should go async from here, since processing all the batches could take a lot of time
-	zkEVMClient := client.NewClient(app.config.FullNodeRPCs[signedTx.Tx.L1Contract.String()])
+	zkEVMClient := client.NewClient(app.config.FullNodeRPCs[signedTx.Tx.L1Contract])
 	batch, err := zkEVMClient.BatchByNumber(
 		ctx,
 		big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
@@ -40,7 +42,7 @@ func (app *Interop) Execute(signedTx tx.SignedTx) error {
 	return nil
 }
 
-func (app *Interop) Settle(signedTx tx.SignedTx) (common.Hash, error) {
+func (app *Interop) Settle(signedTx tx.SignedTx, dbTx pgx.Tx) (common.Hash, error) {
 	// // Send L1 tx
 	// Verify ZKP using eth_call
 	l1TxData, err := app.etherman.BuildTrustedVerifyBatchesTxData(
@@ -60,6 +62,7 @@ func (app *Interop) Settle(signedTx tx.SignedTx) (common.Hash, error) {
 		&signedTx.Tx.L1Contract,
 		nil,
 		l1TxData,
+		dbTx,
 	); err != nil {
 		return common.Hash{}, fmt.Errorf("failed to add tx to ethTxMan, error: %s", err)
 	}
