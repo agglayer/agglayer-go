@@ -6,8 +6,8 @@ import (
 	"github.com/0xPolygon/beethoven/mocks"
 	"math/big"
 	"testing"
+	"time"
 
-	"github.com/0xPolygon/beethoven/tx"
 	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
 	validiumTypes "github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
 	"github.com/ethereum/go-ethereum"
@@ -17,7 +17,11 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/0xPolygon/beethoven/tx"
 )
+
+const rpcRequestTimeout = 10 * time.Second
 
 var _ EthermanInterface = (*ethermanMock)(nil)
 
@@ -137,6 +141,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			dbMock,
 			new(ethermanMock),
 			nil,
+			rpcRequestTimeout,
 			new(ethTxManagerMock),
 		)
 
@@ -168,6 +173,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			dbMock,
 			new(ethermanMock),
 			nil,
+			rpcRequestTimeout,
 			txManagerMock,
 		)
 
@@ -211,6 +217,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			dbMock,
 			new(ethermanMock),
 			nil,
+			rpcRequestTimeout,
 			txManagerMock,
 		)
 
@@ -266,7 +273,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 		ethTxManagerMock := new(ethTxManagerMock)
 
 		executeTestFn := func() {
-			i := NewInteropEndpoints(common.HexToAddress("0xadmin"), dbMock, ethermanMock, fullNodeRPCs, ethTxManagerMock)
+			i := NewInteropEndpoints(common.HexToAddress("0xadmin"), dbMock, ethermanMock, fullNodeRPCs, rpcRequestTimeout, ethTxManagerMock)
 			i.zkEVMClientCreator = zkEVMClientCreatorMock
 
 			result, err := i.SendTx(*signedTx)

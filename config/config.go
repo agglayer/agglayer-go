@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/0xPolygon/beethoven/rpc"
 	"github.com/0xPolygon/cdk-validium-node/config/types"
 	"github.com/0xPolygon/cdk-validium-node/db"
 	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
@@ -16,6 +15,8 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
+
+	"github.com/0xPolygon/beethoven/rpc"
 )
 
 const (

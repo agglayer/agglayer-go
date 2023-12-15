@@ -3,11 +3,9 @@ package etherman
 import (
 	"context"
 	"errors"
-	"github.com/jackc/pgx/v4"
 	"math/big"
 	"time"
 
-	"github.com/0xPolygon/beethoven/tx"
 	"github.com/0xPolygon/cdk-validium-node/etherman/smartcontracts/cdkvalidium"
 	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/0xPolygon/cdk-validium-node/state"
@@ -16,6 +14,14 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/jackc/pgx/v4"
+
+	"github.com/0xPolygon/beethoven/tx"
+)
+
+const (
+	HashLength  = 32
+	ProofLength = 24
 )
 
 type Etherman struct {
@@ -40,9 +46,9 @@ func (e *Etherman) GetSequencerAddr(l1Contract common.Address) (common.Address, 
 }
 
 func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
-	var newLocalExitRoot [32]byte
+	var newLocalExitRoot [HashLength]byte
 	copy(newLocalExitRoot[:], proof.NewLocalExitRoot.Bytes())
-	var newStateRoot [32]byte
+	var newStateRoot [HashLength]byte
 	copy(newStateRoot[:], proof.NewStateRoot.Bytes())
 	finalProof, err := ConvertProof(proof.Proof.Hex())
 	if err != nil {
