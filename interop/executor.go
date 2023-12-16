@@ -7,11 +7,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 )
 
-const (
-	AppVersion uint64 = 1
-)
-
-type Interop struct {
+type Executor struct {
 	logger           hclog.Logger
 	interopAdminAddr common.Address
 	config           *config.Config
@@ -24,8 +20,8 @@ func New(logger hclog.Logger, cfg *config.Config,
 	db DBInterface,
 	etherman EthermanInterface,
 	ethTxManager EthTxManager,
-) *Interop {
-	return &Interop{
+) *Executor {
+	return &Executor{
 		logger:           logger,
 		interopAdminAddr: interopAdminAddr,
 		config:           cfg,

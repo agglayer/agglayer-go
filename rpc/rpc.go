@@ -31,7 +31,7 @@ func (zc *zkEVMClientCreator) NewClient(rpc string) interop.ZkEVMClientInterface
 
 // InteropEndpoints contains implementations for the "interop" RPC endpoints
 type InteropEndpoints struct {
-	interop  *interop.Interop
+	interop  *interop.Executor
 	db       interop.DBInterface
 	etherman interop.EthermanInterface
 	// interopAdminAddr   common.Address
@@ -42,7 +42,7 @@ type InteropEndpoints struct {
 
 // NewInteropEndpoints returns InteropEndpoints
 func NewInteropEndpoints(
-	interop *interop.Interop,
+	interop *interop.Executor,
 	// interopAdminAddr common.Address,
 	db interop.DBInterface,
 	etherman interop.EthermanInterface,

@@ -10,18 +10,18 @@ import (
 	"github.com/ethereum/go-ethereum"
 )
 
-func (i *Interop) Verify(tx tx.SignedTx) error {
-	err := i.VerifyZKP(tx)
+func (e *Executor) Verify(tx tx.SignedTx) error {
+	err := e.VerifyZKP(tx)
 	if err != nil {
 		return fmt.Errorf("failed to verify ZKP: %s", err)
 	}
 
-	return i.VerifySignature(tx)
+	return e.VerifySignature(tx)
 }
 
-func (i *Interop) VerifyZKP(stx tx.SignedTx) error {
+func (e *Executor) VerifyZKP(stx tx.SignedTx) error {
 	// Verify ZKP using eth_call
-	l1TxData, err := i.etherman.BuildTrustedVerifyBatchesTxData(
+	l1TxData, err := e.etherman.BuildTrustedVerifyBatchesTxData(
 		uint64(stx.Tx.LastVerifiedBatch),
 		uint64(stx.Tx.NewVerifiedBatch),
 		stx.Tx.ZKP,
@@ -30,11 +30,11 @@ func (i *Interop) VerifyZKP(stx tx.SignedTx) error {
 		return fmt.Errorf("failed to build verify ZKP tx: %s", err)
 	}
 	msg := ethereum.CallMsg{
-		From: i.interopAdminAddr,
+		From: e.interopAdminAddr,
 		To:   &stx.Tx.L1Contract,
 		Data: l1TxData,
 	}
-	res, err := i.etherman.CallContract(context.Background(), msg, nil)
+	res, err := e.etherman.CallContract(context.Background(), msg, nil)
 	if err != nil {
 		return fmt.Errorf("failed to call verify ZKP response: %s, error: %s", res, err)
 	}
@@ -42,7 +42,7 @@ func (i *Interop) VerifyZKP(stx tx.SignedTx) error {
 	return nil
 }
 
-func (i *Interop) VerifySignature(stx tx.SignedTx) error {
+func (i *Executor) VerifySignature(stx tx.SignedTx) error {
 	// Auth: check signature vs admin
 	signer, err := stx.Signer()
 	if err != nil {

@@ -15,13 +15,13 @@ import (
 
 const ethTxManOwner = "interop"
 
-func (app *Interop) Execute(signedTx tx.SignedTx) error {
+func (e *Executor) Execute(signedTx tx.SignedTx) error {
 	ctx := context.TODO()
 
 	// Check expected root vs root from the managed full node
 	// TODO: go stateless, depends on https://github.com/0xPolygonHermez/zkevm-prover/issues/581
 	// when this happens we should go async from here, since processing all the batches could take a lot of time
-	zkEVMClient := client.NewClient(app.config.FullNodeRPCs[signedTx.Tx.L1Contract])
+	zkEVMClient := client.NewClient(e.config.FullNodeRPCs[signedTx.Tx.L1Contract])
 	batch, err := zkEVMClient.BatchByNumber(
 		ctx,
 		big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
@@ -42,10 +42,10 @@ func (app *Interop) Execute(signedTx tx.SignedTx) error {
 	return nil
 }
 
-func (app *Interop) Settle(signedTx tx.SignedTx, dbTx pgx.Tx) (common.Hash, error) {
+func (e *Executor) Settle(signedTx tx.SignedTx, dbTx pgx.Tx) (common.Hash, error) {
 	// // Send L1 tx
 	// Verify ZKP using eth_call
-	l1TxData, err := app.etherman.BuildTrustedVerifyBatchesTxData(
+	l1TxData, err := e.etherman.BuildTrustedVerifyBatchesTxData(
 		uint64(signedTx.Tx.LastVerifiedBatch),
 		uint64(signedTx.Tx.NewVerifiedBatch),
 		signedTx.Tx.ZKP,
@@ -54,11 +54,11 @@ func (app *Interop) Settle(signedTx tx.SignedTx, dbTx pgx.Tx) (common.Hash, erro
 		return common.Hash{}, fmt.Errorf("failed to build verify ZKP tx: %s", err)
 	}
 
-	if err := app.ethTxMan.Add(
+	if err := e.ethTxMan.Add(
 		context.Background(),
 		ethTxManOwner,
 		signedTx.Tx.Hash().Hex(),
-		app.interopAdminAddr,
+		e.interopAdminAddr,
 		&signedTx.Tx.L1Contract,
 		nil,
 		l1TxData,
