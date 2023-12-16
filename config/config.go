@@ -16,6 +16,8 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
+
+	"github.com/0xPolygon/beethoven/rpc"
 )
 
 const (

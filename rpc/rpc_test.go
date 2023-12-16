@@ -3,21 +3,25 @@ package rpc
 import (
 	"context"
 	"errors"
+	"github.com/0xPolygon/beethoven/mocks"
 	"math/big"
 	"testing"
+	"time"
 
-	"github.com/0xPolygon/beethoven/tx"
 	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
 	validiumTypes "github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/0xPolygon/beethoven/tx"
 )
+
+const rpcRequestTimeout = 10 * time.Second
 
 var _ EthermanInterface = (*ethermanMock)(nil)
 
@@ -94,70 +98,6 @@ func (e *ethTxManagerMock) ProcessPendingMonitoredTxs(ctx context.Context, owner
 	e.Called(ctx, owner, failedResultHandler, dbTx)
 }
 
-var _ pgx.Tx = (*txMock)(nil)
-
-type txMock struct {
-	mock.Mock
-}
-
-func (tx *txMock) Begin(ctx context.Context) (pgx.Tx, error) {
-	return nil, nil
-}
-
-func (tx *txMock) BeginFunc(ctx context.Context, f func(pgx.Tx) error) (err error) {
-	return nil
-}
-
-func (tx *txMock) Commit(ctx context.Context) error {
-	args := tx.Called(ctx)
-
-	return args.Error(0)
-}
-
-func (tx *txMock) Rollback(ctx context.Context) error {
-	args := tx.Called(ctx)
-
-	return args.Error(0)
-}
-
-func (tx *txMock) CopyFrom(ctx context.Context, tableName pgx.Identifier,
-	columnNames []string, rowSrc pgx.CopyFromSource) (int64, error) {
-	return 0, nil
-}
-
-func (tx *txMock) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
-	return nil
-}
-
-func (tx *txMock) LargeObjects() pgx.LargeObjects {
-	return pgx.LargeObjects{}
-}
-
-func (tx *txMock) Prepare(ctx context.Context, name, sql string) (*pgconn.StatementDescription, error) {
-	return nil, nil
-}
-
-func (tx *txMock) Exec(ctx context.Context, sql string, arguments ...interface{}) (commandTag pgconn.CommandTag, err error) {
-	return nil, nil
-}
-
-func (tx *txMock) Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error) {
-	return nil, nil
-}
-
-func (tx *txMock) QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row {
-	return nil
-}
-
-func (tx *txMock) QueryFunc(ctx context.Context, sql string,
-	args []interface{}, scans []interface{}, f func(pgx.QueryFuncRow) error) (pgconn.CommandTag, error) {
-	return nil, nil
-}
-
-func (tx *txMock) Conn() *pgx.Conn {
-	return nil
-}
-
 var _ ZkEVMClientInterface = (*zkEVMClientMock)(nil)
 
 type zkEVMClientMock struct {
@@ -201,6 +141,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			dbMock,
 			new(ethermanMock),
 			nil,
+			rpcRequestTimeout,
 			new(ethTxManagerMock),
 		)
 
@@ -217,7 +158,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 
 		txHash := common.HexToHash("0xsomeTxHash")
 
-		txMock := new(txMock)
+		txMock := new(mocks.TxMock)
 		txMock.On("Rollback", mock.Anything).Return(nil).Once()
 
 		dbMock := new(dbMock)
@@ -232,6 +173,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			dbMock,
 			new(ethermanMock),
 			nil,
+			rpcRequestTimeout,
 			txManagerMock,
 		)
 
@@ -260,7 +202,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			},
 		}
 
-		txMock := new(txMock)
+		txMock := new(mocks.TxMock)
 		txMock.On("Rollback", mock.Anything).Return(nil).Once()
 
 		dbMock := new(dbMock)
@@ -275,6 +217,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			dbMock,
 			new(ethermanMock),
 			nil,
+			rpcRequestTimeout,
 			txManagerMock,
 		)
 
@@ -326,11 +269,11 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 		zkEVMClientCreatorMock := new(zkEVMClientCreatorMock)
 		zkEVMClientMock := new(zkEVMClientMock)
 		dbMock := new(dbMock)
-		txMock := new(txMock)
+		txMock := new(mocks.TxMock)
 		ethTxManagerMock := new(ethTxManagerMock)
 
 		executeTestFn := func() {
-			i := NewInteropEndpoints(common.HexToAddress("0xadmin"), dbMock, ethermanMock, fullNodeRPCs, ethTxManagerMock)
+			i := NewInteropEndpoints(common.HexToAddress("0xadmin"), dbMock, ethermanMock, fullNodeRPCs, rpcRequestTimeout, ethTxManagerMock)
 			i.zkEVMClientCreator = zkEVMClientCreatorMock
 
 			result, err := i.SendTx(*signedTx)

@@ -1,0 +1,33 @@
+name: SonarCloud Scan
+
+on:
+  workflow_call:
+
+jobs:
+  scan:
+    name: Execution
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.21.x
+      
+      - name: Download coverage results
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage
+
+      - name: SonarCloud Scan
+        if: ${{ env.HAVE_SONAR_TOKEN == 'true' }}
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          HAVE_SONAR_TOKEN: ${{ secrets.SONAR_TOKEN != '' }}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+            args: >
+                -X

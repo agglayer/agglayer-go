@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  workflow_dispatch: {}
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Linter Analysis
+    uses: ./.github/workflows/lint.yml
+
+  build:
+      name: Build
+      uses: ./.github/workflows/build.yml
+
+  unit-tests:
+    name: Unit Tests
+    uses: ./.github/workflows/unit-test.yml
+    needs: build
+
+  sonar-scan:
+    name: SonarCloud Scan
+    uses: ./.github/workflows/sonar-scan.yml
+    needs: unit-tests
+    secrets: inherit
+
+  e2e-tests:
+    name: E2E Tests
+    uses: ./.github/workflows/e2e.yml

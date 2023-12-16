@@ -4,15 +4,17 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/interop"
-	"github.com/0xPolygon/beethoven/tx"
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
 	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+
+	"github.com/0xPolygon/beethoven/tx"
 )
 
 // INTEROP is the namespace of the interop service
@@ -36,6 +38,7 @@ type InteropEndpoints struct {
 	etherman interop.EthermanInterface
 	// interopAdminAddr   common.Address
 	fullNodeRPCs       config.FullNodeRPCs
+	rpcTimeout         time.Duration
 	ethTxManager       interop.EthTxManager
 	zkEVMClientCreator interop.ZkEVMClientClientCreator
 }
@@ -47,6 +50,7 @@ func NewInteropEndpoints(
 	db interop.DBInterface,
 	etherman interop.EthermanInterface,
 	fullNodeRPCs config.FullNodeRPCs,
+	rpcTimeout time.Duration,
 	ethTxManager interop.EthTxManager,
 ) *InteropEndpoints {
 	return &InteropEndpoints{
@@ -54,13 +58,15 @@ func NewInteropEndpoints(
 		// interopAdminAddr:   interopAdminAddr,
 		etherman:           etherman,
 		fullNodeRPCs:       fullNodeRPCs,
+		rpcTimeout:         rpcTimeout,
 		ethTxManager:       ethTxManager,
 		zkEVMClientCreator: &zkEVMClientCreator{},
 	}
 }
 
 func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Error) {
-	ctx := context.TODO()
+	ctx, cancel := context.WithTimeout(context.Background(), i.rpcTimeout)
+	defer cancel()
 
 	// Check if the RPC is actually registered, if not it won't be possible to assert soundness (in the future once we are stateless won't be needed)
 	if _, ok := i.fullNodeRPCs[signedTx.Tx.L1Contract]; !ok {
@@ -143,7 +149,9 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 }
 
 func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, err types.Error) {
-	ctx := context.TODO()
+	ctx, cancel := context.WithTimeout(context.Background(), i.rpcTimeout)
+	defer cancel()
+
 	dbTx, innerErr := i.db.BeginStateTransaction(ctx)
 	if innerErr != nil {
 		result = "0x0"
@@ -169,5 +177,5 @@ func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, er
 
 	result = res.Status.String()
 
-	return result, err
+	return
 }

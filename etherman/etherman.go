@@ -6,7 +6,6 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/0xPolygon/beethoven/tx"
 	"github.com/0xPolygon/cdk-validium-node/etherman/smartcontracts/cdkvalidium"
 	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/0xPolygon/cdk-validium-node/state"
@@ -15,8 +14,14 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jackc/pgx/v4"
+
+	"github.com/0xPolygon/beethoven/tx"
+)
+
+const (
+	HashLength  = 32
+	ProofLength = 24
 )
 
 type Etherman struct {
@@ -24,20 +29,7 @@ type Etherman struct {
 	auth      bind.TransactOpts
 }
 
-func New(ctx context.Context, url string, auth bind.TransactOpts) (Etherman, error) {
-	// Connect to ethereum node
-	ethClient, err := ethclient.DialContext(ctx, url)
-	if err != nil {
-		log.Errorf("error connecting to %s: %+v", url, err)
-		return Etherman{}, err
-	}
-
-	// Make sure the connection is okay
-	if _, err = ethClient.ChainID(ctx); err != nil {
-		log.Errorf("error getting chain ID from l1 with %s address: %+v", url, err)
-		return Etherman{}, err
-	}
-
+func New(ethClient EthereumClient, auth bind.TransactOpts) (Etherman, error) {
 	return Etherman{
 		ethClient: ethClient,
 		auth:      auth,
@@ -49,13 +41,14 @@ func (e *Etherman) GetSequencerAddr(l1Contract common.Address) (common.Address, 
 	if err != nil {
 		return common.Address{}, err
 	}
+
 	return contract.TrustedSequencer(&bind.CallOpts{Pending: false})
 }
 
 func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
-	var newLocalExitRoot [32]byte
+	var newLocalExitRoot [HashLength]byte
 	copy(newLocalExitRoot[:], proof.NewLocalExitRoot.Bytes())
-	var newStateRoot [32]byte
+	var newStateRoot [HashLength]byte
 	copy(newStateRoot[:], proof.NewStateRoot.Bytes())
 	finalProof, err := ConvertProof(proof.Proof.Hex())
 	if err != nil {
@@ -69,6 +62,7 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifie
 		log.Errorf("error geting ABI: %v, Proof: %s", err)
 		return nil, err
 	}
+
 	return abi.Pack(
 		"verifyBatchesTrustedAggregator",
 		pendStateNum,
@@ -177,6 +171,7 @@ func (e *Etherman) GetRevertMessage(ctx context.Context, tx *types.Transaction) 
 
 	if receipt.Status == types.ReceiptStatusFailed {
 		revertMessage, err := operations.RevertReason(ctx, e.ethClient, tx, receipt.BlockNumber)
+
 		if err != nil {
 			return "", err
 		}

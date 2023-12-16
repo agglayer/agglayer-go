@@ -10,7 +10,6 @@ import (
 	"os/signal"
 	"time"
 
-	beethoven "github.com/0xPolygon/beethoven"
 	"github.com/0xPolygon/cdk-data-availability/dummyinterfaces"
 	dbConf "github.com/0xPolygon/cdk-validium-node/db"
 	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
@@ -18,11 +17,13 @@ import (
 	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/urfave/cli/v2"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/sdk/metric"
 
+	beethoven "github.com/0xPolygon/beethoven"
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/db"
 	"github.com/0xPolygon/beethoven/etherman"
@@ -93,7 +94,19 @@ func start(cliCtx *cli.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ethMan, err := etherman.New(cliCtx.Context, c.L1.NodeURL, *auth)
+
+	// Connect to ethereum node
+	ethClient, err := ethclient.DialContext(cliCtx.Context, c.L1.NodeURL)
+	if err != nil {
+		log.Fatal("error connecting to %s: %+v", c.L1.NodeURL, err)
+	}
+
+	// Make sure the connection is okay
+	if _, err = ethClient.ChainID(cliCtx.Context); err != nil {
+		log.Fatal("error getting chain ID from l1 with address: %+v", err)
+	}
+
+	ethMan, err := etherman.New(ethClient, *auth)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -120,8 +133,9 @@ func start(cliCtx *cli.Context) error {
 		&dummyinterfaces.DummyStorage{},
 		[]jsonrpc.Service{
 			{
-				Name:    rpc.INTEROP,
-				Service: rpc.NewInteropEndpoints(addr, storage, &ethMan, c.FullNodeRPCs, etm),
+				Name: rpc.INTEROP,
+				Service: rpc.NewInteropEndpoints(addr, storage, &ethMan,
+					c.FullNodeRPCs, c.RPC.ReadTimeout.Duration, etm),
 			},
 		},
 	)
