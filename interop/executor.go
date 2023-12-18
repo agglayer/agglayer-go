@@ -3,19 +3,19 @@ package interop
 import (
 	"github.com/0xPolygon/beethoven/config"
 
+	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/hashicorp/go-hclog"
 )
 
 type Executor struct {
-	logger           hclog.Logger
+	logger           *log.Logger
 	interopAdminAddr common.Address
 	config           *config.Config
 	ethTxMan         EthTxManager
 	etherman         EthermanInterface
 }
 
-func New(logger hclog.Logger, cfg *config.Config,
+func New(logger *log.Logger, cfg *config.Config,
 	interopAdminAddr common.Address,
 	db DBInterface,
 	etherman EthermanInterface,

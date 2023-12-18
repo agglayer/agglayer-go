@@ -125,11 +125,11 @@ func start(cliCtx *cli.Context) error {
 		log.Fatal(err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), i.rpcTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), c.RPC.ReadTimeout.Duration)
 	defer cancel()
 
 	executor := interop.New(
-		log,
+		log.WithFields("module", "executor"),
 		c,
 		addr,
 		storage,
