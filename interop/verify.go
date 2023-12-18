@@ -42,14 +42,14 @@ func (e *Executor) VerifyZKP(stx tx.SignedTx) error {
 	return nil
 }
 
-func (i *Executor) VerifySignature(stx tx.SignedTx) error {
+func (e *Executor) VerifySignature(stx tx.SignedTx) error {
 	// Auth: check signature vs admin
 	signer, err := stx.Signer()
 	if err != nil {
 		return errors.New("failed to get signer")
 	}
 
-	sequencer, err := i.etherman.GetSequencerAddr(stx.Tx.L1Contract)
+	sequencer, err := e.etherman.GetSequencerAddr(stx.Tx.L1Contract)
 	if err != nil {
 		return errors.New("failed to get admin from L1")
 	}
