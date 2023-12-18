@@ -99,15 +99,13 @@ func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, er
 		}
 	}()
 
-	res, innerErr := i.executor.GetTxStatus(i.ctx, hash, dbTx)
+	result, innerErr = i.executor.GetTxStatus(i.ctx, hash, dbTx)
 	if innerErr != nil {
 		result = "0x0"
 		err = types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", innerErr))
 
 		return
 	}
-
-	result = res.Status.String()
 
 	return
 }

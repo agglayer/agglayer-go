@@ -133,7 +133,7 @@ func start(cliCtx *cli.Context) error {
 		c,
 		addr,
 		storage,
-		ethMan,
+		&ethMan,
 		etm,
 	)
 

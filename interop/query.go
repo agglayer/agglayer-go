@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-func (e *Executor) GetTxStatus(ctx context.Context, hash common.Hash, dbTx pgx.Tx) (result interface{}, err types.Error) {
+func (e *Executor) GetTxStatus(ctx context.Context, hash common.Hash, dbTx pgx.Tx) (result string, err types.Error) {
 	res, innerErr := e.ethTxMan.Result(ctx, ethTxManOwner, hash.Hex(), dbTx)
 	if innerErr != nil {
 		result = "0x0"
