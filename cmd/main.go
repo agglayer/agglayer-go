@@ -27,6 +27,7 @@ import (
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/db"
 	"github.com/0xPolygon/beethoven/etherman"
+	"github.com/0xPolygon/beethoven/interop"
 	"github.com/0xPolygon/beethoven/network"
 	"github.com/0xPolygon/beethoven/rpc"
 )
@@ -124,6 +125,18 @@ func start(cliCtx *cli.Context) error {
 		log.Fatal(err)
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), i.rpcTimeout)
+	defer cancel()
+
+	executor := interop.New(
+		log,
+		c,
+		addr,
+		storage,
+		ethMan,
+		etm,
+	)
+
 	// Register services
 	server := jsonrpc.NewServer(
 		c.RPC,
@@ -133,9 +146,8 @@ func start(cliCtx *cli.Context) error {
 		&dummyinterfaces.DummyStorage{},
 		[]jsonrpc.Service{
 			{
-				Name: rpc.INTEROP,
-				Service: rpc.NewInteropEndpoints(addr, storage, &ethMan,
-					c.FullNodeRPCs, c.RPC.ReadTimeout.Duration, etm),
+				Name:    rpc.INTEROP,
+				Service: rpc.NewInteropEndpoints(ctx, executor, storage),
 			},
 		},
 	)
