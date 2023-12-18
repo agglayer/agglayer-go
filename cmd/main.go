@@ -132,7 +132,6 @@ func start(cliCtx *cli.Context) error {
 		log.WithFields("module", "executor"),
 		c,
 		addr,
-		storage,
 		&ethMan,
 		etm,
 	)
