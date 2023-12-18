@@ -7,8 +7,8 @@ require (
 	github.com/0xPolygon/cdk-validium-node v0.0.2-0.20230922123231-07ce723e6268
 	github.com/ethereum/go-ethereum v1.13.5
 	github.com/gobuffalo/packr/v2 v2.8.3
-	github.com/jackc/pgx/v4 v4.18.1
 	github.com/jackc/pgconn v1.14.1
+	github.com/jackc/pgx/v4 v4.18.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/prometheus/client_golang v1.17.0
 	github.com/rubenv/sql-migrate v1.5.2

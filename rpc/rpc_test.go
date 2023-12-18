@@ -3,11 +3,11 @@ package rpc
 import (
 	"context"
 	"errors"
-	"github.com/0xPolygon/beethoven/mocks"
 	"math/big"
 	"testing"
 	"time"
 
+	beethovenTypes "github.com/0xPolygon/beethoven/rpc/types"
 	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
 	validiumTypes "github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
 	"github.com/ethereum/go-ethereum"
@@ -18,6 +18,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/0xPolygon/beethoven/mocks"
 	"github.com/0xPolygon/beethoven/tx"
 )
 
@@ -257,8 +258,8 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 		}
 		tnx := tx.Tx{
 			L1Contract:        common.BytesToAddress([]byte{1, 2, 3, 4}),
-			LastVerifiedBatch: validiumTypes.ArgUint64(1),
-			NewVerifiedBatch:  *validiumTypes.ArgUint64Ptr(2),
+			LastVerifiedBatch: beethovenTypes.ArgUint64(1),
+			NewVerifiedBatch:  *beethovenTypes.ArgUint64Ptr(2),
 			ZKP: tx.ZKP{
 				NewStateRoot:     common.BigToHash(big.NewInt(11)),
 				NewLocalExitRoot: common.BigToHash(big.NewInt(11)),

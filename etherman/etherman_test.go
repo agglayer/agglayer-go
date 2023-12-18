@@ -3,9 +3,12 @@ package etherman
 import (
 	"context"
 	"errors"
+	"math/big"
+	"testing"
+
 	"github.com/0xPolygon/beethoven/mocks"
+	cdkTypes "github.com/0xPolygon/beethoven/rpc/types"
 	"github.com/0xPolygon/beethoven/tx"
-	cdkTypes "github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -13,8 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"math/big"
-	"testing"
 )
 
 func signer(from common.Address, tx *types.Transaction) (*types.Transaction, error) {

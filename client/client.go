@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/0xPolygon/beethoven/rpc/types"
 	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
 	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
-	"github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/0xPolygon/beethoven/tx"
