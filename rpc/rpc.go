@@ -6,9 +6,9 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
-	"github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
-	"github.com/0xPolygon/cdk-validium-node/log"
+	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
+	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
+	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 
@@ -132,7 +132,7 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, types.Erro
 	if err != nil {
 		return "0x0", types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", err))
 	}
-	err = i.ethTxManager.Add(ctx, ethTxManOwner, signedTx.Tx.Hash().Hex(), i.interopAdminAddr, &signedTx.Tx.L1Contract, nil, l1TxData, dbTx)
+	err = i.ethTxManager.Add(ctx, ethTxManOwner, signedTx.Tx.Hash().Hex(), i.interopAdminAddr, &signedTx.Tx.L1Contract, nil, l1TxData, 0, dbTx)
 	if err != nil {
 		if errRollback := dbTx.Rollback(ctx); errRollback != nil {
 			log.Error("rollback err: ", errRollback)

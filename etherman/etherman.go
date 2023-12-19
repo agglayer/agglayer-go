@@ -6,10 +6,10 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/0xPolygon/cdk-validium-node/etherman/smartcontracts/cdkvalidium"
-	"github.com/0xPolygon/cdk-validium-node/log"
-	"github.com/0xPolygon/cdk-validium-node/state"
-	"github.com/0xPolygon/cdk-validium-node/test/operations"
+	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonzkevm"
+	"github.com/0xPolygonHermez/zkevm-node/log"
+	"github.com/0xPolygonHermez/zkevm-node/state"
+	"github.com/0xPolygonHermez/zkevm-node/test/operations"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -57,7 +57,7 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifie
 	}
 
 	const pendStateNum uint64 = 0 // TODO hardcoded for now until we implement the pending state feature
-	abi, err := cdkvalidium.CdkvalidiumMetaData.GetAbi()
+	abi, err := polygonzkevm.PolygonzkevmMetaData.GetAbi()
 	if err != nil {
 		log.Errorf("error geting ABI: %v, Proof: %s", err)
 		return nil, err
@@ -78,7 +78,7 @@ func (e *Etherman) CallContract(ctx context.Context, call ethereum.CallMsg, bloc
 	return e.ethClient.CallContract(ctx, call, blockNumber)
 }
 
-func (e *Etherman) contractCaller(from, to common.Address) (*bind.TransactOpts, *cdkvalidium.Cdkvalidium, error) {
+func (e *Etherman) contractCaller(from, to common.Address) (*bind.TransactOpts, *polygonzkevm.Polygonzkevm, error) {
 	opts := bind.TransactOpts{}
 	opts.From = from
 	opts.NoSend = true
@@ -86,7 +86,7 @@ func (e *Etherman) contractCaller(from, to common.Address) (*bind.TransactOpts, 
 	opts.Nonce = big.NewInt(1)
 	opts.GasLimit = uint64(1)
 	opts.GasPrice = big.NewInt(1)
-	contract, err := cdkvalidium.NewCdkvalidium(to, e.ethClient)
+	contract, err := polygonzkevm.NewPolygonzkevm(to, e.ethClient)
 	if err != nil {
 		log.Errorf("error instantiating contract: %s", err)
 		return nil, nil, err

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/0xPolygon/cdk-validium-node/encoding"
+	"github.com/0xPolygonHermez/zkevm-node/encoding"
 )
 
 type Proof [ProofLength][HashLength]byte
