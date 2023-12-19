@@ -3,13 +3,17 @@ package rpc
 import (
 	"context"
 	"errors"
-	"github.com/0xPolygon/beethoven/mocks"
 	"math/big"
 	"testing"
 	"time"
 
+	"github.com/0xPolygon/beethoven/config"
+	"github.com/0xPolygon/beethoven/interop"
+	"github.com/0xPolygon/beethoven/mocks"
+
 	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
 	validiumTypes "github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
+	"github.com/0xPolygon/cdk-validium-node/log"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -23,7 +27,7 @@ import (
 
 const rpcRequestTimeout = 10 * time.Second
 
-var _ EthermanInterface = (*ethermanMock)(nil)
+var _ interop.EthermanInterface = (*ethermanMock)(nil)
 
 type ethermanMock struct {
 	mock.Mock
@@ -49,7 +53,7 @@ func (e *ethermanMock) CallContract(ctx context.Context, call ethereum.CallMsg,
 	return args.Get(0).([]byte), args.Error(1) //nolint:forcetypeassert
 }
 
-var _ DBInterface = (*dbMock)(nil)
+var _ interop.DBInterface = (*dbMock)(nil)
 
 type dbMock struct {
 	mock.Mock
@@ -66,7 +70,7 @@ func (db *dbMock) BeginStateTransaction(ctx context.Context) (pgx.Tx, error) {
 	return tx, args.Error(1)
 }
 
-var _ EthTxManager = (*ethTxManagerMock)(nil)
+var _ interop.EthTxManager = (*ethTxManagerMock)(nil)
 
 type ethTxManagerMock struct {
 	mock.Mock
@@ -98,7 +102,7 @@ func (e *ethTxManagerMock) ProcessPendingMonitoredTxs(ctx context.Context, owner
 	e.Called(ctx, owner, failedResultHandler, dbTx)
 }
 
-var _ ZkEVMClientInterface = (*zkEVMClientMock)(nil)
+var _ interop.ZkEVMClientInterface = (*zkEVMClientMock)(nil)
 
 type zkEVMClientMock struct {
 	mock.Mock
@@ -115,16 +119,16 @@ func (zkc *zkEVMClientMock) BatchByNumber(ctx context.Context, number *big.Int) 
 	return batch, args.Error(1)
 }
 
-var _ ZkEVMClientClientCreator = (*zkEVMClientCreatorMock)(nil)
+var _ interop.ZkEVMClientClientCreator = (*zkEVMClientCreatorMock)(nil)
 
 type zkEVMClientCreatorMock struct {
 	mock.Mock
 }
 
-func (zc *zkEVMClientCreatorMock) NewClient(rpc string) ZkEVMClientInterface {
+func (zc *zkEVMClientCreatorMock) NewClient(rpc string) interop.ZkEVMClientInterface {
 	args := zc.Called(rpc)
 
-	return args.Get(0).(ZkEVMClientInterface) //nolint:forcetypeassert
+	return args.Get(0).(interop.ZkEVMClientInterface) //nolint:forcetypeassert
 }
 
 func TestInteropEndpointsGetTxStatus(t *testing.T) {
@@ -136,14 +140,14 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		dbMock := new(dbMock)
 		dbMock.On("BeginStateTransaction", mock.Anything).Return(nil, errors.New("error")).Once()
 
-		i := NewInteropEndpoints(
+		e := interop.New(
+			log.WithFields("module", "test"),
+			&config.Config{},
 			common.HexToAddress("0xadmin"),
-			dbMock,
 			new(ethermanMock),
-			nil,
-			rpcRequestTimeout,
 			new(ethTxManagerMock),
 		)
+		i := NewInteropEndpoints(context.Background(), e, dbMock)
 
 		result, err := i.GetTxStatus(common.HexToHash("0xsomeTxHash"))
 
@@ -168,14 +172,14 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		txManagerMock.On("Result", mock.Anything, ethTxManOwner, txHash.Hex(), txMock).
 			Return(ethtxmanager.MonitoredTxResult{}, errors.New("error")).Once()
 
-		i := NewInteropEndpoints(
+		e := interop.New(
+			log.WithFields("module", "test"),
+			&config.Config{},
 			common.HexToAddress("0xadmin"),
-			dbMock,
 			new(ethermanMock),
-			nil,
-			rpcRequestTimeout,
-			txManagerMock,
+			new(ethTxManagerMock),
 		)
+		i := NewInteropEndpoints(context.Background(), e, dbMock)
 
 		result, err := i.GetTxStatus(txHash)
 
@@ -212,14 +216,14 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		txManagerMock.On("Result", mock.Anything, ethTxManOwner, txHash.Hex(), txMock).
 			Return(result, nil).Once()
 
-		i := NewInteropEndpoints(
+		e := interop.New(
+			log.WithFields("module", "test"),
+			&config.Config{},
 			common.HexToAddress("0xadmin"),
-			dbMock,
 			new(ethermanMock),
-			nil,
-			rpcRequestTimeout,
-			txManagerMock,
+			new(ethTxManagerMock),
 		)
+		i := NewInteropEndpoints(context.Background(), e, dbMock)
 
 		status, err := i.GetTxStatus(txHash)
 
@@ -252,7 +256,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 	}
 
 	testFn := func(cfg testConfig) {
-		fullNodeRPCs := FullNodeRPCs{
+		fullNodeRPCs := config.FullNodeRPCs{
 			common.BytesToAddress([]byte{1, 2, 3, 4}): "someRPC",
 		}
 		tnx := tx.Tx{
@@ -273,7 +277,16 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 		ethTxManagerMock := new(ethTxManagerMock)
 
 		executeTestFn := func() {
-			i := NewInteropEndpoints(common.HexToAddress("0xadmin"), dbMock, ethermanMock, fullNodeRPCs, rpcRequestTimeout, ethTxManagerMock)
+			e := interop.New(
+				log.WithFields("module", "test"),
+				&config.Config{
+					FullNodeRPCs: fullNodeRPCs,
+				},
+				common.HexToAddress("0xadmin"),
+				ethermanMock,
+				ethTxManagerMock,
+			)
+			i := NewInteropEndpoints(context.Background(), e, dbMock)
 			i.zkEVMClientCreator = zkEVMClientCreatorMock
 
 			result, err := i.SendTx(*signedTx)
@@ -295,7 +308,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 		}
 
 		if !cfg.isL1ContractInMap {
-			fullNodeRPCs = FullNodeRPCs{}
+			fullNodeRPCs = config.FullNodeRPCs{}
 			executeTestFn()
 
 			return
