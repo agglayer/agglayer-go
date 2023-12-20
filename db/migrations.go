@@ -26,10 +26,10 @@ func RunMigrationsDown(pg *pgxpool.Pool) error {
 // the database updated with the latest changes in either direction,
 // up or down.
 func runMigrations(pg *pgxpool.Pool, direction migrate.MigrationDirection) error {
-	_db := stdlib.OpenDB(*pg.Config().ConnConfig)
+	db := stdlib.OpenDB(*pg.Config().ConnConfig)
 
 	var migrations = &migrate.PackrMigrationSource{Box: packrMigrations}
-	nMigrations, err := migrate.Exec(_db, "postgres", migrations, direction)
+	nMigrations, err := migrate.Exec(db, "postgres", migrations, direction)
 	if err != nil {
 		return err
 	}

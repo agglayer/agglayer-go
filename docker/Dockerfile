@@ -12,7 +12,11 @@ RUN go mod download
 
 # Build binary
 COPY . .
-RUN cd ./db && packr2 && cd ../
+
+WORKDIR /go/src/github.com/0xPolygon/beethoven/db
+RUN packr2
+
+WORKDIR /go/src/github.com/0xPolygon/beethoven
 RUN make build
 
 # CONTAINER FOR RUNNING BINARY
