@@ -287,7 +287,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 				ethTxManagerMock,
 			)
 			i := NewInteropEndpoints(context.Background(), e, dbMock)
-			i.zkEVMClientCreator = zkEVMClientCreatorMock
+			// i.zkEVMClientCreator = zkEVMClientCreatorMock
 
 			result, err := i.SendTx(*signedTx)
 
