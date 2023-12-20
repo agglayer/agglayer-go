@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/0xPolygon/beethoven/interop"
-	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
-	"github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
-	"github.com/0xPolygon/cdk-validium-node/log"
+	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
+	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
+	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/0xPolygon/beethoven/tx"

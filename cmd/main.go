@@ -10,11 +10,10 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/0xPolygon/cdk-data-availability/dummyinterfaces"
-	dbConf "github.com/0xPolygon/cdk-validium-node/db"
-	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
-	"github.com/0xPolygon/cdk-validium-node/jsonrpc"
-	"github.com/0xPolygon/cdk-validium-node/log"
+	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
+	dbConf "github.com/0xPolygonHermez/zkevm-node/db"
+	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
+	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -137,13 +136,9 @@ func start(cliCtx *cli.Context) error {
 	)
 
 	// Register services
-	server := jsonrpc.NewServer(
+	server := jRPC.NewServer(
 		c.RPC,
-		0,
-		&dummyinterfaces.DummyPool{},
-		&dummyinterfaces.DummyState{},
-		&dummyinterfaces.DummyStorage{},
-		[]jsonrpc.Service{
+		[]jRPC.Service{
 			{
 				Name:    rpc.INTEROP,
 				Service: rpc.NewInteropEndpoints(ctx, executor, storage),

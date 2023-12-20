@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/0xPolygon/cdk-validium-node/config/types"
-	"github.com/0xPolygon/cdk-validium-node/db"
-	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
-	"github.com/0xPolygon/cdk-validium-node/jsonrpc"
-	"github.com/0xPolygon/cdk-validium-node/log"
+	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
+	"github.com/0xPolygonHermez/zkevm-node/config/types"
+	"github.com/0xPolygonHermez/zkevm-node/db"
+	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
+	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/mitchellh/mapstructure"
@@ -27,8 +27,8 @@ type FullNodeRPCs map[common.Address]string
 
 // Config represents the full configuration of the data node
 type Config struct {
-	FullNodeRPCs FullNodeRPCs        `mapstructure:"FullNodeRPCs"`
-	RPC          jsonrpc.Config      `mapstructure:"RPC"`
+	FullNodeRPCs rpc.FullNodeRPCs    `mapstructure:"FullNodeRPCs"`
+	RPC          jRPC.Config         `mapstructure:"RPC"`
 	Log          log.Config          `mapstructure:"Log"`
 	DB           db.Config           `mapstructure:"DB"`
 	EthTxManager ethtxmanager.Config `mapstructure:"EthTxManager"`

@@ -11,9 +11,9 @@ import (
 	"github.com/0xPolygon/beethoven/interop"
 	"github.com/0xPolygon/beethoven/mocks"
 
-	"github.com/0xPolygon/cdk-validium-node/ethtxmanager"
-	validiumTypes "github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
-	"github.com/0xPolygon/cdk-validium-node/log"
+	beethovenTypes "github.com/0xPolygon/beethoven/rpc/types"
+	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
+	validiumTypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/0xPolygon/beethoven/mocks"
 	"github.com/0xPolygon/beethoven/tx"
 )
 
@@ -77,7 +78,7 @@ type ethTxManagerMock struct {
 }
 
 func (e *ethTxManagerMock) Add(ctx context.Context, owner, id string,
-	from common.Address, to *common.Address, value *big.Int, data []byte, dbTx pgx.Tx) error {
+	from common.Address, to *common.Address, value *big.Int, data []byte, gasOffset uint64, dbTx pgx.Tx) error {
 	args := e.Called(ctx, owner, id, from, to, value, data, dbTx)
 
 	return args.Error(0)
@@ -261,8 +262,8 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 		}
 		tnx := tx.Tx{
 			L1Contract:        common.BytesToAddress([]byte{1, 2, 3, 4}),
-			LastVerifiedBatch: validiumTypes.ArgUint64(1),
-			NewVerifiedBatch:  *validiumTypes.ArgUint64Ptr(2),
+			LastVerifiedBatch: beethovenTypes.ArgUint64(1),
+			NewVerifiedBatch:  *beethovenTypes.ArgUint64Ptr(2),
 			ZKP: tx.ZKP{
 				NewStateRoot:     common.BigToHash(big.NewInt(11)),
 				NewLocalExitRoot: common.BigToHash(big.NewInt(11)),
