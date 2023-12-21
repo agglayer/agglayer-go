@@ -1,6 +1,7 @@
 package types
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -53,7 +54,7 @@ func (b ArgBytes) MarshalText() ([]byte, error) {
 func (b *ArgBytes) UnmarshalText(input []byte) error {
 	hh, err := decodeToHex(input)
 	if err != nil {
-		return nil
+		return fmt.Errorf("invalid hex: %w", err)
 	}
 	aux := make([]byte, len(hh))
 	copy(aux[:], hh[:])
@@ -81,7 +82,7 @@ type ArgHash common.Hash
 // UnmarshalText unmarshals from text
 func (arg *ArgHash) UnmarshalText(input []byte) error {
 	if !hexIsValid(string(input)) {
-		return fmt.Errorf("invalid hash, it needs to be a hexadecimal value")
+		return errors.New("invalid hash, it needs to be a hexadecimal value")
 	}
 
 	str := strings.TrimPrefix(string(input), "0x")
