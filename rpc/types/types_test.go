@@ -80,6 +80,37 @@ func TestArgUint64_UnmarshalText(t *testing.T) {
 	}
 }
 
+func TestArgUint64_Hex(t *testing.T) {
+	tests := []struct {
+		name     string
+		arg      ArgUint64
+		expected string
+	}{
+		{
+			name:     "Positive number",
+			arg:      ArgUint64(123),
+			expected: "0x7b",
+		},
+		{
+			name:     "Zero",
+			arg:      ArgUint64(0),
+			expected: "0x0",
+		},
+		{
+			name:     "Large number",
+			arg:      ArgUint64(18446744073709551615),
+			expected: "0xffffffffffffffff",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result := test.arg.Hex()
+			assert.Equal(t, test.expected, result)
+		})
+	}
+}
+
 func TestArgBytes_MarshalText(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -146,6 +177,32 @@ func TestArgBytes_UnmarshalText(t *testing.T) {
 	}
 }
 
+func TestArgBytes_Hex(t *testing.T) {
+	tests := []struct {
+		name     string
+		arg      ArgBytes
+		expected string
+	}{
+		{
+			name:     "Non-empty bytes",
+			arg:      ArgBytes{0x01, 0x02, 0x03},
+			expected: "0x010203",
+		},
+		{
+			name:     "Empty bytes",
+			arg:      ArgBytes{},
+			expected: "0x",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result := test.arg.Hex()
+			assert.Equal(t, test.expected, result)
+		})
+	}
+}
+
 func TestArgHash_UnmarshalText(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -181,6 +238,32 @@ func TestArgHash_UnmarshalText(t *testing.T) {
 				t.Errorf("Unexpected error status, got error: %v, want error: %v", err, test.wantErr)
 			}
 			assert.Equal(t, test.expected, arg)
+		})
+	}
+}
+
+func TestArgHash_Hash(t *testing.T) {
+	tests := []struct {
+		name     string
+		arg      *ArgHash
+		expected common.Hash
+	}{
+		{
+			name:     "Non-nil argument",
+			arg:      &ArgHash{0x01, 0x02, 0x03},
+			expected: common.Hash{0x01, 0x02, 0x03},
+		},
+		{
+			name:     "Nil argument",
+			arg:      nil,
+			expected: common.Hash{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result := test.arg.Hash()
+			assert.Equal(t, test.expected, result)
 		})
 	}
 }
