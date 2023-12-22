@@ -33,7 +33,7 @@ func TestEthTransfer(t *testing.T) {
 	msg, err := cluster.stop()
 	require.NoError(t, err, string(msg))
 	msg, err = cluster.start()
-	log.Info(msg)
+	log.Info(string(msg))
 	require.NoError(t, err, string(msg))
 	time.Sleep(5 * time.Second)
 
