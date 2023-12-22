@@ -24,16 +24,15 @@ func TestEthTransfer(t *testing.T) {
 	require.NoError(t, err)
 
 	ctx := context.Background()
-	// defer func() {
-	// 	msg, err := cluster.stop()
-	// 	require.NoError(t, err, string(msg))
-	// }()
+	defer func() {
+		msg, err := cluster.stop()
+		require.NoError(t, err, string(msg))
+	}()
 
 	log.Info("restarting docker containers for the test")
 	msg, err := cluster.stop()
 	require.NoError(t, err, string(msg))
 	msg, err = cluster.start()
-	log.Info(msg)
 	require.NoError(t, err, string(msg))
 	time.Sleep(5 * time.Second)
 
