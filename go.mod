@@ -3,9 +3,9 @@ module github.com/0xPolygon/beethoven
 go 1.21
 
 require (
-	github.com/0xPolygon/cdk-data-availability v0.0.3
-	github.com/0xPolygonHermez/zkevm-node v0.4.4
-	github.com/ethereum/go-ethereum v1.13.2
+	github.com/0xPolygon/cdk-data-availability v0.0.0-20230920141507-405e1d638f0b
+	github.com/0xPolygon/cdk-validium-node v0.0.2-0.20230922123231-07ce723e6268
+	github.com/ethereum/go-ethereum v1.13.8
 	github.com/gobuffalo/packr/v2 v2.8.3
 	github.com/jackc/pgconn v1.14.1
 	github.com/jackc/pgx/v4 v4.18.1
@@ -38,6 +38,7 @@ require (
 	github.com/consensys/bavard v0.1.13 // indirect
 	github.com/consensys/gnark-crypto v0.12.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/crate-crypto/go-ipa v0.0.0-20231025140028-3c0104f4b233 // indirect
 	github.com/crate-crypto/go-kzg-4844 v0.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/deckarep/golang-set/v2 v2.1.0 // indirect
@@ -48,6 +49,7 @@ require (
 	github.com/ethereum/c-kzg-4844 v0.3.1 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gballet/go-libpcsclite v0.0.0-20190607065134-2772fd86a8ff // indirect
+	github.com/gballet/go-verkle v0.1.1-0.20231031103413-a67434b50f46 // indirect
 	github.com/getsentry/sentry-go v0.18.0 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
@@ -55,7 +57,6 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-pkgz/expirable-cache v0.0.3 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
-	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gobuffalo/logger v1.0.7 // indirect
 	github.com/gobuffalo/packd v1.0.2 // indirect
 	github.com/gofrs/flock v0.8.1 // indirect
