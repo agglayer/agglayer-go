@@ -15,6 +15,7 @@ CREATE TABLE state.monitored_txs
     data       VARCHAR,
     gas        DECIMAL(78, 0) NOT NULL,
     gas_price  DECIMAL(78, 0) NOT NULL,
+    gas_offset DECIMAL(78, 0) NOT NULL DEFAULT 0,
     status     VARCHAR NOT NULL,
     history    VARCHAR[],
     block_num  BIGINT,
