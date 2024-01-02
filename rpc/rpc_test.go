@@ -5,7 +5,6 @@ import (
 	"errors"
 	"math/big"
 	"testing"
-	"time"
 
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/interop"
@@ -25,8 +24,6 @@ import (
 
 	"github.com/0xPolygon/beethoven/tx"
 )
-
-const rpcRequestTimeout = 10 * time.Second
 
 var _ interop.EthermanInterface = (*ethermanMock)(nil)
 
