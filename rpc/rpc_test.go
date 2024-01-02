@@ -14,6 +14,7 @@ import (
 	beethovenTypes "github.com/0xPolygon/beethoven/rpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	validiumTypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
+	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -22,7 +23,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/0xPolygon/beethoven/mocks"
 	"github.com/0xPolygon/beethoven/tx"
 )
 

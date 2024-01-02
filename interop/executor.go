@@ -9,9 +9,9 @@ import (
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/tx"
 
-	"github.com/0xPolygon/cdk-validium-node/jsonrpc/client"
-	"github.com/0xPolygon/cdk-validium-node/jsonrpc/types"
-	"github.com/0xPolygon/cdk-validium-node/log"
+	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
+	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
+	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jackc/pgx/v4"
@@ -150,6 +150,7 @@ func (e *Executor) Settle(signedTx tx.SignedTx, dbTx pgx.Tx) (common.Hash, error
 		&signedTx.Tx.L1Contract,
 		nil,
 		l1TxData,
+		0,
 		dbTx,
 	); err != nil {
 		return common.Hash{}, fmt.Errorf("failed to add tx to ethTxMan, error: %s", err)

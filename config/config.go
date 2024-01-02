@@ -27,7 +27,7 @@ type FullNodeRPCs map[common.Address]string
 
 // Config represents the full configuration of the data node
 type Config struct {
-	FullNodeRPCs rpc.FullNodeRPCs    `mapstructure:"FullNodeRPCs"`
+	FullNodeRPCs FullNodeRPCs        `mapstructure:"FullNodeRPCs"`
 	RPC          jRPC.Config         `mapstructure:"RPC"`
 	Log          log.Config          `mapstructure:"Log"`
 	DB           db.Config           `mapstructure:"DB"`
