@@ -407,6 +407,11 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 			ethTxManagerMock.On("Add", mock.Anything, ethTxManOwner, signedTx.Tx.Hash().Hex(), mock.Anything,
 				mock.Anything, mock.Anything, mock.Anything, txMock).Return(errors.New("error")).Once()
 			txMock.On("Rollback", mock.Anything).Return(nil).Once()
+
+			ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+				uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
+				Return([]byte{1, 2}, nil).Once()
+
 			executeTestFn()
 
 			return
@@ -417,10 +422,19 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 
 		if !cfg.isTxCommitted {
 			txMock.On("Commit", mock.Anything).Return(errors.New("error")).Once()
+
+			ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+				uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
+				Return([]byte{1, 2}, nil).Once()
+
 			executeTestFn()
 
 			return
 		}
+
+		ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+			uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
+			Return([]byte{1, 2}, nil).Once()
 
 		txMock.On("Commit", mock.Anything).Return(nil).Once()
 		executeTestFn()
