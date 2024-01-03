@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/0xPolygon/beethoven/interop"
-	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/common"
@@ -18,14 +17,6 @@ const (
 	INTEROP       = "interop"
 	ethTxManOwner = "interop"
 )
-
-var _ interop.ZkEVMClientClientCreator = (*zkEVMClientCreator)(nil)
-
-type zkEVMClientCreator struct{}
-
-func (zc *zkEVMClientCreator) NewClient(rpc string) interop.ZkEVMClientInterface {
-	return client.NewClient(rpc)
-}
 
 // InteropEndpoints contains implementations for the "interop" RPC endpoints
 type InteropEndpoints struct {

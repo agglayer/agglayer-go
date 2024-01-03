@@ -8,8 +8,8 @@ import (
 
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/tx"
-
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
+
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum"
@@ -17,12 +17,21 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
+var _ ZkEVMClientClientCreator = (*zkEVMClientCreator)(nil)
+
+type zkEVMClientCreator struct{}
+
+func (zc *zkEVMClientCreator) NewClient(rpc string) ZkEVMClientInterface {
+	return client.NewClient(rpc)
+}
+
 type Executor struct {
-	logger           *log.Logger
-	interopAdminAddr common.Address
-	config           *config.Config
-	ethTxMan         EthTxManager
-	etherman         EthermanInterface
+	logger             *log.Logger
+	interopAdminAddr   common.Address
+	config             *config.Config
+	ethTxMan           EthTxManager
+	etherman           EthermanInterface
+	ZkEVMClientCreator ZkEVMClientClientCreator
 }
 
 func New(logger *log.Logger, cfg *config.Config,
@@ -31,11 +40,12 @@ func New(logger *log.Logger, cfg *config.Config,
 	ethTxManager EthTxManager,
 ) *Executor {
 	return &Executor{
-		logger:           logger,
-		interopAdminAddr: interopAdminAddr,
-		config:           cfg,
-		ethTxMan:         ethTxManager,
-		etherman:         etherman,
+		logger:             logger,
+		interopAdminAddr:   interopAdminAddr,
+		config:             cfg,
+		ethTxMan:           ethTxManager,
+		etherman:           etherman,
+		ZkEVMClientCreator: &zkEVMClientCreator{},
 	}
 }
 
@@ -109,7 +119,7 @@ func (e *Executor) Execute(signedTx tx.SignedTx) error {
 	// Check expected root vs root from the managed full node
 	// TODO: go stateless, depends on https://github.com/0xPolygonHermez/zkevm-prover/issues/581
 	// when this happens we should go async from here, since processing all the batches could take a lot of time
-	zkEVMClient := client.NewClient(e.config.FullNodeRPCs[signedTx.Tx.L1Contract])
+	zkEVMClient := e.ZkEVMClientCreator.NewClient(e.config.FullNodeRPCs[signedTx.Tx.L1Contract])
 	batch, err := zkEVMClient.BatchByNumber(
 		ctx,
 		big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),

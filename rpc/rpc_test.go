@@ -175,7 +175,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			&config.Config{},
 			common.HexToAddress("0xadmin"),
 			new(ethermanMock),
-			new(ethTxManagerMock),
+			txManagerMock,
 		)
 		i := NewInteropEndpoints(context.Background(), e, dbMock)
 
@@ -219,7 +219,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			&config.Config{},
 			common.HexToAddress("0xadmin"),
 			new(ethermanMock),
-			new(ethTxManagerMock),
+			txManagerMock,
 		)
 		i := NewInteropEndpoints(context.Background(), e, dbMock)
 
@@ -285,7 +285,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 				ethTxManagerMock,
 			)
 			i := NewInteropEndpoints(context.Background(), e, dbMock)
-			// i.zkEVMClientCreator = zkEVMClientCreatorMock
+			i.executor.ZkEVMClientCreator = zkEVMClientCreatorMock
 
 			result, err := i.SendTx(*signedTx)
 
