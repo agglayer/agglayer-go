@@ -129,7 +129,7 @@ func (e *Executor) Execute(signedTx tx.SignedTx) error {
 	}
 	if batch.StateRoot != signedTx.Tx.ZKP.NewStateRoot || batch.LocalExitRoot != signedTx.Tx.ZKP.NewLocalExitRoot {
 		return fmt.Errorf(
-			"Missmatch detected,  expected local exit root: %s actual: %s. expected state root: %s actual: %s",
+			"Mismatch detected,  expected local exit root: %s actual: %s. expected state root: %s actual: %s",
 			signedTx.Tx.ZKP.NewLocalExitRoot.Hex(),
 			batch.LocalExitRoot.Hex(),
 			signedTx.Tx.ZKP.NewStateRoot.Hex(),
