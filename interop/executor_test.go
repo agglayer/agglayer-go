@@ -2,6 +2,7 @@ package interop
 
 import (
 	"context"
+	"errors"
 	"math/big"
 	"testing"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/0xPolygon/beethoven/mocks"
 	"github.com/0xPolygon/beethoven/tx"
 
+	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	rpctypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/common"
@@ -224,6 +226,47 @@ func TestExecutor_Settle(t *testing.T) {
 	hash, err := executor.Settle(ctx, signedTx, dbTx)
 	require.NoError(t, err)
 	assert.Equal(t, signedTx.Tx.Hash(), hash)
+
+	etherman.AssertExpectations(t)
+	ethTxManager.AssertExpectations(t)
+}
+
+func TestExecutor_GetTxStatus(t *testing.T) {
+	cfg := &config.Config{
+		// Set your desired config values here
+	}
+	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
+	etherman := &mocks.EthermanMock{}
+	ethTxManager := &mocks.EthTxManagerMock{}
+	dbTx := &mocks.TxMock{}
+
+	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
+
+	hash := common.HexToHash("0x1234567890abcdef")
+	expectedResult := "0x1"
+	expectedError := rpctypes.NewRPCError(rpctypes.DefaultErrorCode, "failed to get tx, error: sampleError")
+
+	ethTxManager.On("Result", mock.Anything, ethTxManOwner, hash.Hex(), dbTx).
+		Return(ethtxmanager.MonitoredTxResult{
+			ID:     "0x1",
+			Status: ethtxmanager.MonitoredTxStatus("0x1"),
+		}, nil).Once()
+
+	result, err := executor.GetTxStatus(context.Background(), hash, dbTx)
+
+	assert.Equal(t, expectedResult, result)
+	assert.NoError(t, err)
+
+	ethTxManager.On("Result", mock.Anything, ethTxManOwner, hash.Hex(), dbTx).
+		Return(ethtxmanager.MonitoredTxResult{
+			ID:     "0x0",
+			Status: ethtxmanager.MonitoredTxStatus("0x1"),
+		}, errors.New("sampleError")).Once()
+
+	result, err = executor.GetTxStatus(context.Background(), hash, dbTx)
+
+	assert.Equal(t, "0x0", result)
+	assert.Equal(t, expectedError, err)
 
 	etherman.AssertExpectations(t)
 	ethTxManager.AssertExpectations(t)
