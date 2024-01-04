@@ -9,125 +9,20 @@ import (
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/interop"
 	"github.com/0xPolygon/beethoven/mocks"
+	"github.com/0xPolygon/beethoven/test"
 
 	beethovenTypes "github.com/0xPolygon/beethoven/rpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	validiumTypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/log"
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/0xPolygon/beethoven/tx"
 )
-
-var _ interop.EthermanInterface = (*ethermanMock)(nil)
-
-type ethermanMock struct {
-	mock.Mock
-}
-
-func (e *ethermanMock) GetSequencerAddr(l1Contract common.Address) (common.Address, error) {
-	args := e.Called(l1Contract)
-
-	return args.Get(0).(common.Address), args.Error(1) //nolint:forcetypeassert
-}
-
-func (e *ethermanMock) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch,
-	newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
-	args := e.Called(lastVerifiedBatch, newVerifiedBatch, proof)
-
-	return args.Get(0).([]byte), args.Error(1) //nolint:forcetypeassert
-}
-
-func (e *ethermanMock) CallContract(ctx context.Context, call ethereum.CallMsg,
-	blockNumber *big.Int) ([]byte, error) {
-	args := e.Called(ctx, call, blockNumber)
-
-	return args.Get(0).([]byte), args.Error(1) //nolint:forcetypeassert
-}
-
-var _ interop.DBInterface = (*dbMock)(nil)
-
-type dbMock struct {
-	mock.Mock
-}
-
-func (db *dbMock) BeginStateTransaction(ctx context.Context) (pgx.Tx, error) {
-	args := db.Called(ctx)
-
-	tx, ok := args.Get(0).(pgx.Tx)
-	if !ok {
-		return nil, args.Error(1)
-	}
-
-	return tx, args.Error(1)
-}
-
-var _ interop.EthTxManager = (*ethTxManagerMock)(nil)
-
-type ethTxManagerMock struct {
-	mock.Mock
-}
-
-func (e *ethTxManagerMock) Add(ctx context.Context, owner, id string,
-	from common.Address, to *common.Address, value *big.Int, data []byte, gasOffset uint64, dbTx pgx.Tx) error {
-	args := e.Called(ctx, owner, id, from, to, value, data, dbTx)
-
-	return args.Error(0)
-}
-
-func (e *ethTxManagerMock) Result(ctx context.Context, owner,
-	id string, dbTx pgx.Tx) (ethtxmanager.MonitoredTxResult, error) {
-	args := e.Called(ctx, owner, id, dbTx)
-
-	return args.Get(0).(ethtxmanager.MonitoredTxResult), args.Error(1) //nolint:forcetypeassert
-}
-
-func (e *ethTxManagerMock) ResultsByStatus(ctx context.Context, owner string,
-	statuses []ethtxmanager.MonitoredTxStatus, dbTx pgx.Tx) ([]ethtxmanager.MonitoredTxResult, error) {
-	e.Called(ctx, owner, statuses, dbTx)
-
-	return nil, nil
-}
-
-func (e *ethTxManagerMock) ProcessPendingMonitoredTxs(ctx context.Context, owner string,
-	failedResultHandler ethtxmanager.ResultHandler, dbTx pgx.Tx) {
-	e.Called(ctx, owner, failedResultHandler, dbTx)
-}
-
-var _ interop.ZkEVMClientInterface = (*zkEVMClientMock)(nil)
-
-type zkEVMClientMock struct {
-	mock.Mock
-}
-
-func (zkc *zkEVMClientMock) BatchByNumber(ctx context.Context, number *big.Int) (*validiumTypes.Batch, error) {
-	args := zkc.Called(ctx, number)
-
-	batch, ok := args.Get(0).(*validiumTypes.Batch)
-	if !ok {
-		return nil, args.Error(1)
-	}
-
-	return batch, args.Error(1)
-}
-
-var _ interop.ZkEVMClientClientCreator = (*zkEVMClientCreatorMock)(nil)
-
-type zkEVMClientCreatorMock struct {
-	mock.Mock
-}
-
-func (zc *zkEVMClientCreatorMock) NewClient(rpc string) interop.ZkEVMClientInterface {
-	args := zc.Called(rpc)
-
-	return args.Get(0).(interop.ZkEVMClientInterface) //nolint:forcetypeassert
-}
 
 func TestInteropEndpointsGetTxStatus(t *testing.T) {
 	t.Parallel()
@@ -135,15 +30,15 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 	t.Run("BeginStateTransaction returns an error", func(t *testing.T) {
 		t.Parallel()
 
-		dbMock := new(dbMock)
+		dbMock := new(test.DbMock)
 		dbMock.On("BeginStateTransaction", mock.Anything).Return(nil, errors.New("error")).Once()
 
 		e := interop.New(
 			log.WithFields("module", "test"),
 			&config.Config{},
 			common.HexToAddress("0xadmin"),
-			new(ethermanMock),
-			new(ethTxManagerMock),
+			new(test.EthermanMock),
+			new(test.EthTxManagerMock),
 		)
 		i := NewInteropEndpoints(context.Background(), e, dbMock)
 
@@ -163,10 +58,10 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		txMock := new(mocks.TxMock)
 		txMock.On("Rollback", mock.Anything).Return(nil).Once()
 
-		dbMock := new(dbMock)
+		dbMock := new(test.DbMock)
 		dbMock.On("BeginStateTransaction", mock.Anything).Return(txMock, nil).Once()
 
-		txManagerMock := new(ethTxManagerMock)
+		txManagerMock := new(test.EthTxManagerMock)
 		txManagerMock.On("Result", mock.Anything, ethTxManOwner, txHash.Hex(), txMock).
 			Return(ethtxmanager.MonitoredTxResult{}, errors.New("error")).Once()
 
@@ -174,7 +69,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			log.WithFields("module", "test"),
 			&config.Config{},
 			common.HexToAddress("0xadmin"),
-			new(ethermanMock),
+			new(test.EthermanMock),
 			txManagerMock,
 		)
 		i := NewInteropEndpoints(context.Background(), e, dbMock)
@@ -207,10 +102,10 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		txMock := new(mocks.TxMock)
 		txMock.On("Rollback", mock.Anything).Return(nil).Once()
 
-		dbMock := new(dbMock)
+		dbMock := new(test.DbMock)
 		dbMock.On("BeginStateTransaction", mock.Anything).Return(txMock, nil).Once()
 
-		txManagerMock := new(ethTxManagerMock)
+		txManagerMock := new(test.EthTxManagerMock)
 		txManagerMock.On("Result", mock.Anything, ethTxManOwner, txHash.Hex(), txMock).
 			Return(result, nil).Once()
 
@@ -218,7 +113,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			log.WithFields("module", "test"),
 			&config.Config{},
 			common.HexToAddress("0xadmin"),
-			new(ethermanMock),
+			new(test.EthermanMock),
 			txManagerMock,
 		)
 		i := NewInteropEndpoints(context.Background(), e, dbMock)
@@ -267,12 +162,12 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 			},
 		}
 		signedTx := &tx.SignedTx{Tx: tnx}
-		ethermanMock := new(ethermanMock)
-		zkEVMClientCreatorMock := new(zkEVMClientCreatorMock)
-		zkEVMClientMock := new(zkEVMClientMock)
-		dbMock := new(dbMock)
+		ethermanMock := new(test.EthermanMock)
+		zkEVMClientCreatorMock := new(test.ZkEVMClientCreatorMock)
+		zkEVMClientMock := new(test.ZkEVMClientMock)
+		dbMock := new(test.DbMock)
 		txMock := new(mocks.TxMock)
-		ethTxManagerMock := new(ethTxManagerMock)
+		ethTxManagerMock := new(test.EthTxManagerMock)
 
 		executeTestFn := func() {
 			e := interop.New(

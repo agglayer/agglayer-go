@@ -8,20 +8,21 @@ import (
 
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/tx"
-	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
+	"github.com/0xPolygon/beethoven/types"
 
-	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
+	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
+	rpctypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jackc/pgx/v4"
 )
 
-var _ ZkEVMClientClientCreator = (*zkEVMClientCreator)(nil)
+var _ types.ZkEVMClientClientCreator = (*zkEVMClientCreator)(nil)
 
 type zkEVMClientCreator struct{}
 
-func (zc *zkEVMClientCreator) NewClient(rpc string) ZkEVMClientInterface {
+func (zc *zkEVMClientCreator) NewClient(rpc string) types.ZkEVMClientInterface {
 	return client.NewClient(rpc)
 }
 
@@ -29,15 +30,15 @@ type Executor struct {
 	logger             *log.Logger
 	interopAdminAddr   common.Address
 	config             *config.Config
-	ethTxMan           EthTxManager
-	etherman           EthermanInterface
-	ZkEVMClientCreator ZkEVMClientClientCreator
+	ethTxMan           types.EthTxManager
+	etherman           types.EthermanInterface
+	ZkEVMClientCreator types.ZkEVMClientClientCreator
 }
 
 func New(logger *log.Logger, cfg *config.Config,
 	interopAdminAddr common.Address,
-	etherman EthermanInterface,
-	ethTxManager EthTxManager,
+	etherman types.EthermanInterface,
+	ethTxManager types.EthTxManager,
 ) *Executor {
 	return &Executor{
 		logger:             logger,
@@ -169,11 +170,11 @@ func (e *Executor) Settle(signedTx tx.SignedTx, dbTx pgx.Tx) (common.Hash, error
 	return signedTx.Tx.Hash(), nil
 }
 
-func (e *Executor) GetTxStatus(ctx context.Context, hash common.Hash, dbTx pgx.Tx) (result string, err types.Error) {
+func (e *Executor) GetTxStatus(ctx context.Context, hash common.Hash, dbTx pgx.Tx) (result string, err rpctypes.Error) {
 	res, innerErr := e.ethTxMan.Result(ctx, ethTxManOwner, hash.Hex(), dbTx)
 	if innerErr != nil {
 		result = "0x0"
-		err = types.NewRPCError(types.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", innerErr))
+		err = rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", innerErr))
 
 		return
 	}
