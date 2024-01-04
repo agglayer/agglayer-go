@@ -10,8 +10,10 @@ import (
 
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewExecutor(t *testing.T) {
@@ -108,6 +110,7 @@ func TestExecutor_VerifyZKP(t *testing.T) {
 	assert.NoError(t, err)
 	etherman.AssertExpectations(t)
 }
+
 func TestExecutor_VerifySignature(t *testing.T) {
 	cfg := &config.Config{
 		// Set your desired config values here
@@ -118,21 +121,25 @@ func TestExecutor_VerifySignature(t *testing.T) {
 
 	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
 
-	// Create a sample signed transaction for testing
-	signedTx := tx.SignedTx{
-		Tx: tx.Tx{
-			LastVerifiedBatch: 0,
-			NewVerifiedBatch:  1,
-			ZKP: tx.ZKP{
-				Proof: []byte("sampleProof"),
-			},
-			L1Contract: common.HexToAddress("0x1234567890abcdef"),
+	txn := tx.Tx{
+		LastVerifiedBatch: 0,
+		NewVerifiedBatch:  1,
+		ZKP: tx.ZKP{
+			Proof: []byte("sampleProof"),
 		},
+		L1Contract: common.HexToAddress("0x1234567890abcdef"),
 	}
 
-	etherman.On("GetSequencerAddr", mock.Anything).
-		Return([]byte{}, nil).Once()
+	pk, err := crypto.GenerateKey()
+	require.NoError(t, err)
 
-	err := executor.VerifySignature(signedTx)
-	assert.NoError(t, err)
+	signedTx, err := txn.Sign(pk)
+	require.NoError(t, err)
+
+	etherman.On("GetSequencerAddr", mock.Anything).
+		Return(crypto.PubkeyToAddress(pk.PublicKey), nil).Once()
+
+	err = executor.VerifySignature(*signedTx)
+	require.NoError(t, err)
+	etherman.AssertExpectations(t)
 }
