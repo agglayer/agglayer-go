@@ -299,7 +299,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 
 		if !cfg.isTxAddedToEthTxMan {
 			ethTxManagerMock.On("Add", mock.Anything, ethTxManOwner, signedTx.Tx.Hash().Hex(), mock.Anything,
-				mock.Anything, mock.Anything, mock.Anything, txMock).Return(errors.New("error")).Once()
+				mock.Anything, mock.Anything, mock.Anything, mock.Anything, txMock).Return(errors.New("error")).Once()
 			txMock.On("Rollback", mock.Anything).Return(nil).Once()
 
 			ethermanMock.On("BuildTrustedVerifyBatchesTxData",
@@ -312,7 +312,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 		}
 
 		ethTxManagerMock.On("Add", mock.Anything, ethTxManOwner, signedTx.Tx.Hash().Hex(), mock.Anything,
-			mock.Anything, mock.Anything, mock.Anything, txMock).Return(nil).Once()
+			mock.Anything, mock.Anything, mock.Anything, mock.Anything, txMock).Return(nil).Once()
 
 		if !cfg.isTxCommitted {
 			txMock.On("Commit", mock.Anything).Return(errors.New("error")).Once()
