@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/0xPolygon/beethoven/config"
-	"github.com/0xPolygon/beethoven/test"
+	"github.com/0xPolygon/beethoven/mocks"
 	"github.com/0xPolygon/beethoven/tx"
 
 	rpctypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
@@ -23,8 +23,8 @@ func TestNewExecutor(t *testing.T) {
 		// Set your desired config values here
 	}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := &test.EthermanMock{}
-	ethTxManager := &test.EthTxManagerMock{}
+	etherman := &mocks.EthermanMock{}
+	ethTxManager := &mocks.EthTxManagerMock{}
 
 	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
 
@@ -43,8 +43,8 @@ func TestExecutor_CheckTx(t *testing.T) {
 		},
 	}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := &test.EthermanMock{}
-	ethTxManager := &test.EthTxManagerMock{}
+	etherman := &mocks.EthermanMock{}
+	ethTxManager := &mocks.EthTxManagerMock{}
 
 	executor := New(log.WithFields("test", "test"), cfg, interopAdminAddr, etherman, ethTxManager)
 
@@ -83,8 +83,8 @@ func TestExecutor_VerifyZKP(t *testing.T) {
 		// Set your desired config values here
 	}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := &test.EthermanMock{}
-	ethTxManager := &test.EthTxManagerMock{}
+	etherman := &mocks.EthermanMock{}
+	ethTxManager := &mocks.EthTxManagerMock{}
 	tnx := tx.Tx{
 		LastVerifiedBatch: 0,
 		NewVerifiedBatch:  1,
@@ -118,8 +118,8 @@ func TestExecutor_VerifySignature(t *testing.T) {
 		// Set your desired config values here
 	}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := &test.EthermanMock{}
-	ethTxManager := &test.EthTxManagerMock{}
+	etherman := &mocks.EthermanMock{}
+	ethTxManager := &mocks.EthTxManagerMock{}
 
 	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
 
@@ -149,8 +149,8 @@ func TestExecutor_VerifySignature(t *testing.T) {
 func TestExecutor_Execute(t *testing.T) {
 	cfg := &config.Config{}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := &test.EthermanMock{}
-	ethTxManager := &test.EthTxManagerMock{}
+	etherman := &mocks.EthermanMock{}
+	ethTxManager := &mocks.EthTxManagerMock{}
 
 	executor := New(log.WithFields("test", "test"), cfg, interopAdminAddr, etherman, ethTxManager)
 
@@ -168,8 +168,8 @@ func TestExecutor_Execute(t *testing.T) {
 	}
 
 	// Mock the ZkEVMClientCreator.NewClient method
-	mockZkEVMClientCreator := &test.ZkEVMClientCreatorMock{}
-	mockZkEVMClient := &test.ZkEVMClientMock{}
+	mockZkEVMClientCreator := &mocks.ZkEVMClientCreatorMock{}
+	mockZkEVMClient := &mocks.ZkEVMClientMock{}
 
 	mockZkEVMClientCreator.On("NewClient", mock.Anything).Return(mockZkEVMClient).Once()
 	mockZkEVMClient.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).
