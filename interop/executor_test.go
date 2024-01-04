@@ -33,7 +33,9 @@ func TestNewExecutor(t *testing.T) {
 
 func TestExecutor_CheckTx(t *testing.T) {
 	cfg := &config.Config{
-		// Set your desired config values here
+		FullNodeRPCs: map[common.Address]string{
+			common.HexToAddress("0x1234567890abcdef"): "http://localhost:8545",
+		},
 	}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
 	etherman := &test.EthermanMock{}
@@ -55,4 +57,18 @@ func TestExecutor_CheckTx(t *testing.T) {
 
 	err := executor.CheckTx(context.Background(), signedTx)
 	assert.NoError(t, err)
+
+	signedTx = tx.SignedTx{
+		Tx: tx.Tx{
+			LastVerifiedBatch: 0,
+			NewVerifiedBatch:  1,
+			ZKP: tx.ZKP{
+				Proof: []byte("sampleProof"),
+			},
+			L1Contract: common.HexToAddress("0xdeadbeef"),
+		},
+	}
+
+	err = executor.CheckTx(context.Background(), signedTx)
+	assert.Error(t, err)
 }
