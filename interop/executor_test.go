@@ -2,12 +2,14 @@ package interop
 
 import (
 	"context"
+	"math/big"
 	"testing"
 
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/test"
 	"github.com/0xPolygon/beethoven/tx"
 
+	rpctypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -142,4 +144,46 @@ func TestExecutor_VerifySignature(t *testing.T) {
 	err = executor.VerifySignature(*signedTx)
 	require.NoError(t, err)
 	etherman.AssertExpectations(t)
+}
+
+func TestExecutor_Execute(t *testing.T) {
+	cfg := &config.Config{}
+	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
+	etherman := &test.EthermanMock{}
+	ethTxManager := &test.EthTxManagerMock{}
+
+	executor := New(log.WithFields("test", "test"), cfg, interopAdminAddr, etherman, ethTxManager)
+
+	// Create a sample signed transaction for testing
+	signedTx := tx.SignedTx{
+		Tx: tx.Tx{
+			LastVerifiedBatch: 0,
+			NewVerifiedBatch:  1,
+			ZKP: tx.ZKP{
+				NewStateRoot: common.BytesToHash([]byte("sampleNewStateRoot")),
+				Proof:        []byte("sampleProof"),
+			},
+			L1Contract: common.HexToAddress("0x1234567890abcdef"),
+		},
+	}
+
+	// Mock the ZkEVMClientCreator.NewClient method
+	mockZkEVMClientCreator := &test.ZkEVMClientCreatorMock{}
+	mockZkEVMClient := &test.ZkEVMClientMock{}
+
+	mockZkEVMClientCreator.On("NewClient", mock.Anything).Return(mockZkEVMClient).Once()
+	mockZkEVMClient.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).
+		Return(&rpctypes.Batch{
+			StateRoot:     signedTx.Tx.ZKP.NewStateRoot,
+			LocalExitRoot: signedTx.Tx.ZKP.NewLocalExitRoot,
+			// Add other necessary fields here
+		}, nil).Once()
+
+	// Set the ZkEVMClientCreator to return the mock ZkEVMClient
+	executor.ZkEVMClientCreator = mockZkEVMClientCreator
+
+	err := executor.Execute(signedTx)
+	require.NoError(t, err)
+	mockZkEVMClientCreator.AssertExpectations(t)
+	mockZkEVMClient.AssertExpectations(t)
 }
