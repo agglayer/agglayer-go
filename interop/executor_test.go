@@ -11,6 +11,7 @@ import (
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestNewExecutor(t *testing.T) {
@@ -71,4 +72,67 @@ func TestExecutor_CheckTx(t *testing.T) {
 
 	err = executor.CheckTx(context.Background(), signedTx)
 	assert.Error(t, err)
+}
+
+func TestExecutor_VerifyZKP(t *testing.T) {
+	cfg := &config.Config{
+		// Set your desired config values here
+	}
+	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
+	etherman := &test.EthermanMock{}
+	ethTxManager := &test.EthTxManagerMock{}
+	tnx := tx.Tx{
+		LastVerifiedBatch: 0,
+		NewVerifiedBatch:  1,
+		ZKP: tx.ZKP{
+			Proof: []byte("sampleProof"),
+		},
+		L1Contract: common.HexToAddress("0x1234567890abcdef"),
+	}
+
+	etherman.On("BuildTrustedVerifyBatchesTxData",
+		uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
+		Return([]byte{}, nil).Once()
+
+	etherman.On("CallContract", mock.Anything, mock.Anything, mock.Anything).
+		Return([]byte{}, nil).Once()
+
+	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
+
+	// Create a sample signed transaction for testing
+	signedTx := tx.SignedTx{
+		Tx: tnx,
+	}
+
+	err := executor.VerifyZKP(signedTx)
+	assert.NoError(t, err)
+	etherman.AssertExpectations(t)
+}
+func TestExecutor_VerifySignature(t *testing.T) {
+	cfg := &config.Config{
+		// Set your desired config values here
+	}
+	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
+	etherman := &test.EthermanMock{}
+	ethTxManager := &test.EthTxManagerMock{}
+
+	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
+
+	// Create a sample signed transaction for testing
+	signedTx := tx.SignedTx{
+		Tx: tx.Tx{
+			LastVerifiedBatch: 0,
+			NewVerifiedBatch:  1,
+			ZKP: tx.ZKP{
+				Proof: []byte("sampleProof"),
+			},
+			L1Contract: common.HexToAddress("0x1234567890abcdef"),
+		},
+	}
+
+	etherman.On("GetSequencerAddr", mock.Anything).
+		Return([]byte{}, nil).Once()
+
+	err := executor.VerifySignature(signedTx)
+	assert.NoError(t, err)
 }
