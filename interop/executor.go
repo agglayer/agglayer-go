@@ -141,7 +141,7 @@ func (e *Executor) Execute(signedTx tx.SignedTx) error {
 	return nil
 }
 
-func (e *Executor) Settle(signedTx tx.SignedTx, dbTx pgx.Tx) (common.Hash, error) {
+func (e *Executor) Settle(ctx context.Context, signedTx tx.SignedTx, dbTx pgx.Tx) (common.Hash, error) {
 	// // Send L1 tx
 	// Verify ZKP using eth_call
 	l1TxData, err := e.etherman.BuildTrustedVerifyBatchesTxData(
@@ -154,12 +154,12 @@ func (e *Executor) Settle(signedTx tx.SignedTx, dbTx pgx.Tx) (common.Hash, error
 	}
 
 	if err := e.ethTxMan.Add(
-		context.Background(),
+		ctx,
 		ethTxManOwner,
 		signedTx.Tx.Hash().Hex(),
 		e.interopAdminAddr,
 		&signedTx.Tx.L1Contract,
-		nil,
+		big.NewInt(0),
 		l1TxData,
 		0,
 		dbTx,

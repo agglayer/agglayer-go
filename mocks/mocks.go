@@ -66,7 +66,7 @@ type EthTxManagerMock struct {
 
 func (e *EthTxManagerMock) Add(ctx context.Context, owner, id string,
 	from common.Address, to *common.Address, value *big.Int, data []byte, gasOffset uint64, dbTx pgx.Tx) error {
-	args := e.Called(ctx, owner, id, from, to, value, data, dbTx)
+	args := e.Called(ctx, owner, id, from, to, value, data, gasOffset, dbTx)
 
 	return args.Error(0)
 }

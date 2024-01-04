@@ -61,7 +61,7 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, rpctypes.E
 		return "0x0", rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", err))
 	}
 
-	_, err = i.executor.Settle(signedTx, dbTx)
+	_, err = i.executor.Settle(i.ctx, signedTx, dbTx)
 	if err != nil {
 		if errRollback := dbTx.Rollback(i.ctx); errRollback != nil {
 			log.Error("rollback err: ", errRollback)

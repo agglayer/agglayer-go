@@ -187,3 +187,44 @@ func TestExecutor_Execute(t *testing.T) {
 	mockZkEVMClientCreator.AssertExpectations(t)
 	mockZkEVMClient.AssertExpectations(t)
 }
+
+func TestExecutor_Settle(t *testing.T) {
+	cfg := &config.Config{
+		// Set your desired config values here
+	}
+	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
+	etherman := &mocks.EthermanMock{}
+	ethTxManager := &mocks.EthTxManagerMock{}
+	dbTx := &mocks.TxMock{}
+
+	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
+
+	signedTx := tx.SignedTx{
+		Tx: tx.Tx{
+			LastVerifiedBatch: 0,
+			NewVerifiedBatch:  1,
+			ZKP: tx.ZKP{
+				Proof: []byte("sampleProof"),
+			},
+			L1Contract: common.HexToAddress("0x1234567890abcdef"),
+		},
+	}
+
+	l1TxData := []byte("sampleL1TxData")
+	etherman.On("BuildTrustedVerifyBatchesTxData",
+		uint64(signedTx.Tx.LastVerifiedBatch), uint64(signedTx.Tx.NewVerifiedBatch), signedTx.Tx.ZKP).
+		Return(l1TxData, nil).Once()
+
+	ctx := context.Background()
+	txHash := signedTx.Tx.Hash().Hex()
+	ethTxManager.On("Add",
+		ctx, ethTxManOwner, txHash, interopAdminAddr, &signedTx.Tx.L1Contract, big.NewInt(0), l1TxData, uint64(0), dbTx).
+		Return(nil).Once()
+
+	hash, err := executor.Settle(ctx, signedTx, dbTx)
+	require.NoError(t, err)
+	assert.Equal(t, signedTx.Tx.Hash(), hash)
+
+	etherman.AssertExpectations(t)
+	ethTxManager.AssertExpectations(t)
+}
