@@ -64,8 +64,8 @@ func (e *Executor) CheckTx(ctx context.Context, tx tx.SignedTx) error {
 	return nil
 }
 
-func (e *Executor) Verify(tx tx.SignedTx) error {
-	err := e.VerifyZKP(tx)
+func (e *Executor) Verify(ctx context.Context, tx tx.SignedTx) error {
+	err := e.VerifyZKP(ctx, tx)
 	if err != nil {
 		return fmt.Errorf("failed to verify ZKP: %s", err)
 	}
@@ -73,7 +73,7 @@ func (e *Executor) Verify(tx tx.SignedTx) error {
 	return e.VerifySignature(tx)
 }
 
-func (e *Executor) VerifyZKP(stx tx.SignedTx) error {
+func (e *Executor) VerifyZKP(ctx context.Context, stx tx.SignedTx) error {
 	// Verify ZKP using eth_call
 	l1TxData, err := e.etherman.BuildTrustedVerifyBatchesTxData(
 		uint64(stx.Tx.LastVerifiedBatch),
@@ -88,7 +88,7 @@ func (e *Executor) VerifyZKP(stx tx.SignedTx) error {
 		To:   &stx.Tx.L1Contract,
 		Data: l1TxData,
 	}
-	res, err := e.etherman.CallContract(context.Background(), msg, nil)
+	res, err := e.etherman.CallContract(ctx, msg, nil)
 	if err != nil {
 		return fmt.Errorf("failed to call verify ZKP response: %s, error: %s", res, err)
 	}
@@ -114,9 +114,7 @@ func (e *Executor) VerifySignature(stx tx.SignedTx) error {
 	return nil
 }
 
-func (e *Executor) Execute(signedTx tx.SignedTx) error {
-	ctx := context.TODO()
-
+func (e *Executor) Execute(ctx context.Context, signedTx tx.SignedTx) error {
 	// Check expected root vs root from the managed full node
 	// TODO: go stateless, depends on https://github.com/0xPolygonHermez/zkevm-prover/issues/581
 	// when this happens we should go async from here, since processing all the batches could take a lot of time

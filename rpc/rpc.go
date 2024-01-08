@@ -47,11 +47,11 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, rpctypes.E
 	}
 
 	// Verify ZKP using eth_call
-	if err := i.executor.Verify(signedTx); err != nil {
+	if err := i.executor.Verify(i.ctx, signedTx); err != nil {
 		return "0x0", rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("failed to verify tx: %s", err))
 	}
 
-	if err := i.executor.Execute(signedTx); err != nil {
+	if err := i.executor.Execute(i.ctx, signedTx); err != nil {
 		return "0x0", rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("failed to execute tx: %s", err))
 	}
 

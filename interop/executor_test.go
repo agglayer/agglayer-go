@@ -110,7 +110,7 @@ func TestExecutor_VerifyZKP(t *testing.T) {
 		Tx: tnx,
 	}
 
-	err := executor.VerifyZKP(signedTx)
+	err := executor.VerifyZKP(context.Background(), signedTx)
 	assert.NoError(t, err)
 	etherman.AssertExpectations(t)
 }
@@ -184,7 +184,7 @@ func TestExecutor_Execute(t *testing.T) {
 	// Set the ZkEVMClientCreator to return the mock ZkEVMClient
 	executor.ZkEVMClientCreator = mockZkEVMClientCreator
 
-	err := executor.Execute(signedTx)
+	err := executor.Execute(context.Background(), signedTx)
 	require.NoError(t, err)
 	mockZkEVMClientCreator.AssertExpectations(t)
 	mockZkEVMClient.AssertExpectations(t)
