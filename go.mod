@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/0xPolygon/cdk-data-availability v0.0.3
-	github.com/0xPolygonHermez/zkevm-node v0.4.5
+	github.com/0xPolygonHermez/zkevm-node v0.4.6
 	github.com/ethereum/go-ethereum v1.13.8
 	github.com/gobuffalo/packr/v2 v2.8.3
 	github.com/jackc/pgconn v1.14.1

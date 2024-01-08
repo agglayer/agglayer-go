@@ -41,8 +41,8 @@ github.com/0xPolygon/cdk-data-availability v0.0.3 h1:ft0j1H7Q8hYT0AcapM9DmZS9FkA
 github.com/0xPolygon/cdk-data-availability v0.0.3/go.mod h1:nA2O2ZzuvrR1pJLAmzTjuhUBSlCT0Noz2WI6HZfhvsg=
 github.com/0xPolygonHermez/zkevm-data-streamer v0.1.15 h1:WmSnrlSHzlpkD33mRoUVlxScR6f+xig9pMKqYM8n+hQ=
 github.com/0xPolygonHermez/zkevm-data-streamer v0.1.15/go.mod h1:VrOfhxA3y9XVpZh2jpBqwv7eGBKwxgKJ7jVTzFr6vYI=
-github.com/0xPolygonHermez/zkevm-node v0.4.5 h1:spFfHtQ5b0NB32FcFj0ELYGRxhaWgsE67bMxQTr81+o=
-github.com/0xPolygonHermez/zkevm-node v0.4.5/go.mod h1:53xLWQDtrRygFT0mzTVqhH6J5Vrbg1Th866npGW9NME=
+github.com/0xPolygonHermez/zkevm-node v0.4.6 h1:YC62PYYG/8noTEu40Eg8BgfSFFCVBp/C4FuSeb1vP5M=
+github.com/0xPolygonHermez/zkevm-node v0.4.6/go.mod h1:53xLWQDtrRygFT0mzTVqhH6J5Vrbg1Th866npGW9NME=
 github.com/AndreasBriese/bbloom v0.0.0-20190306092124-e2d15f34fcf9/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
 github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 h1:w+iIsaOQNcT7OZ575w+acHgRric5iCyQh+xv+KJ4HB8=
 github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78/go.mod h1:LmzpDX56iTiv29bbRTIsUNlaFfuhWRQBWjQdVyAevI8=
