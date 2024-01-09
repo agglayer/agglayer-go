@@ -140,8 +140,7 @@ func (e *Executor) Execute(ctx context.Context, signedTx tx.SignedTx) error {
 }
 
 func (e *Executor) Settle(ctx context.Context, signedTx tx.SignedTx, dbTx pgx.Tx) (common.Hash, error) {
-	// // Send L1 tx
-	// Verify ZKP using eth_call
+	// Send L1 tx
 	l1TxData, err := e.etherman.BuildTrustedVerifyBatchesTxData(
 		uint64(signedTx.Tx.LastVerifiedBatch),
 		uint64(signedTx.Tx.NewVerifiedBatch),
