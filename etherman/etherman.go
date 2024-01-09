@@ -40,8 +40,8 @@ func New(ethClient EthereumClient, auth bind.TransactOpts, cfg *config.Config) (
 	}, nil
 }
 
-func (e *Etherman) GetSequencerAddr(rollupID uint32) (common.Address, error) {
-	address, err := e.getTrustedSequencerAddress(rollupID)
+func (e *Etherman) GetSequencerAddr(rollupId uint32) (common.Address, error) {
+	address, err := e.getTrustedSequencerAddress(rollupId)
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -88,7 +88,7 @@ func (e *Etherman) CallContract(ctx context.Context, call ethereum.CallMsg, bloc
 	return e.ethClient.CallContract(ctx, call, blockNumber)
 }
 
-func (e *Etherman) getRollupContractAddress(rollupID uint32) (common.Address, error) {
+func (e *Etherman) getRollupContractAddress(rollupId uint32) (common.Address, error) {
 	contract, err := polygonrollupmanager.NewPolygonrollupmanager(e.config.L1.RollupManagerContract, e.ethClient)
 
 	if err != nil {
@@ -96,7 +96,7 @@ func (e *Etherman) getRollupContractAddress(rollupID uint32) (common.Address, er
 		return common.Address{}, err
 	}
 
-	rollupData, err := contract.RollupIDToRollupData(&bind.CallOpts{Pending: false}, rollupID)
+	rollupData, err := contract.RollupIDToRollupData(&bind.CallOpts{Pending: false}, rollupId)
 
 	if err != nil {
 		log.Errorf("error receiving the 'RollupData' struct: %s", err)
@@ -106,8 +106,8 @@ func (e *Etherman) getRollupContractAddress(rollupID uint32) (common.Address, er
 	return rollupData.RollupContract, nil
 }
 
-func (e *Etherman) getTrustedSequencerAddress(rollupID uint32) (common.Address, error) {
-	rollupContractAddress, err := e.getRollupContractAddress(rollupID)
+func (e *Etherman) getTrustedSequencerAddress(rollupId uint32) (common.Address, error) {
+	rollupContractAddress, err := e.getRollupContractAddress(rollupId)
 	if err != nil {
 		log.Errorf("error requesting the RollupContract address from PolygonRollupManager: %s", err)
 		return common.Address{}, err
