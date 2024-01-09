@@ -52,8 +52,7 @@ func New(logger *log.Logger, cfg *config.Config,
 
 const ethTxManOwner = "interop"
 
-func (e *Executor) CheckTx(ctx context.Context, tx tx.SignedTx) error {
-	e.logger.Debug("check tx")
+func (e *Executor) CheckTx(tx tx.SignedTx) error {
 
 	// Check if the RPC is actually registered, if not it won't be possible to assert soundness (in the future once we are stateless won't be needed)
 	// TODO: The JSON parsing of the contract is incorrect
@@ -65,15 +64,15 @@ func (e *Executor) CheckTx(ctx context.Context, tx tx.SignedTx) error {
 }
 
 func (e *Executor) Verify(ctx context.Context, tx tx.SignedTx) error {
-	err := e.VerifyZKP(ctx, tx)
+	err := e.verifyZKP(ctx, tx)
 	if err != nil {
 		return fmt.Errorf("failed to verify ZKP: %s", err)
 	}
 
-	return e.VerifySignature(tx)
+	return e.verifySignature(tx)
 }
 
-func (e *Executor) VerifyZKP(ctx context.Context, stx tx.SignedTx) error {
+func (e *Executor) verifyZKP(ctx context.Context, stx tx.SignedTx) error {
 	// Verify ZKP using eth_call
 	l1TxData, err := e.etherman.BuildTrustedVerifyBatchesTxData(
 		uint64(stx.Tx.LastVerifiedBatch),
@@ -96,7 +95,7 @@ func (e *Executor) VerifyZKP(ctx context.Context, stx tx.SignedTx) error {
 	return nil
 }
 
-func (e *Executor) VerifySignature(stx tx.SignedTx) error {
+func (e *Executor) verifySignature(stx tx.SignedTx) error {
 	// Auth: check signature vs admin
 	signer, err := stx.Signer()
 	if err != nil {

@@ -21,9 +21,7 @@ import (
 )
 
 func TestNewExecutor(t *testing.T) {
-	cfg := &config.Config{
-		// Set your desired config values here
-	}
+	cfg := &config.Config{}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
 	etherman := &mocks.EthermanMock{}
 	ethTxManager := &mocks.EthTxManagerMock{}
@@ -62,7 +60,7 @@ func TestExecutor_CheckTx(t *testing.T) {
 		},
 	}
 
-	err := executor.CheckTx(context.Background(), signedTx)
+	err := executor.CheckTx(signedTx)
 	assert.NoError(t, err)
 
 	signedTx = tx.SignedTx{
@@ -76,14 +74,12 @@ func TestExecutor_CheckTx(t *testing.T) {
 		},
 	}
 
-	err = executor.CheckTx(context.Background(), signedTx)
+	err = executor.CheckTx(signedTx)
 	assert.Error(t, err)
 }
 
 func TestExecutor_VerifyZKP(t *testing.T) {
-	cfg := &config.Config{
-		// Set your desired config values here
-	}
+	cfg := &config.Config{}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
 	etherman := &mocks.EthermanMock{}
 	ethTxManager := &mocks.EthTxManagerMock{}
@@ -110,15 +106,13 @@ func TestExecutor_VerifyZKP(t *testing.T) {
 		Tx: tnx,
 	}
 
-	err := executor.VerifyZKP(context.Background(), signedTx)
+	err := executor.verifyZKP(context.Background(), signedTx)
 	assert.NoError(t, err)
 	etherman.AssertExpectations(t)
 }
 
 func TestExecutor_VerifySignature(t *testing.T) {
-	cfg := &config.Config{
-		// Set your desired config values here
-	}
+	cfg := &config.Config{}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
 	etherman := &mocks.EthermanMock{}
 	ethTxManager := &mocks.EthTxManagerMock{}
@@ -143,7 +137,7 @@ func TestExecutor_VerifySignature(t *testing.T) {
 	etherman.On("GetSequencerAddr", mock.Anything).
 		Return(crypto.PubkeyToAddress(pk.PublicKey), nil).Once()
 
-	err = executor.VerifySignature(*signedTx)
+	err = executor.verifySignature(*signedTx)
 	require.NoError(t, err)
 	etherman.AssertExpectations(t)
 }
@@ -191,9 +185,7 @@ func TestExecutor_Execute(t *testing.T) {
 }
 
 func TestExecutor_Settle(t *testing.T) {
-	cfg := &config.Config{
-		// Set your desired config values here
-	}
+	cfg := &config.Config{}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
 	etherman := &mocks.EthermanMock{}
 	ethTxManager := &mocks.EthTxManagerMock{}
@@ -232,9 +224,7 @@ func TestExecutor_Settle(t *testing.T) {
 }
 
 func TestExecutor_GetTxStatus(t *testing.T) {
-	cfg := &config.Config{
-		// Set your desired config values here
-	}
+	cfg := &config.Config{}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
 	etherman := &mocks.EthermanMock{}
 	ethTxManager := &mocks.EthTxManagerMock{}
