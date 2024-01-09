@@ -18,7 +18,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jackc/pgx/v4"
 
-	rpcTypes "github.com/0xPolygon/beethoven/rpc/types"
 	"github.com/0xPolygon/beethoven/tx"
 )
 
@@ -41,7 +40,7 @@ func New(ethClient EthereumClient, auth bind.TransactOpts, cfg *config.Config) (
 	}, nil
 }
 
-func (e *Etherman) GetSequencerAddr(rollupID rpcTypes.ArgUint64) (common.Address, error) {
+func (e *Etherman) GetSequencerAddr(rollupID uint32) (common.Address, error) {
 	address, err := e.getTrustedSequencerAddress(rollupID)
 	if err != nil {
 		return common.Address{}, err
@@ -54,7 +53,7 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(
 	lastVerifiedBatch,
 	newVerifiedBatch uint64,
 	proof tx.ZKP,
-	rollupId rpcTypes.ArgUint64,
+	rollupId uint32,
 ) (data []byte, err error) {
 	var newLocalExitRoot [HashLength]byte
 	copy(newLocalExitRoot[:], proof.NewLocalExitRoot.Bytes())
@@ -89,7 +88,7 @@ func (e *Etherman) CallContract(ctx context.Context, call ethereum.CallMsg, bloc
 	return e.ethClient.CallContract(ctx, call, blockNumber)
 }
 
-func (e *Etherman) getRollupContractAddress(rollupID rpcTypes.ArgUint64) (common.Address, error) {
+func (e *Etherman) getRollupContractAddress(rollupID uint32) (common.Address, error) {
 	contract, err := polygonrollupmanager.NewPolygonrollupmanager(e.config.L1.RollupManagerContract, e.ethClient)
 
 	if err != nil {
@@ -97,7 +96,7 @@ func (e *Etherman) getRollupContractAddress(rollupID rpcTypes.ArgUint64) (common
 		return common.Address{}, err
 	}
 
-	rollupData, err := contract.RollupIDToRollupData(rollupID, &bind.CallOpts{Pending: false})
+	rollupData, err := contract.RollupIDToRollupData(&bind.CallOpts{Pending: false}, rollupID)
 
 	if err != nil {
 		log.Errorf("error receiving the 'RollupData' struct: %s", err)
@@ -107,7 +106,7 @@ func (e *Etherman) getRollupContractAddress(rollupID rpcTypes.ArgUint64) (common
 	return rollupData.RollupContract, nil
 }
 
-func (e *Etherman) getTrustedSequencerAddress(rollupID rpcTypes.ArgUint64) (common.Address, error) {
+func (e *Etherman) getTrustedSequencerAddress(rollupID uint32) (common.Address, error) {
 	rollupContractAddress, err := e.getRollupContractAddress(rollupID)
 	if err != nil {
 		log.Errorf("error requesting the RollupContract address from PolygonRollupManager: %s", err)

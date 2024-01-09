@@ -2,7 +2,6 @@ package tx
 
 import (
 	"crypto/ecdsa"
-
 	"github.com/0xPolygon/beethoven/rpc/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -24,7 +23,7 @@ type ZKP struct {
 type Tx struct {
 	// L1Concensus      L1Con census
 	// Batches          []types.Batch
-	RollupID          types.ArgUint64
+	RollupID          uint32
 	LastVerifiedBatch types.ArgUint64 `json:"lastVerifiedBatch"`
 	NewVerifiedBatch  types.ArgUint64 `json:"newVerifiedBatch"`
 	ZKP               ZKP             `json:"ZKP"`

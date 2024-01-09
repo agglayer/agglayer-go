@@ -16,8 +16,6 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
-
-	rpcTypes "github.com/0xPolygon/beethoven/rpc/types"
 )
 
 const (
@@ -25,7 +23,7 @@ const (
 	FlagCfg = "cfg"
 )
 
-type FullNodeRPCs map[rpcTypes.ArgUint64]string
+type FullNodeRPCs map[uint32]string
 
 // Config represents the full configuration of the data node
 type Config struct {
