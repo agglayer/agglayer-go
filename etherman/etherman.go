@@ -42,17 +42,12 @@ func New(ethClient EthereumClient, auth bind.TransactOpts, cfg *config.Config) (
 }
 
 func (e *Etherman) GetSequencerAddr(rollupID rpcTypes.ArgUint64) (common.Address, error) {
-	rollupContractAddress, err := e.getRollupContractAddress(rollupID)
+	address, err := e.getTrustedSequencerAddress(rollupID)
 	if err != nil {
 		return common.Address{}, err
 	}
 
-	contract, err := e.getRollupContractInstance(rollupContractAddress)
-	if err != nil {
-		return common.Address{}, err
-	}
-
-	return contract.TrustedSequencer(&bind.CallOpts{Pending: false})
+	return address, nil
 }
 
 func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
@@ -106,13 +101,20 @@ func (e *Etherman) getRollupContractAddress(rollupID rpcTypes.ArgUint64) (common
 	return rollupData.RollupContract, nil
 }
 
-func (e *Etherman) getRollupContractInstance(to common.Address) (*polygonzkevm.Polygonzkevm, error) {
-	contract, err := polygonzkevm.NewPolygonzkevm(to, e.ethClient)
+func (e *Etherman) getTrustedSequencerAddress(rollupID rpcTypes.ArgUint64) (common.Address, error) {
+	rollupContractAddress, err := e.getRollupContractAddress(rollupID)
+	if err != nil {
+		log.Errorf("error requesting the RollupContract address from PolygonRollupManager: %s", err)
+		return common.Address{}, err
+	}
+
+	contract, err := polygonzkevm.NewPolygonzkevm(rollupContractAddress, e.ethClient)
 	if err != nil {
 		log.Errorf("error instantiating contract: %s", err)
-		return nil, err
+		return common.Address{}, err
 	}
-	return contract, nil
+
+	return contract.TrustedSequencer(&bind.CallOpts{Pending: false})
 }
 
 // CheckTxWasMined check if a tx was already mined
