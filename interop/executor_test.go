@@ -40,8 +40,8 @@ func TestNewExecutor(t *testing.T) {
 
 func TestExecutor_CheckTx(t *testing.T) {
 	cfg := &config.Config{
-		FullNodeRPCs: map[common.Address]string{
-			common.HexToAddress("0x1234567890abcdef"): "http://localhost:8545",
+		FullNodeRPCs: map[uint32]string{
+			1: "http://localhost:8545",
 		},
 	}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
@@ -58,7 +58,6 @@ func TestExecutor_CheckTx(t *testing.T) {
 			ZKP: tx.ZKP{
 				Proof: []byte("sampleProof"),
 			},
-			L1Contract: common.HexToAddress("0x1234567890abcdef"),
 		},
 	}
 
@@ -72,7 +71,6 @@ func TestExecutor_CheckTx(t *testing.T) {
 			ZKP: tx.ZKP{
 				Proof: []byte("sampleProof"),
 			},
-			L1Contract: common.HexToAddress("0xdeadbeef"),
 		},
 	}
 
@@ -93,7 +91,6 @@ func TestExecutor_VerifyZKP(t *testing.T) {
 		ZKP: tx.ZKP{
 			Proof: []byte("sampleProof"),
 		},
-		L1Contract: common.HexToAddress("0x1234567890abcdef"),
 	}
 
 	etherman.On("BuildTrustedVerifyBatchesTxData",
@@ -131,7 +128,6 @@ func TestExecutor_VerifySignature(t *testing.T) {
 		ZKP: tx.ZKP{
 			Proof: []byte("sampleProof"),
 		},
-		L1Contract: common.HexToAddress("0x1234567890abcdef"),
 	}
 
 	pk, err := crypto.GenerateKey()
@@ -165,7 +161,6 @@ func TestExecutor_Execute(t *testing.T) {
 				NewStateRoot: common.BytesToHash([]byte("sampleNewStateRoot")),
 				Proof:        []byte("sampleProof"),
 			},
-			L1Contract: common.HexToAddress("0x1234567890abcdef"),
 		},
 	}
 
@@ -208,7 +203,7 @@ func TestExecutor_Settle(t *testing.T) {
 			ZKP: tx.ZKP{
 				Proof: []byte("sampleProof"),
 			},
-			L1Contract: common.HexToAddress("0x1234567890abcdef"),
+			RollupID: 1,
 		},
 	}
 
@@ -219,9 +214,19 @@ func TestExecutor_Settle(t *testing.T) {
 
 	ctx := context.Background()
 	txHash := signedTx.Tx.Hash().Hex()
-	ethTxManager.On("Add",
-		ctx, ethTxManOwner, txHash, interopAdminAddr, &signedTx.Tx.L1Contract, big.NewInt(0), l1TxData, uint64(0), dbTx).
-		Return(nil).Once()
+	ethTxManager.On(
+		"Add",
+		ctx, ethTxManOwner,
+		txHash,
+		interopAdminAddr,
+		&cfg.L1.RollupManagerContract,
+		big.NewInt(0),
+		l1TxData,
+		uint64(0),
+		dbTx,
+	).Return(
+		nil,
+	).Once()
 
 	hash, err := executor.Settle(ctx, signedTx, dbTx)
 	require.NoError(t, err)

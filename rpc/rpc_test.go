@@ -149,16 +149,17 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 
 	testFn := func(cfg testConfig) {
 		fullNodeRPCs := config.FullNodeRPCs{
-			common.BytesToAddress([]byte{1, 2, 3, 4}): "someRPC",
+			1: "someRPC",
 		}
 		tnx := tx.Tx{
-			L1Contract:        common.BytesToAddress([]byte{1, 2, 3, 4}),
+			RollupID:          1,
 			LastVerifiedBatch: beethovenTypes.ArgUint64(1),
 			NewVerifiedBatch:  *beethovenTypes.ArgUint64Ptr(2),
 			ZKP: tx.ZKP{
 				NewStateRoot:     common.BigToHash(big.NewInt(11)),
 				NewLocalExitRoot: common.BigToHash(big.NewInt(11)),
 			},
+			RollupID: 1,
 		}
 		signedTx := &tx.SignedTx{Tx: tnx}
 		ethermanMock := new(mocks.EthermanMock)
@@ -173,6 +174,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 				log.WithFields("module", "test"),
 				&config.Config{
 					FullNodeRPCs: fullNodeRPCs,
+					L1:           config.L1Config{RollupManagerContract: common.HexToAddress("0xdeadbeef")},
 				},
 				common.HexToAddress("0xadmin"),
 				ethermanMock,
@@ -245,20 +247,20 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 		signedTx = stx
 
 		if !cfg.isAdminRetrieved {
-			ethermanMock.On("GetSequencerAddr", tnx.L1Contract).Return(common.Address{}, errors.New("error")).Once()
+			ethermanMock.On("GetSequencerAddr", common.HexToAddress("0xdeadbeef")).Return(common.Address{}, errors.New("error")).Once()
 			executeTestFn()
 
 			return
 		}
 
 		if !cfg.isSignerValid {
-			ethermanMock.On("GetSequencerAddr", tnx.L1Contract).Return(common.BytesToAddress([]byte{1, 2, 3, 4}), nil).Once()
+			ethermanMock.On("GetSequencerAddr", common.HexToAddress("0xdeadbeef")).Return(common.BytesToAddress([]byte{1, 2, 3, 4}), nil).Once()
 			executeTestFn()
 
 			return
 		}
 
-		ethermanMock.On("GetSequencerAddr", tnx.L1Contract).Return(crypto.PubkeyToAddress(privateKey.PublicKey), nil).Once()
+		ethermanMock.On("GetSequencerAddr", common.HexToAddress("0xdeadbeef")).Return(crypto.PubkeyToAddress(privateKey.PublicKey), nil).Once()
 		zkEVMClientCreatorMock.On("NewClient", mock.Anything).Return(zkEVMClientMock)
 
 		if !cfg.canGetBatch {

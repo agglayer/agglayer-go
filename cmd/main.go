@@ -106,7 +106,7 @@ func start(cliCtx *cli.Context) error {
 		log.Fatal("error getting chain ID from l1 with address: %+v", err)
 	}
 
-	ethMan, err := etherman.New(ethClient, *auth)
+	ethMan, err := etherman.New(ethClient, *auth, c)
 	if err != nil {
 		log.Fatal(err)
 	}

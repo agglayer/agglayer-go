@@ -3,6 +3,7 @@ package etherman
 import (
 	"context"
 	"errors"
+	"github.com/0xPolygon/beethoven/config"
 	"math/big"
 	"testing"
 
@@ -36,6 +37,7 @@ func getEtherman(ethClientMock EthereumClient) Etherman {
 			Context:   context.TODO(),
 			NoSend:    false,
 		},
+		&config.Config{},
 	)
 
 	return ethman
@@ -70,7 +72,7 @@ func TestGetSequencerAddr(t *testing.T) {
 			nil,
 		).Once()
 
-		_, err := ethman.GetSequencerAddr(common.HexToAddress("0x0000000000000000000000000000000000000000"))
+		_, err := ethman.GetSequencerAddr(1)
 
 		assert.ErrorContains(err, "abi: improperly formatted output:")
 		ethClient.AssertExpectations(t)
@@ -82,7 +84,17 @@ func TestGetSequencerAddr(t *testing.T) {
 		ethClient := new(mocks.EthereumClientMock)
 		ethman := getEtherman(ethClient)
 
-		ethClient.On(
+		ethClient.On( // Call "RollupIdToRollupData" mapping
+			"CallContract",
+			mock.Anything,
+			ethereum.CallMsg{},
+			(*big.Int)(nil),
+		).Return(
+			common.Hex2Bytes("00000000000000000000000000000000000000000000000000000000000000000"),
+			nil,
+		).Once()
+
+		ethClient.On( // Call "TrustedSequencer" property on rollup contract
 			"CallContract",
 			mock.Anything,
 			ethereum.CallMsg{
@@ -96,7 +108,7 @@ func TestGetSequencerAddr(t *testing.T) {
 			nil,
 		).Once()
 
-		returnValue, err := ethman.GetSequencerAddr(common.HexToAddress("0x0000000000000000000000000000000000000000"))
+		returnValue, err := ethman.GetSequencerAddr(1)
 
 		assert.Equal(common.Address{}, returnValue)
 		assert.NoError(err)
@@ -120,6 +132,7 @@ func TestBuildTrustedVerifyBatches(t *testing.T) {
 				NewLocalExitRoot: common.HexToHash("0x002"),
 				Proof:            cdkTypes.ArgBytes("0x30030030030003003300300030033003000300330030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030003003003000300300300030030030"),
 			},
+			1,
 		)
 
 		assert.ErrorContains(err, "invalid proof length. Expected length: 1538, Actual length 1534")

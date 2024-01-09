@@ -119,7 +119,7 @@ func (e *Executor) Execute(ctx context.Context, signedTx tx.SignedTx) error {
 	// Check expected root vs root from the managed full node
 	// TODO: go stateless, depends on https://github.com/0xPolygonHermez/zkevm-prover/issues/581
 	// when this happens we should go async from here, since processing all the batches could take a lot of time
-	zkEVMClient := e.ZkEVMClientCreator.NewClient(e.config.FullNodeRPCs[e.config.L1.RollupManagerContract])
+	zkEVMClient := e.ZkEVMClientCreator.NewClient(e.config.FullNodeRPCs[signedTx.Tx.RollupID])
 	batch, err := zkEVMClient.BatchByNumber(
 		ctx,
 		big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
