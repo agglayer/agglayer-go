@@ -152,7 +152,6 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 			1: "someRPC",
 		}
 		tnx := tx.Tx{
-			RollupID:          1,
 			LastVerifiedBatch: beethovenTypes.ArgUint64(1),
 			NewVerifiedBatch:  *beethovenTypes.ArgUint64Ptr(2),
 			ZKP: tx.ZKP{
