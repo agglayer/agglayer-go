@@ -2,7 +2,6 @@ package config
 
 import (
 	"crypto/ecdsa"
-	beethovenTypes "gitub.com/0xPolygon/beethoven/rpc/types"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,6 +16,8 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
+
+	beethovenTypes "github.com/0xPolygon/beethoven/rpc/types"
 )
 
 const (
