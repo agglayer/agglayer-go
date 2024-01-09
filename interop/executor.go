@@ -146,6 +146,7 @@ func (e *Executor) Settle(ctx context.Context, signedTx tx.SignedTx, dbTx pgx.Tx
 		uint64(signedTx.Tx.LastVerifiedBatch),
 		uint64(signedTx.Tx.NewVerifiedBatch),
 		signedTx.Tx.ZKP,
+		signedTx.Tx.RollupID,
 	)
 	if err != nil {
 		return common.Hash{}, fmt.Errorf("failed to build verify ZKP tx: %s", err)

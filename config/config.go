@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
 
-	beethovenTypes "github.com/0xPolygon/beethoven/rpc/types"
+	rpcTypes "github.com/0xPolygon/beethoven/rpc/types"
 )
 
 const (
@@ -25,7 +25,7 @@ const (
 	FlagCfg = "cfg"
 )
 
-type FullNodeRPCs map[beethovenTypes.ArgUint64]string
+type FullNodeRPCs map[rpcTypes.ArgUint64]string
 
 // Config represents the full configuration of the data node
 type Config struct {

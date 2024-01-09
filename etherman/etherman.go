@@ -50,7 +50,12 @@ func (e *Etherman) GetSequencerAddr(rollupID rpcTypes.ArgUint64) (common.Address
 	return address, nil
 }
 
-func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
+func (e *Etherman) BuildTrustedVerifyBatchesTxData(
+	lastVerifiedBatch,
+	newVerifiedBatch uint64,
+	proof tx.ZKP,
+	rollupId rpcTypes.ArgUint64,
+) (data []byte, err error) {
 	var newLocalExitRoot [HashLength]byte
 	copy(newLocalExitRoot[:], proof.NewLocalExitRoot.Bytes())
 	var newStateRoot [HashLength]byte
@@ -70,6 +75,7 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifie
 
 	return abi.Pack(
 		"verifyBatchesTrustedAggregator",
+		rollupId,
 		pendStateNum,
 		lastVerifiedBatch,
 		newVerifiedBatch,

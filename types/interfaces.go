@@ -10,6 +10,8 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jackc/pgx/v4"
+
+	rpcTypes "github.com/0xPolygon/beethoven/rpc/types"
 )
 
 type DBInterface interface {
@@ -18,7 +20,7 @@ type DBInterface interface {
 
 type EthermanInterface interface {
 	GetSequencerAddr(rollupID types.ArgUint64) (common.Address, error)
-	BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error)
+	BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP, rollupId rpcTypes.ArgUint64) (data []byte, err error)
 	CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) ([]byte, error)
 }
 
