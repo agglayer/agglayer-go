@@ -22,9 +22,9 @@ type ZKP struct {
 }
 
 type Tx struct {
-	L1Contract common.Address `json:"l1Contract"`
 	// L1Concensus      L1Con census
 	// Batches          []types.Batch
+	RollupID          types.ArgUint64
 	LastVerifiedBatch types.ArgUint64 `json:"lastVerifiedBatch"`
 	NewVerifiedBatch  types.ArgUint64 `json:"newVerifiedBatch"`
 	ZKP               ZKP             `json:"ZKP"`

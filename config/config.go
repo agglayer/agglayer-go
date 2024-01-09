@@ -2,6 +2,7 @@ package config
 
 import (
 	"crypto/ecdsa"
+	beethovenTypes "gitub.com/0xPolygon/beethoven/rpc/types"
 	"os"
 	"path/filepath"
 	"strings"
@@ -23,7 +24,7 @@ const (
 	FlagCfg = "cfg"
 )
 
-type FullNodeRPCs map[common.Address]string
+type FullNodeRPCs map[beethovenTypes.ArgUint64]string
 
 // Config represents the full configuration of the data node
 type Config struct {
@@ -37,8 +38,9 @@ type Config struct {
 }
 
 type L1Config struct {
-	ChainID int64
-	NodeURL string
+	ChainID               int64
+	NodeURL               string
+	RollupManagerContract common.Address
 }
 
 type Telemetry struct {

@@ -3,9 +3,11 @@ package etherman
 import (
 	"context"
 	"errors"
+	"github.com/0xPolygon/beethoven/config"
 	"math/big"
 	"time"
 
+	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonrollupmanager"
 	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonzkevm"
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/0xPolygonHermez/zkevm-node/state"
@@ -16,6 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jackc/pgx/v4"
 
+	rpcTypes "github.com/0xPolygon/beethoven/rpc/types"
 	"github.com/0xPolygon/beethoven/tx"
 )
 
@@ -27,17 +30,24 @@ const (
 type Etherman struct {
 	ethClient EthereumClient
 	auth      bind.TransactOpts
+	config    *config.Config
 }
 
-func New(ethClient EthereumClient, auth bind.TransactOpts) (Etherman, error) {
+func New(ethClient EthereumClient, auth bind.TransactOpts, cfg *config.Config) (Etherman, error) {
 	return Etherman{
 		ethClient: ethClient,
 		auth:      auth,
+		config:    cfg,
 	}, nil
 }
 
-func (e *Etherman) GetSequencerAddr(l1Contract common.Address) (common.Address, error) {
-	_, contract, err := e.contractCaller(common.Address{}, l1Contract)
+func (e *Etherman) GetSequencerAddr(rollupID rpcTypes.ArgUint64) (common.Address, error) {
+	rollupContractAddress, err := e.getRollupContractAddress(rollupID)
+	if err != nil {
+		return common.Address{}, err
+	}
+
+	contract, err := e.getRollupContractInstance(rollupContractAddress)
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -78,20 +88,31 @@ func (e *Etherman) CallContract(ctx context.Context, call ethereum.CallMsg, bloc
 	return e.ethClient.CallContract(ctx, call, blockNumber)
 }
 
-func (e *Etherman) contractCaller(from, to common.Address) (*bind.TransactOpts, *polygonzkevm.Polygonzkevm, error) {
-	opts := bind.TransactOpts{}
-	opts.From = from
-	opts.NoSend = true
-	// force nonce, gas limit and gas price to avoid querying it from the chain
-	opts.Nonce = big.NewInt(1)
-	opts.GasLimit = uint64(1)
-	opts.GasPrice = big.NewInt(1)
+func (e *Etherman) getRollupContractAddress(rollupID rpcTypes.ArgUint64) (common.Address, error) {
+	contract, err := polygonrollupmanager.NewPolygonrollupmanager(e.config.L1.RollupManagerContract, e.ethClient)
+
+	if err != nil {
+		log.Errorf("error instantiating contract: %s", err)
+		return common.Address{}, err
+	}
+
+	rollupData, err := contract.RollupIDToRollupData(rollupID, &bind.CallOpts{Pending: false})
+
+	if err != nil {
+		log.Errorf("error receiving the 'RollupData' struct: %s", err)
+		return common.Address{}, err
+	}
+
+	return rollupData.RollupContract, nil
+}
+
+func (e *Etherman) getRollupContractInstance(to common.Address) (*polygonzkevm.Polygonzkevm, error) {
 	contract, err := polygonzkevm.NewPolygonzkevm(to, e.ethClient)
 	if err != nil {
 		log.Errorf("error instantiating contract: %s", err)
-		return nil, nil, err
+		return nil, err
 	}
-	return &opts, contract, nil
+	return contract, nil
 }
 
 // CheckTxWasMined check if a tx was already mined
