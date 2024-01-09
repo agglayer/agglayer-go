@@ -79,6 +79,7 @@ func (e *Executor) VerifyZKP(ctx context.Context, stx tx.SignedTx) error {
 		uint64(stx.Tx.LastVerifiedBatch),
 		uint64(stx.Tx.NewVerifiedBatch),
 		stx.Tx.ZKP,
+		stx.Tx.RollupID,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to build verify ZKP tx: %s", err)
