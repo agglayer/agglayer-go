@@ -42,7 +42,7 @@ func NewInteropEndpoints(
 
 func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, rpctypes.Error) {
 	// Check if the RPC is actually registered, if not it won't be possible to assert soundness (in the future once we are stateless won't be needed)
-	if err := i.executor.CheckTx(i.ctx, signedTx); err != nil {
+	if err := i.executor.CheckTx(signedTx); err != nil {
 		return "0x0", rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("there is no RPC registered for %v", signedTx.Tx.RollupID))
 	}
 
