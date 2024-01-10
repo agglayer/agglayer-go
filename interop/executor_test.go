@@ -58,6 +58,7 @@ func TestExecutor_CheckTx(t *testing.T) {
 			ZKP: tx.ZKP{
 				Proof: []byte("sampleProof"),
 			},
+			RollupID: 1,
 		},
 	}
 
@@ -71,6 +72,7 @@ func TestExecutor_CheckTx(t *testing.T) {
 			ZKP: tx.ZKP{
 				Proof: []byte("sampleProof"),
 			},
+			RollupID: 0,
 		},
 	}
 
@@ -91,14 +93,29 @@ func TestExecutor_VerifyZKP(t *testing.T) {
 		ZKP: tx.ZKP{
 			Proof: []byte("sampleProof"),
 		},
+		RollupID: 1,
 	}
 
-	etherman.On("BuildTrustedVerifyBatchesTxData",
-		uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
-		Return([]byte{}, nil).Once()
+	etherman.On(
+		"BuildTrustedVerifyBatchesTxData",
+		uint64(tnx.LastVerifiedBatch),
+		uint64(tnx.NewVerifiedBatch),
+		mock.Anything,
+		uint32(1),
+	).Return(
+		[]byte{},
+		nil,
+	).Once()
 
-	etherman.On("CallContract", mock.Anything, mock.Anything, mock.Anything).
-		Return([]byte{}, nil).Once()
+	etherman.On(
+		"CallContract",
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+	).Return(
+		[]byte{},
+		nil,
+	).Once()
 
 	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
 
@@ -128,6 +145,7 @@ func TestExecutor_VerifySignature(t *testing.T) {
 		ZKP: tx.ZKP{
 			Proof: []byte("sampleProof"),
 		},
+		RollupID: 1,
 	}
 
 	pk, err := crypto.GenerateKey()
@@ -136,8 +154,13 @@ func TestExecutor_VerifySignature(t *testing.T) {
 	signedTx, err := txn.Sign(pk)
 	require.NoError(t, err)
 
-	etherman.On("GetSequencerAddr", mock.Anything).
-		Return(crypto.PubkeyToAddress(pk.PublicKey), nil).Once()
+	etherman.On(
+		"GetSequencerAddr",
+		uint32(1),
+	).Return(
+		crypto.PubkeyToAddress(pk.PublicKey),
+		nil,
+	).Once()
 
 	err = executor.VerifySignature(*signedTx)
 	require.NoError(t, err)
@@ -208,9 +231,16 @@ func TestExecutor_Settle(t *testing.T) {
 	}
 
 	l1TxData := []byte("sampleL1TxData")
-	etherman.On("BuildTrustedVerifyBatchesTxData",
-		uint64(signedTx.Tx.LastVerifiedBatch), uint64(signedTx.Tx.NewVerifiedBatch), signedTx.Tx.ZKP).
-		Return(l1TxData, nil).Once()
+	etherman.On(
+		"BuildTrustedVerifyBatchesTxData",
+		uint64(signedTx.Tx.LastVerifiedBatch),
+		uint64(signedTx.Tx.NewVerifiedBatch),
+		signedTx.Tx.ZKP,
+		uint32(1),
+	).Return(
+		l1TxData,
+		nil,
+	).Once()
 
 	ctx := context.Background()
 	txHash := signedTx.Tx.Hash().Hex()
