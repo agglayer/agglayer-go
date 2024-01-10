@@ -5,128 +5,23 @@ import (
 	"errors"
 	"math/big"
 	"testing"
-	"time"
+
+	"github.com/0xPolygon/beethoven/config"
+	"github.com/0xPolygon/beethoven/interop"
+	"github.com/0xPolygon/beethoven/mocks"
 
 	beethovenTypes "github.com/0xPolygon/beethoven/rpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	validiumTypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
-	"github.com/ethereum/go-ethereum"
+	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/0xPolygon/beethoven/mocks"
 	"github.com/0xPolygon/beethoven/tx"
 )
-
-const rpcRequestTimeout = 10 * time.Second
-
-var _ EthermanInterface = (*ethermanMock)(nil)
-
-type ethermanMock struct {
-	mock.Mock
-}
-
-func (e *ethermanMock) GetSequencerAddr(l1Contract common.Address) (common.Address, error) {
-	args := e.Called(l1Contract)
-
-	return args.Get(0).(common.Address), args.Error(1) //nolint:forcetypeassert
-}
-
-func (e *ethermanMock) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch,
-	newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
-	args := e.Called(lastVerifiedBatch, newVerifiedBatch, proof)
-
-	return args.Get(0).([]byte), args.Error(1) //nolint:forcetypeassert
-}
-
-func (e *ethermanMock) CallContract(ctx context.Context, call ethereum.CallMsg,
-	blockNumber *big.Int) ([]byte, error) {
-	args := e.Called(ctx, call, blockNumber)
-
-	return args.Get(0).([]byte), args.Error(1) //nolint:forcetypeassert
-}
-
-var _ DBInterface = (*dbMock)(nil)
-
-type dbMock struct {
-	mock.Mock
-}
-
-func (db *dbMock) BeginStateTransaction(ctx context.Context) (pgx.Tx, error) {
-	args := db.Called(ctx)
-
-	tx, ok := args.Get(0).(pgx.Tx)
-	if !ok {
-		return nil, args.Error(1)
-	}
-
-	return tx, args.Error(1)
-}
-
-var _ EthTxManager = (*ethTxManagerMock)(nil)
-
-type ethTxManagerMock struct {
-	mock.Mock
-}
-
-func (e *ethTxManagerMock) Add(ctx context.Context, owner, id string,
-	from common.Address, to *common.Address, value *big.Int, data []byte, gasOffset uint64, dbTx pgx.Tx) error {
-	args := e.Called(ctx, owner, id, from, to, value, data, dbTx)
-
-	return args.Error(0)
-}
-
-func (e *ethTxManagerMock) Result(ctx context.Context, owner,
-	id string, dbTx pgx.Tx) (ethtxmanager.MonitoredTxResult, error) {
-	args := e.Called(ctx, owner, id, dbTx)
-
-	return args.Get(0).(ethtxmanager.MonitoredTxResult), args.Error(1) //nolint:forcetypeassert
-}
-
-func (e *ethTxManagerMock) ResultsByStatus(ctx context.Context, owner string,
-	statuses []ethtxmanager.MonitoredTxStatus, dbTx pgx.Tx) ([]ethtxmanager.MonitoredTxResult, error) {
-	e.Called(ctx, owner, statuses, dbTx)
-
-	return nil, nil
-}
-
-func (e *ethTxManagerMock) ProcessPendingMonitoredTxs(ctx context.Context, owner string,
-	failedResultHandler ethtxmanager.ResultHandler, dbTx pgx.Tx) {
-	e.Called(ctx, owner, failedResultHandler, dbTx)
-}
-
-var _ ZkEVMClientInterface = (*zkEVMClientMock)(nil)
-
-type zkEVMClientMock struct {
-	mock.Mock
-}
-
-func (zkc *zkEVMClientMock) BatchByNumber(ctx context.Context, number *big.Int) (*validiumTypes.Batch, error) {
-	args := zkc.Called(ctx, number)
-
-	batch, ok := args.Get(0).(*validiumTypes.Batch)
-	if !ok {
-		return nil, args.Error(1)
-	}
-
-	return batch, args.Error(1)
-}
-
-var _ ZkEVMClientClientCreator = (*zkEVMClientCreatorMock)(nil)
-
-type zkEVMClientCreatorMock struct {
-	mock.Mock
-}
-
-func (zc *zkEVMClientCreatorMock) NewClient(rpc string) ZkEVMClientInterface {
-	args := zc.Called(rpc)
-
-	return args.Get(0).(ZkEVMClientInterface) //nolint:forcetypeassert
-}
 
 func TestInteropEndpointsGetTxStatus(t *testing.T) {
 	t.Parallel()
@@ -134,17 +29,17 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 	t.Run("BeginStateTransaction returns an error", func(t *testing.T) {
 		t.Parallel()
 
-		dbMock := new(dbMock)
+		dbMock := new(mocks.DbMock)
 		dbMock.On("BeginStateTransaction", mock.Anything).Return(nil, errors.New("error")).Once()
 
-		i := NewInteropEndpoints(
+		e := interop.New(
+			log.WithFields("module", "test"),
+			&config.Config{},
 			common.HexToAddress("0xadmin"),
-			dbMock,
-			new(ethermanMock),
-			nil,
-			rpcRequestTimeout,
-			new(ethTxManagerMock),
+			new(mocks.EthermanMock),
+			new(mocks.EthTxManagerMock),
 		)
+		i := NewInteropEndpoints(context.Background(), e, dbMock)
 
 		result, err := i.GetTxStatus(common.HexToHash("0xsomeTxHash"))
 
@@ -162,21 +57,21 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		txMock := new(mocks.TxMock)
 		txMock.On("Rollback", mock.Anything).Return(nil).Once()
 
-		dbMock := new(dbMock)
+		dbMock := new(mocks.DbMock)
 		dbMock.On("BeginStateTransaction", mock.Anything).Return(txMock, nil).Once()
 
-		txManagerMock := new(ethTxManagerMock)
+		txManagerMock := new(mocks.EthTxManagerMock)
 		txManagerMock.On("Result", mock.Anything, ethTxManOwner, txHash.Hex(), txMock).
 			Return(ethtxmanager.MonitoredTxResult{}, errors.New("error")).Once()
 
-		i := NewInteropEndpoints(
+		e := interop.New(
+			log.WithFields("module", "test"),
+			&config.Config{},
 			common.HexToAddress("0xadmin"),
-			dbMock,
-			new(ethermanMock),
-			nil,
-			rpcRequestTimeout,
+			new(mocks.EthermanMock),
 			txManagerMock,
 		)
+		i := NewInteropEndpoints(context.Background(), e, dbMock)
 
 		result, err := i.GetTxStatus(txHash)
 
@@ -206,21 +101,21 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		txMock := new(mocks.TxMock)
 		txMock.On("Rollback", mock.Anything).Return(nil).Once()
 
-		dbMock := new(dbMock)
+		dbMock := new(mocks.DbMock)
 		dbMock.On("BeginStateTransaction", mock.Anything).Return(txMock, nil).Once()
 
-		txManagerMock := new(ethTxManagerMock)
+		txManagerMock := new(mocks.EthTxManagerMock)
 		txManagerMock.On("Result", mock.Anything, ethTxManOwner, txHash.Hex(), txMock).
 			Return(result, nil).Once()
 
-		i := NewInteropEndpoints(
+		e := interop.New(
+			log.WithFields("module", "test"),
+			&config.Config{},
 			common.HexToAddress("0xadmin"),
-			dbMock,
-			new(ethermanMock),
-			nil,
-			rpcRequestTimeout,
+			new(mocks.EthermanMock),
 			txManagerMock,
 		)
+		i := NewInteropEndpoints(context.Background(), e, dbMock)
 
 		status, err := i.GetTxStatus(txHash)
 
@@ -253,7 +148,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 	}
 
 	testFn := func(cfg testConfig) {
-		fullNodeRPCs := FullNodeRPCs{
+		fullNodeRPCs := config.FullNodeRPCs{
 			common.BytesToAddress([]byte{1, 2, 3, 4}): "someRPC",
 		}
 		tnx := tx.Tx{
@@ -266,16 +161,25 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 			},
 		}
 		signedTx := &tx.SignedTx{Tx: tnx}
-		ethermanMock := new(ethermanMock)
-		zkEVMClientCreatorMock := new(zkEVMClientCreatorMock)
-		zkEVMClientMock := new(zkEVMClientMock)
-		dbMock := new(dbMock)
+		ethermanMock := new(mocks.EthermanMock)
+		zkEVMClientCreatorMock := new(mocks.ZkEVMClientCreatorMock)
+		zkEVMClientMock := new(mocks.ZkEVMClientMock)
+		dbMock := new(mocks.DbMock)
 		txMock := new(mocks.TxMock)
-		ethTxManagerMock := new(ethTxManagerMock)
+		ethTxManagerMock := new(mocks.EthTxManagerMock)
 
 		executeTestFn := func() {
-			i := NewInteropEndpoints(common.HexToAddress("0xadmin"), dbMock, ethermanMock, fullNodeRPCs, rpcRequestTimeout, ethTxManagerMock)
-			i.zkEVMClientCreator = zkEVMClientCreatorMock
+			e := interop.New(
+				log.WithFields("module", "test"),
+				&config.Config{
+					FullNodeRPCs: fullNodeRPCs,
+				},
+				common.HexToAddress("0xadmin"),
+				ethermanMock,
+				ethTxManagerMock,
+			)
+			i := NewInteropEndpoints(context.Background(), e, dbMock)
+			i.executor.ZkEVMClientCreator = zkEVMClientCreatorMock
 
 			result, err := i.SendTx(*signedTx)
 
@@ -296,7 +200,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 		}
 
 		if !cfg.isL1ContractInMap {
-			fullNodeRPCs = FullNodeRPCs{}
+			fullNodeRPCs = config.FullNodeRPCs{}
 			executeTestFn()
 
 			return
@@ -395,22 +299,36 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 
 		if !cfg.isTxAddedToEthTxMan {
 			ethTxManagerMock.On("Add", mock.Anything, ethTxManOwner, signedTx.Tx.Hash().Hex(), mock.Anything,
-				mock.Anything, mock.Anything, mock.Anything, txMock).Return(errors.New("error")).Once()
+				mock.Anything, mock.Anything, mock.Anything, mock.Anything, txMock).Return(errors.New("error")).Once()
 			txMock.On("Rollback", mock.Anything).Return(nil).Once()
+
+			ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+				uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
+				Return([]byte{1, 2}, nil).Once()
+
 			executeTestFn()
 
 			return
 		}
 
 		ethTxManagerMock.On("Add", mock.Anything, ethTxManOwner, signedTx.Tx.Hash().Hex(), mock.Anything,
-			mock.Anything, mock.Anything, mock.Anything, txMock).Return(nil).Once()
+			mock.Anything, mock.Anything, mock.Anything, mock.Anything, txMock).Return(nil).Once()
 
 		if !cfg.isTxCommitted {
 			txMock.On("Commit", mock.Anything).Return(errors.New("error")).Once()
+
+			ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+				uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
+				Return([]byte{1, 2}, nil).Once()
+
 			executeTestFn()
 
 			return
 		}
+
+		ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+			uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
+			Return([]byte{1, 2}, nil).Once()
 
 		txMock.On("Commit", mock.Anything).Return(nil).Once()
 		executeTestFn()

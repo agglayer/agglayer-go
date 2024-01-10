@@ -12,11 +12,10 @@ import (
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
-
-	"github.com/0xPolygon/beethoven/rpc"
 )
 
 const (
@@ -24,9 +23,11 @@ const (
 	FlagCfg = "cfg"
 )
 
+type FullNodeRPCs map[common.Address]string
+
 // Config represents the full configuration of the data node
 type Config struct {
-	FullNodeRPCs rpc.FullNodeRPCs    `mapstructure:"FullNodeRPCs"`
+	FullNodeRPCs FullNodeRPCs        `mapstructure:"FullNodeRPCs"`
 	RPC          jRPC.Config         `mapstructure:"RPC"`
 	Log          log.Config          `mapstructure:"Log"`
 	DB           db.Config           `mapstructure:"DB"`
