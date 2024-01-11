@@ -96,7 +96,6 @@ func (e *Etherman) getRollupContractAddress(rollupId uint32) (common.Address, er
 	}
 
 	rollupData, err := contract.RollupIDToRollupData(&bind.CallOpts{Pending: false}, rollupId)
-
 	if err != nil {
 		log.Errorf("error receiving the 'RollupData' struct: %s", err)
 		return common.Address{}, err
