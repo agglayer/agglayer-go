@@ -90,7 +90,6 @@ func (e *Etherman) CallContract(ctx context.Context, call ethereum.CallMsg, bloc
 
 func (e *Etherman) getRollupContractAddress(rollupId uint32) (common.Address, error) {
 	contract, err := polygonrollupmanager.NewPolygonrollupmanager(e.config.L1.RollupManagerContract, e.ethClient)
-
 	if err != nil {
 		log.Errorf("error instantiating contract: %s", err)
 		return common.Address{}, err
