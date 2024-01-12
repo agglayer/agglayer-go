@@ -21,15 +21,19 @@ type EthermanMock struct {
 	mock.Mock
 }
 
-func (e *EthermanMock) GetSequencerAddr(l1Contract common.Address) (common.Address, error) {
-	args := e.Called(l1Contract)
+func (e *EthermanMock) GetSequencerAddr(rollupId uint32) (common.Address, error) {
+	args := e.Called(rollupId)
 
 	return args.Get(0).(common.Address), args.Error(1) //nolint:forcetypeassert
 }
 
-func (e *EthermanMock) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch,
-	newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error) {
-	args := e.Called(lastVerifiedBatch, newVerifiedBatch, proof)
+func (e *EthermanMock) BuildTrustedVerifyBatchesTxData(
+	lastVerifiedBatch,
+	newVerifiedBatch uint64,
+	proof tx.ZKP,
+	rollupId uint32,
+) (data []byte, err error) {
+	args := e.Called(lastVerifiedBatch, newVerifiedBatch, proof, rollupId)
 
 	return args.Get(0).([]byte), args.Error(1) //nolint:forcetypeassert
 }

@@ -149,16 +149,16 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 
 	testFn := func(cfg testConfig) {
 		fullNodeRPCs := config.FullNodeRPCs{
-			common.BytesToAddress([]byte{1, 2, 3, 4}): "someRPC",
+			1: "someRPC",
 		}
 		tnx := tx.Tx{
-			L1Contract:        common.BytesToAddress([]byte{1, 2, 3, 4}),
 			LastVerifiedBatch: beethovenTypes.ArgUint64(1),
 			NewVerifiedBatch:  *beethovenTypes.ArgUint64Ptr(2),
 			ZKP: tx.ZKP{
 				NewStateRoot:     common.BigToHash(big.NewInt(11)),
 				NewLocalExitRoot: common.BigToHash(big.NewInt(11)),
 			},
+			RollupID: 1,
 		}
 		signedTx := &tx.SignedTx{Tx: tnx}
 		ethermanMock := new(mocks.EthermanMock)
@@ -173,6 +173,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 				log.WithFields("module", "test"),
 				&config.Config{
 					FullNodeRPCs: fullNodeRPCs,
+					L1:           config.L1Config{RollupManagerContract: common.HexToAddress("0xdeadbeef")},
 				},
 				common.HexToAddress("0xadmin"),
 				ethermanMock,
@@ -207,28 +208,58 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 		}
 
 		if !cfg.canBuildZKProof {
-			ethermanMock.On("BuildTrustedVerifyBatchesTxData",
-				uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
-				Return([]byte{}, errors.New("error")).Once()
+			ethermanMock.On(
+				"BuildTrustedVerifyBatchesTxData",
+				uint64(tnx.LastVerifiedBatch),
+				uint64(tnx.NewVerifiedBatch),
+				mock.Anything,
+				uint32(1),
+			).Return(
+				[]byte{},
+				errors.New("error"),
+			).Once()
+
 			executeTestFn()
 
 			return
 		}
 
-		ethermanMock.On("BuildTrustedVerifyBatchesTxData",
-			uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
-			Return([]byte{1, 2}, nil).Once()
+		ethermanMock.On(
+			"BuildTrustedVerifyBatchesTxData",
+			uint64(tnx.LastVerifiedBatch),
+			uint64(tnx.NewVerifiedBatch),
+			mock.Anything,
+			uint32(1),
+		).Return(
+			[]byte{1, 2},
+			nil,
+		).Once()
 
 		if !cfg.isZKProofValid {
-			ethermanMock.On("CallContract", mock.Anything, mock.Anything, mock.Anything).
-				Return([]byte{}, errors.New("error")).Once()
+			ethermanMock.On(
+				"CallContract",
+				mock.Anything,
+				mock.Anything,
+				mock.Anything,
+			).Return(
+				[]byte{},
+				errors.New("error"),
+			).Once()
+
 			executeTestFn()
 
 			return
 		}
 
-		ethermanMock.On("CallContract", mock.Anything, mock.Anything, mock.Anything).
-			Return([]byte{1, 2}, nil).Once()
+		ethermanMock.On(
+			"CallContract",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).Return(
+			[]byte{1, 2},
+			nil,
+		).Once()
 
 		if !cfg.isTxSigned {
 			executeTestFn()
@@ -245,92 +276,210 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 		signedTx = stx
 
 		if !cfg.isAdminRetrieved {
-			ethermanMock.On("GetSequencerAddr", tnx.L1Contract).Return(common.Address{}, errors.New("error")).Once()
+			ethermanMock.On(
+				"GetSequencerAddr",
+				uint32(1),
+			).Return(
+				common.Address{},
+				errors.New("error"),
+			).Once()
+
 			executeTestFn()
 
 			return
 		}
 
 		if !cfg.isSignerValid {
-			ethermanMock.On("GetSequencerAddr", tnx.L1Contract).Return(common.BytesToAddress([]byte{1, 2, 3, 4}), nil).Once()
+			ethermanMock.On(
+				"GetSequencerAddr",
+				uint32(1),
+			).Return(
+				common.BytesToAddress([]byte{1, 2, 3, 4}),
+				nil,
+			).Once()
+
 			executeTestFn()
 
 			return
 		}
 
-		ethermanMock.On("GetSequencerAddr", tnx.L1Contract).Return(crypto.PubkeyToAddress(privateKey.PublicKey), nil).Once()
-		zkEVMClientCreatorMock.On("NewClient", mock.Anything).Return(zkEVMClientMock)
+		ethermanMock.On(
+			"GetSequencerAddr",
+			uint32(1),
+		).Return(
+			crypto.PubkeyToAddress(privateKey.PublicKey),
+			nil,
+		).Once()
+
+		zkEVMClientCreatorMock.On(
+			"NewClient",
+			mock.Anything,
+		).Return(
+			zkEVMClientMock,
+		)
 
 		if !cfg.canGetBatch {
-			zkEVMClientMock.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).Return(
-				nil, errors.New("error"),
+			zkEVMClientMock.On(
+				"BatchByNumber",
+				mock.Anything,
+				big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
+			).Return(
+				nil,
+				errors.New("error"),
 			).Once()
+
 			executeTestFn()
 
 			return
 		}
 
 		if !cfg.isBatchValid {
-			zkEVMClientMock.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).Return(
+			zkEVMClientMock.On(
+				"BatchByNumber",
+				mock.Anything,
+				big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
+			).Return(
 				&validiumTypes.Batch{
 					StateRoot: common.BigToHash(big.NewInt(12)),
-				}, nil,
+				},
+				nil,
 			).Once()
+
 			executeTestFn()
 
 			return
 		}
 
-		zkEVMClientMock.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).Return(
+		zkEVMClientMock.On(
+			"BatchByNumber",
+			mock.Anything,
+			big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
+		).Return(
 			&validiumTypes.Batch{
 				StateRoot:     common.BigToHash(big.NewInt(11)),
 				LocalExitRoot: common.BigToHash(big.NewInt(11)),
-			}, nil,
+			},
+			nil,
 		).Once()
 
 		if !cfg.isDbTxOpen {
-			dbMock.On("BeginStateTransaction", mock.Anything).Return(nil, errors.New("error")).Once()
+			dbMock.On(
+				"BeginStateTransaction",
+				mock.Anything,
+			).Return(
+				nil,
+				errors.New("error"),
+			).Once()
+
 			executeTestFn()
 
 			return
 		}
 
-		dbMock.On("BeginStateTransaction", mock.Anything).Return(txMock, nil).Once()
+		dbMock.On(
+			"BeginStateTransaction",
+			mock.Anything,
+		).Return(
+			txMock,
+			nil,
+		).Once()
 
 		if !cfg.isTxAddedToEthTxMan {
-			ethTxManagerMock.On("Add", mock.Anything, ethTxManOwner, signedTx.Tx.Hash().Hex(), mock.Anything,
-				mock.Anything, mock.Anything, mock.Anything, mock.Anything, txMock).Return(errors.New("error")).Once()
-			txMock.On("Rollback", mock.Anything).Return(nil).Once()
+			ethTxManagerMock.On(
+				"Add",
+				mock.Anything,
+				ethTxManOwner,
+				signedTx.Tx.Hash().Hex(),
+				mock.Anything,
+				mock.Anything,
+				mock.Anything,
+				mock.Anything,
+				mock.Anything,
+				txMock,
+			).Return(
+				errors.New("error"),
+			).Once()
 
-			ethermanMock.On("BuildTrustedVerifyBatchesTxData",
-				uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
-				Return([]byte{1, 2}, nil).Once()
+			txMock.On(
+				"Rollback",
+				mock.Anything,
+			).Return(
+				nil,
+			).Once()
+
+			ethermanMock.On(
+				"BuildTrustedVerifyBatchesTxData",
+				uint64(tnx.LastVerifiedBatch),
+				uint64(tnx.NewVerifiedBatch),
+				mock.Anything,
+				uint32(1),
+			).Return(
+				[]byte{1, 2},
+				nil,
+			).Once()
 
 			executeTestFn()
 
 			return
 		}
 
-		ethTxManagerMock.On("Add", mock.Anything, ethTxManOwner, signedTx.Tx.Hash().Hex(), mock.Anything,
-			mock.Anything, mock.Anything, mock.Anything, mock.Anything, txMock).Return(nil).Once()
+		ethTxManagerMock.On(
+			"Add",
+			mock.Anything,
+			ethTxManOwner,
+			signedTx.Tx.Hash().Hex(),
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+			txMock,
+		).Return(
+			nil,
+		).Once()
 
 		if !cfg.isTxCommitted {
-			txMock.On("Commit", mock.Anything).Return(errors.New("error")).Once()
+			txMock.On(
+				"Commit",
+				mock.Anything,
+			).Return(
+				errors.New("error"),
+			).Once()
 
-			ethermanMock.On("BuildTrustedVerifyBatchesTxData",
-				uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
-				Return([]byte{1, 2}, nil).Once()
+			ethermanMock.On(
+				"BuildTrustedVerifyBatchesTxData",
+				uint64(tnx.LastVerifiedBatch),
+				uint64(tnx.NewVerifiedBatch),
+				mock.Anything,
+				uint32(1),
+			).Return(
+				[]byte{1, 2},
+				nil,
+			).Once()
 
 			executeTestFn()
 
 			return
 		}
 
-		ethermanMock.On("BuildTrustedVerifyBatchesTxData",
-			uint64(tnx.LastVerifiedBatch), uint64(tnx.NewVerifiedBatch), mock.Anything).
-			Return([]byte{1, 2}, nil).Once()
+		ethermanMock.On(
+			"BuildTrustedVerifyBatchesTxData",
+			uint64(tnx.LastVerifiedBatch),
+			uint64(tnx.NewVerifiedBatch),
+			mock.Anything,
+			uint32(1),
+		).Return(
+			[]byte{1, 2},
+			nil,
+		).Once()
 
-		txMock.On("Commit", mock.Anything).Return(nil).Once()
+		txMock.On(
+			"Commit",
+			mock.Anything,
+		).Return(
+			nil,
+		).Once()
+
 		executeTestFn()
 	}
 

@@ -56,8 +56,8 @@ func (e *Executor) CheckTx(tx tx.SignedTx) error {
 
 	// Check if the RPC is actually registered, if not it won't be possible to assert soundness (in the future once we are stateless won't be needed)
 	// TODO: The JSON parsing of the contract is incorrect
-	if _, ok := e.config.FullNodeRPCs[tx.Tx.L1Contract]; !ok {
-		return fmt.Errorf("there is no RPC registered for %s", tx.Tx.L1Contract)
+	if _, ok := e.config.FullNodeRPCs[tx.Tx.RollupID]; !ok {
+		return fmt.Errorf("there is no RPC registered for %v", tx.Tx.RollupID)
 	}
 
 	return nil
@@ -78,13 +78,14 @@ func (e *Executor) verifyZKP(ctx context.Context, stx tx.SignedTx) error {
 		uint64(stx.Tx.LastVerifiedBatch),
 		uint64(stx.Tx.NewVerifiedBatch),
 		stx.Tx.ZKP,
+		stx.Tx.RollupID,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to build verify ZKP tx: %s", err)
 	}
 	msg := ethereum.CallMsg{
 		From: e.interopAdminAddr,
-		To:   &stx.Tx.L1Contract,
+		To:   &e.config.L1.RollupManagerContract,
 		Data: l1TxData,
 	}
 	res, err := e.etherman.CallContract(ctx, msg, nil)
@@ -102,7 +103,7 @@ func (e *Executor) verifySignature(stx tx.SignedTx) error {
 		return errors.New("failed to get signer")
 	}
 
-	sequencer, err := e.etherman.GetSequencerAddr(stx.Tx.L1Contract)
+	sequencer, err := e.etherman.GetSequencerAddr(stx.Tx.RollupID)
 	if err != nil {
 		return errors.New("failed to get admin from L1")
 	}
@@ -117,7 +118,7 @@ func (e *Executor) Execute(ctx context.Context, signedTx tx.SignedTx) error {
 	// Check expected root vs root from the managed full node
 	// TODO: go stateless, depends on https://github.com/0xPolygonHermez/zkevm-prover/issues/581
 	// when this happens we should go async from here, since processing all the batches could take a lot of time
-	zkEVMClient := e.ZkEVMClientCreator.NewClient(e.config.FullNodeRPCs[signedTx.Tx.L1Contract])
+	zkEVMClient := e.ZkEVMClientCreator.NewClient(e.config.FullNodeRPCs[signedTx.Tx.RollupID])
 	batch, err := zkEVMClient.BatchByNumber(
 		ctx,
 		big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
@@ -144,6 +145,7 @@ func (e *Executor) Settle(ctx context.Context, signedTx tx.SignedTx, dbTx pgx.Tx
 		uint64(signedTx.Tx.LastVerifiedBatch),
 		uint64(signedTx.Tx.NewVerifiedBatch),
 		signedTx.Tx.ZKP,
+		signedTx.Tx.RollupID,
 	)
 	if err != nil {
 		return common.Hash{}, fmt.Errorf("failed to build verify ZKP tx: %s", err)
@@ -154,7 +156,7 @@ func (e *Executor) Settle(ctx context.Context, signedTx tx.SignedTx, dbTx pgx.Tx
 		ethTxManOwner,
 		signedTx.Tx.Hash().Hex(),
 		e.interopAdminAddr,
-		&signedTx.Tx.L1Contract,
+		&e.config.L1.RollupManagerContract,
 		big.NewInt(0),
 		l1TxData,
 		0,

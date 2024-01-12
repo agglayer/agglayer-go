@@ -17,8 +17,8 @@ type DBInterface interface {
 }
 
 type EthermanInterface interface {
-	GetSequencerAddr(l1Contract common.Address) (common.Address, error)
-	BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP) (data []byte, err error)
+	GetSequencerAddr(rollupId uint32) (common.Address, error)
+	BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP, rollupId uint32) (data []byte, err error)
 	CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) ([]byte, error)
 }
 
