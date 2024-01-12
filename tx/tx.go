@@ -7,11 +7,11 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-// type L1Concensus string
+// type L1Consensus string
 
 // const (
-// 	Rollup   L1Concensus = "rollup"
-// 	Validium L1Concensus = "validium"
+// 	Rollup   L1Consensus = "rollup"
+// 	Validium L1Consensus = "validium"
 // )
 
 type ZKP struct {
@@ -21,7 +21,7 @@ type ZKP struct {
 }
 
 type Tx struct {
-	// L1Concensus      L1Con census
+	// L1Consensus      L1Consensus
 	// Batches          []types.Batch
 	RollupID          uint32
 	LastVerifiedBatch types.ArgUint64 `json:"lastVerifiedBatch"`
