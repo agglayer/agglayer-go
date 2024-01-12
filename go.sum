@@ -39,10 +39,10 @@ cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/0xPolygon/cdk-data-availability v0.0.3 h1:ft0j1H7Q8hYT0AcapM9DmZS9FkAC1JGD+7QrOBhWRWA=
 github.com/0xPolygon/cdk-data-availability v0.0.3/go.mod h1:nA2O2ZzuvrR1pJLAmzTjuhUBSlCT0Noz2WI6HZfhvsg=
-github.com/0xPolygonHermez/zkevm-data-streamer v0.1.17 h1:pCA2k5ke1otBTNAyE8yiSlkDwpZxvJQH55Nf0GXWvfk=
-github.com/0xPolygonHermez/zkevm-data-streamer v0.1.17/go.mod h1:0QkAXcFa92mFJrCbN3UPUJGJYes851yEgYHLONnaosE=
-github.com/0xPolygonHermez/zkevm-node v0.5.0-RC4 h1:xQYFDA4+JQ/5PO28n+AC+yz+/Ase2mGPRYbc52i6m/w=
-github.com/0xPolygonHermez/zkevm-node v0.5.0-RC4/go.mod h1:/+coO2Mg0Zj2NR9XHTB2FVPYT7V7YGx+wXeAidhuFBs=
+github.com/0xPolygonHermez/zkevm-data-streamer v0.1.18 h1:InqeTcHrNbfj1OUfn2aFplFay7ibd7KhYqvmMZYZfn0=
+github.com/0xPolygonHermez/zkevm-data-streamer v0.1.18/go.mod h1:0QkAXcFa92mFJrCbN3UPUJGJYes851yEgYHLONnaosE=
+github.com/0xPolygonHermez/zkevm-node v0.5.0-RC10 h1:tvIsiC9I+llPhz0ENF955dS2yDoDGirPi4AT8EP9pbY=
+github.com/0xPolygonHermez/zkevm-node v0.5.0-RC10/go.mod h1:WWSbnww/Eqoo6BMxTmq5Sy6dLO6/V4gbKH0DGFbPUus=
 github.com/AndreasBriese/bbloom v0.0.0-20190306092124-e2d15f34fcf9/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
 github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 h1:w+iIsaOQNcT7OZ575w+acHgRric5iCyQh+xv+KJ4HB8=
 github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78/go.mod h1:LmzpDX56iTiv29bbRTIsUNlaFfuhWRQBWjQdVyAevI8=

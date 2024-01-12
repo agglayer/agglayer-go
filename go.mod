@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/0xPolygon/cdk-data-availability v0.0.3
-	github.com/0xPolygonHermez/zkevm-node v0.5.0-RC4
+	github.com/0xPolygonHermez/zkevm-node v0.5.0-RC10
 	github.com/ethereum/go-ethereum v1.13.8
 	github.com/gobuffalo/packr/v2 v2.8.3
 	github.com/jackc/pgconn v1.14.1
@@ -20,7 +20,7 @@ require (
 )
 
 require (
-	github.com/0xPolygonHermez/zkevm-data-streamer v0.1.17 // indirect
+	github.com/0xPolygonHermez/zkevm-data-streamer v0.1.18 // indirect
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
