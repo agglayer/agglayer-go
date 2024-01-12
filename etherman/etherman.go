@@ -3,6 +3,7 @@ package etherman
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/0xPolygon/beethoven/config"
 	"math/big"
 	"time"
@@ -92,12 +93,12 @@ func (e *Etherman) CallContract(ctx context.Context, call ethereum.CallMsg, bloc
 func (e *Etherman) getRollupContractAddress(rollupId uint32) (common.Address, error) {
 	contract, err := polygonrollupmanager.NewPolygonrollupmanager(e.config.L1.RollupManagerContract, e.ethClient)
 	if err != nil {
-		return common.Address{}, err
+		return common.Address{}, fmt.Errorf("error instantiating 'PolygonRollupManager' contract: %w", err)
 	}
 
 	rollupData, err := contract.RollupIDToRollupData(&bind.CallOpts{Pending: false}, rollupId)
 	if err != nil {
-		return common.Address{}, err
+		return common.Address{}, fmt.Errorf("error receiving the 'RollupData' struct: %w", err)
 	}
 
 	return rollupData.RollupContract, nil
@@ -106,12 +107,12 @@ func (e *Etherman) getRollupContractAddress(rollupId uint32) (common.Address, er
 func (e *Etherman) getTrustedSequencerAddress(rollupId uint32) (common.Address, error) {
 	rollupContractAddress, err := e.getRollupContractAddress(rollupId)
 	if err != nil {
-		return common.Address{}, err
+		return common.Address{}, fmt.Errorf("error requesting the 'PolygonZkEvm' contract address from 'PolygonRollupManager': %w", err)
 	}
 
 	contract, err := polygonzkevm.NewPolygonzkevm(rollupContractAddress, e.ethClient)
 	if err != nil {
-		return common.Address{}, err
+		return common.Address{}, fmt.Errorf("error instantiating 'PolygonZkEvm' contract: %w", err)
 	}
 
 	return contract.TrustedSequencer(&bind.CallOpts{Pending: false})
