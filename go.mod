@@ -14,7 +14,7 @@ require (
 	github.com/rubenv/sql-migrate v1.6.0
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.8.4
-	github.com/urfave/cli/v2 v2.26.0
+	github.com/urfave/cli/v2 v2.27.1
 	go.opentelemetry.io/otel/exporters/prometheus v0.44.0
 	go.opentelemetry.io/otel/sdk/metric v1.21.0
 )
