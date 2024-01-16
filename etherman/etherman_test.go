@@ -51,7 +51,7 @@ func TestGetSequencerAddr(t *testing.T) {
 	t.Run("Returns expected error on 'TrustedSequencer' call (improperly formatted output)", func(t *testing.T) {
 		t.Parallel()
 
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -101,7 +101,7 @@ func TestGetSequencerAddr(t *testing.T) {
 	t.Run("Returns expected error on 'RollupIDToRollupData' call (improperly formatted output)", func(t *testing.T) {
 		t.Parallel()
 
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -132,7 +132,7 @@ func TestGetSequencerAddr(t *testing.T) {
 	t.Run("Returns expected sequencer address", func(t *testing.T) {
 		t.Parallel()
 
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -179,7 +179,7 @@ func TestGetSequencerAddr(t *testing.T) {
 func TestBuildTrustedVerifyBatches(t *testing.T) {
 	t.Parallel()
 	assert := assert.New(t)
-	ethman := getEtherman(mocks.NewIEthereumClient(t))
+	ethman := getEtherman(mocks.NewEthereumClientMock(t))
 
 	// Because we cant mock the ABI dependency is this the only test case that we somehow
 	// can have here in a unit test. Further test coverage can get achieved with e2e or integration tests.
@@ -205,7 +205,7 @@ func TestCallContract(t *testing.T) {
 	assert := assert.New(t)
 
 	t.Run("Returns expected value", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -248,7 +248,7 @@ func TestCallContract(t *testing.T) {
 	})
 
 	t.Run("Returns expected error", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -296,7 +296,7 @@ func TestCheckTxWasMined(t *testing.T) {
 	assert := assert.New(t)
 
 	t.Run("Returns expected error on 'ethereum.NotFound'", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -317,7 +317,7 @@ func TestCheckTxWasMined(t *testing.T) {
 	})
 
 	t.Run("Returns expected error", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -338,7 +338,7 @@ func TestCheckTxWasMined(t *testing.T) {
 	})
 
 	t.Run("Returns the expected values", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -364,7 +364,7 @@ func TestCurrentNonce(t *testing.T) {
 	assert := assert.New(t)
 
 	t.Run("Returns the expected nonce value", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -385,7 +385,7 @@ func TestCurrentNonce(t *testing.T) {
 	})
 
 	t.Run("Returns the expected error", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -411,7 +411,7 @@ func TestGetTx(t *testing.T) {
 	assert := assert.New(t)
 
 	t.Run("Returns the expected transaction", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -433,7 +433,7 @@ func TestGetTx(t *testing.T) {
 	})
 
 	t.Run("Returns the expected error", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -460,7 +460,7 @@ func TestGetTxReceipt(t *testing.T) {
 	assert := assert.New(t)
 
 	t.Run("Returns expected receipt", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -480,7 +480,7 @@ func TestGetTxReceipt(t *testing.T) {
 	})
 
 	t.Run("Returns expected error", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -513,7 +513,7 @@ func TestSendTx(t *testing.T) {
 	)
 
 	t.Run("Returns expected value", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -531,7 +531,7 @@ func TestSendTx(t *testing.T) {
 	})
 
 	t.Run("Returns expected error", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -554,7 +554,7 @@ func TestSuggestedGasPrice(t *testing.T) {
 	assert := assert.New(t)
 
 	t.Run("Returns expected value", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -573,7 +573,7 @@ func TestSuggestedGasPrice(t *testing.T) {
 	})
 
 	t.Run("Returns expected error", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -597,7 +597,7 @@ func TestEstimateGas(t *testing.T) {
 	assert := assert.New(t)
 
 	t.Run("Returns the expected value", func(t *testing.T) {
-		ethclient := mocks.NewIEthereumClient(t)
+		ethclient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethclient)
 
 		ethclient.On(
@@ -628,7 +628,7 @@ func TestEstimateGas(t *testing.T) {
 	})
 
 	t.Run("Returns the expected error", func(t *testing.T) {
-		ethclient := mocks.NewIEthereumClient(t)
+		ethclient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethclient)
 
 		ethclient.On(
@@ -672,7 +672,7 @@ func TestSignTx(t *testing.T) {
 	)
 
 	t.Run("Returns the expected value", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		transaction, err := ethman.SignTx(context.TODO(), common.Address{}, txData)
@@ -695,7 +695,7 @@ func TestGetRevertMessage(t *testing.T) {
 	)
 
 	t.Run("Returns an empty string and the expected error", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -714,7 +714,7 @@ func TestGetRevertMessage(t *testing.T) {
 	})
 
 	t.Run("Returns an empty string and the error set to nil", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -735,7 +735,7 @@ func TestGetRevertMessage(t *testing.T) {
 	})
 
 	t.Run("Returns the expected revert reason string", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		key, _ := crypto.GenerateKey()
@@ -785,7 +785,7 @@ func TestGetLastBlock(t *testing.T) {
 	assert := assert.New(t)
 
 	t.Run("Returns the expected values", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
@@ -812,7 +812,7 @@ func TestGetLastBlock(t *testing.T) {
 	})
 
 	t.Run("Returns the expected error", func(t *testing.T) {
-		ethClient := mocks.NewIEthereumClient(t)
+		ethClient := mocks.NewEthereumClientMock(t)
 		ethman := getEtherman(ethClient)
 
 		ethClient.On(
