@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/0xPolygon/beethoven/config"
 	"math/big"
 	"time"
+
+	"github.com/0xPolygon/beethoven/config"
 
 	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonrollupmanager"
 	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonzkevm"
@@ -28,12 +29,12 @@ const (
 )
 
 type Etherman struct {
-	ethClient EthereumClient
+	ethClient IEthereumClient
 	auth      bind.TransactOpts
 	config    *config.Config
 }
 
-func New(ethClient EthereumClient, auth bind.TransactOpts, cfg *config.Config) (Etherman, error) {
+func New(ethClient IEthereumClient, auth bind.TransactOpts, cfg *config.Config) (Etherman, error) {
 	return Etherman{
 		ethClient: ethClient,
 		auth:      auth,

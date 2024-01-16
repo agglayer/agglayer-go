@@ -5,7 +5,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 )
 
-type EthereumClient interface {
+//go:generate mockery --name IEthereumClient --structname EthereumClientMock --output ../mocks --case=underscore --filename etherman_client.generated.go
+type IEthereumClient interface {
 	ethereum.ChainReader
 	ethereum.ChainStateReader
 	ethereum.ContractCaller

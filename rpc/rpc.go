@@ -24,14 +24,14 @@ const (
 type InteropEndpoints struct {
 	ctx      context.Context
 	executor *interop.Executor
-	db       types.DBInterface
+	db       types.IDB
 }
 
 // NewInteropEndpoints returns InteropEndpoints
 func NewInteropEndpoints(
 	ctx context.Context,
 	executor *interop.Executor,
-	db types.DBInterface,
+	db types.IDB,
 ) *InteropEndpoints {
 	return &InteropEndpoints{
 		ctx:      ctx,

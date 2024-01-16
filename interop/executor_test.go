@@ -23,8 +23,8 @@ import (
 func TestNewExecutor(t *testing.T) {
 	cfg := &config.Config{}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := &mocks.EthermanMock{}
-	ethTxManager := &mocks.EthTxManagerMock{}
+	etherman := mocks.NewEthermanMock(t)
+	ethTxManager := mocks.NewEthTxManagerMock(t)
 
 	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
 
@@ -43,8 +43,8 @@ func TestExecutor_CheckTx(t *testing.T) {
 		},
 	}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := &mocks.EthermanMock{}
-	ethTxManager := &mocks.EthTxManagerMock{}
+	etherman := mocks.NewEthermanMock(t)
+	ethTxManager := mocks.NewEthTxManagerMock(t)
 
 	executor := New(log.WithFields("test", "test"), cfg, interopAdminAddr, etherman, ethTxManager)
 
@@ -81,8 +81,8 @@ func TestExecutor_CheckTx(t *testing.T) {
 func TestExecutor_VerifyZKP(t *testing.T) {
 	cfg := &config.Config{}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := &mocks.EthermanMock{}
-	ethTxManager := &mocks.EthTxManagerMock{}
+	etherman := mocks.NewEthermanMock(t)
+	ethTxManager := mocks.NewEthTxManagerMock(t)
 	tnx := tx.Tx{
 		LastVerifiedBatch: 0,
 		NewVerifiedBatch:  1,
@@ -128,8 +128,8 @@ func TestExecutor_VerifyZKP(t *testing.T) {
 func TestExecutor_VerifySignature(t *testing.T) {
 	cfg := &config.Config{}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := &mocks.EthermanMock{}
-	ethTxManager := &mocks.EthTxManagerMock{}
+	etherman := mocks.NewEthermanMock(t)
+	ethTxManager := mocks.NewEthTxManagerMock(t)
 
 	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
 
@@ -164,8 +164,8 @@ func TestExecutor_VerifySignature(t *testing.T) {
 func TestExecutor_Execute(t *testing.T) {
 	cfg := &config.Config{}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := &mocks.EthermanMock{}
-	ethTxManager := &mocks.EthTxManagerMock{}
+	etherman := mocks.NewEthermanMock(t)
+	ethTxManager := mocks.NewEthTxManagerMock(t)
 
 	executor := New(log.WithFields("test", "test"), cfg, interopAdminAddr, etherman, ethTxManager)
 
@@ -182,8 +182,8 @@ func TestExecutor_Execute(t *testing.T) {
 	}
 
 	// Mock the ZkEVMClientCreator.NewClient method
-	mockZkEVMClientCreator := &mocks.ZkEVMClientCreatorMock{}
-	mockZkEVMClient := &mocks.ZkEVMClientMock{}
+	mockZkEVMClientCreator := mocks.NewZkEVMClientClientCreatorMock(t)
+	mockZkEVMClient := mocks.NewZkEVMClientMock(t)
 
 	mockZkEVMClientCreator.On("NewClient", mock.Anything).Return(mockZkEVMClient).Once()
 	mockZkEVMClient.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).
@@ -205,8 +205,8 @@ func TestExecutor_Execute(t *testing.T) {
 func TestExecutor_Settle(t *testing.T) {
 	cfg := &config.Config{}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := &mocks.EthermanMock{}
-	ethTxManager := &mocks.EthTxManagerMock{}
+	etherman := mocks.NewEthermanMock(t)
+	ethTxManager := mocks.NewEthTxManagerMock(t)
 	dbTx := &mocks.TxMock{}
 
 	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
@@ -261,8 +261,8 @@ func TestExecutor_Settle(t *testing.T) {
 func TestExecutor_GetTxStatus(t *testing.T) {
 	cfg := &config.Config{}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := &mocks.EthermanMock{}
-	ethTxManager := &mocks.EthTxManagerMock{}
+	etherman := mocks.NewEthermanMock(t)
+	ethTxManager := mocks.NewEthTxManagerMock(t)
 	dbTx := &mocks.TxMock{}
 
 	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
