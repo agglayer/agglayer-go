@@ -18,11 +18,11 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-var _ types.ZkEVMClientClientCreator = (*zkEVMClientCreator)(nil)
+var _ types.IZkEVMClientClientCreator = (*zkEVMClientCreator)(nil)
 
 type zkEVMClientCreator struct{}
 
-func (zc *zkEVMClientCreator) NewClient(rpc string) types.ZkEVMClientInterface {
+func (zc *zkEVMClientCreator) NewClient(rpc string) types.IZkEVMClient {
 	return client.NewClient(rpc)
 }
 
@@ -30,15 +30,15 @@ type Executor struct {
 	logger             *log.Logger
 	interopAdminAddr   common.Address
 	config             *config.Config
-	ethTxMan           types.EthTxManager
-	etherman           types.EthermanInterface
-	ZkEVMClientCreator types.ZkEVMClientClientCreator
+	ethTxMan           types.IEthTxManager
+	etherman           types.IEtherman
+	ZkEVMClientCreator types.IZkEVMClientClientCreator
 }
 
 func New(logger *log.Logger, cfg *config.Config,
 	interopAdminAddr common.Address,
-	etherman types.EthermanInterface,
-	ethTxManager types.EthTxManager,
+	etherman types.IEtherman,
+	ethTxManager types.IEthTxManager,
 ) *Executor {
 	return &Executor{
 		logger:             logger,

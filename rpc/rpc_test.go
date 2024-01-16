@@ -29,15 +29,15 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 	t.Run("BeginStateTransaction returns an error", func(t *testing.T) {
 		t.Parallel()
 
-		dbMock := new(mocks.DbMock)
+		dbMock := mocks.NewIDB(t)
 		dbMock.On("BeginStateTransaction", mock.Anything).Return(nil, errors.New("error")).Once()
 
 		e := interop.New(
 			log.WithFields("module", "test"),
 			&config.Config{},
 			common.HexToAddress("0xadmin"),
-			new(mocks.EthermanMock),
-			new(mocks.EthTxManagerMock),
+			mocks.NewIEtherman(t),
+			mocks.NewIEthTxManager(t),
 		)
 		i := NewInteropEndpoints(context.Background(), e, dbMock)
 
@@ -57,10 +57,10 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		txMock := new(mocks.TxMock)
 		txMock.On("Rollback", mock.Anything).Return(nil).Once()
 
-		dbMock := new(mocks.DbMock)
+		dbMock := mocks.NewIDB(t)
 		dbMock.On("BeginStateTransaction", mock.Anything).Return(txMock, nil).Once()
 
-		txManagerMock := new(mocks.EthTxManagerMock)
+		txManagerMock := mocks.NewIEthTxManager(t)
 		txManagerMock.On("Result", mock.Anything, ethTxManOwner, txHash.Hex(), txMock).
 			Return(ethtxmanager.MonitoredTxResult{}, errors.New("error")).Once()
 
@@ -68,7 +68,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			log.WithFields("module", "test"),
 			&config.Config{},
 			common.HexToAddress("0xadmin"),
-			new(mocks.EthermanMock),
+			mocks.NewIEtherman(t),
 			txManagerMock,
 		)
 		i := NewInteropEndpoints(context.Background(), e, dbMock)
@@ -101,10 +101,10 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		txMock := new(mocks.TxMock)
 		txMock.On("Rollback", mock.Anything).Return(nil).Once()
 
-		dbMock := new(mocks.DbMock)
+		dbMock := mocks.NewIDB(t)
 		dbMock.On("BeginStateTransaction", mock.Anything).Return(txMock, nil).Once()
 
-		txManagerMock := new(mocks.EthTxManagerMock)
+		txManagerMock := mocks.NewIEthTxManager(t)
 		txManagerMock.On("Result", mock.Anything, ethTxManOwner, txHash.Hex(), txMock).
 			Return(result, nil).Once()
 
@@ -112,7 +112,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			log.WithFields("module", "test"),
 			&config.Config{},
 			common.HexToAddress("0xadmin"),
-			new(mocks.EthermanMock),
+			mocks.NewIEtherman(t),
 			txManagerMock,
 		)
 		i := NewInteropEndpoints(context.Background(), e, dbMock)
@@ -161,12 +161,12 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 			RollupID: 1,
 		}
 		signedTx := &tx.SignedTx{Tx: tnx}
-		ethermanMock := new(mocks.EthermanMock)
-		zkEVMClientCreatorMock := new(mocks.ZkEVMClientCreatorMock)
-		zkEVMClientMock := new(mocks.ZkEVMClientMock)
-		dbMock := new(mocks.DbMock)
+		ethermanMock := mocks.NewIEtherman(t)
+		zkEVMClientCreatorMock := mocks.NewIZkEVMClientClientCreator(t)
+		zkEVMClientMock := mocks.NewIZkEVMClient(t)
+		dbMock := mocks.NewIDB(t)
 		txMock := new(mocks.TxMock)
-		ethTxManagerMock := new(mocks.EthTxManagerMock)
+		ethTxManagerMock := mocks.NewIEthTxManager(t)
 
 		executeTestFn := func() {
 			e := interop.New(

@@ -12,28 +12,32 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-type DBInterface interface {
+//go:generate mockery --name IDB --output ../mocks --case=underscore --filename db.generated.go
+type IDB interface {
 	BeginStateTransaction(ctx context.Context) (pgx.Tx, error)
 }
 
-type EthermanInterface interface {
+//go:generate mockery --name IEtherman --output ../mocks --case=underscore --filename etherman.generated.go
+type IEtherman interface {
 	GetSequencerAddr(rollupId uint32) (common.Address, error)
 	BuildTrustedVerifyBatchesTxData(lastVerifiedBatch, newVerifiedBatch uint64, proof tx.ZKP, rollupId uint32) (data []byte, err error)
 	CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) ([]byte, error)
 }
 
-// ethTxManager contains the methods required to send txs to ethereum.
-type EthTxManager interface {
+//go:generate mockery --name IEthTxManager --output ../mocks --case=underscore --filename eth_tx_manager.generated.go
+type IEthTxManager interface {
 	Add(ctx context.Context, owner, id string, from common.Address, to *common.Address, value *big.Int, data []byte, gasOffset uint64, dbTx pgx.Tx) error
 	Result(ctx context.Context, owner, id string, dbTx pgx.Tx) (ethtxmanager.MonitoredTxResult, error)
 	ResultsByStatus(ctx context.Context, owner string, statuses []ethtxmanager.MonitoredTxStatus, dbTx pgx.Tx) ([]ethtxmanager.MonitoredTxResult, error)
 	ProcessPendingMonitoredTxs(ctx context.Context, owner string, failedResultHandler ethtxmanager.ResultHandler, dbTx pgx.Tx)
 }
 
-type ZkEVMClientInterface interface {
+//go:generate mockery --name IZkEVMClient --output ../mocks --case=underscore --filename zk_evm_client.generated.go
+type IZkEVMClient interface {
 	BatchByNumber(ctx context.Context, number *big.Int) (*types.Batch, error)
 }
 
-type ZkEVMClientClientCreator interface {
-	NewClient(rpc string) ZkEVMClientInterface
+//go:generate mockery --name IZkEVMClientClientCreator --output ../mocks --case=underscore --filename zk_evm_client_creator.generated.go
+type IZkEVMClientClientCreator interface {
+	NewClient(rpc string) IZkEVMClient
 }
