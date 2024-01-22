@@ -9,7 +9,7 @@ import (
 
 func TestLoad(t *testing.T) {
 	ctx := cli.NewContext(nil, nil, nil)
-	ctx.Set(FlagCfg, "/path/to/config.yaml")
+	_ = ctx.Set(FlagCfg, "/path/to/config.yaml")
 
 	_, err := Load(ctx)
 	assert.NoError(t, err)
