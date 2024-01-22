@@ -10,7 +10,7 @@ import (
 // DefaultValues is the default configuration
 const DefaultValues = `
 [FullNodeRPCs]
-0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82 = "http://zkevm-node:8123"
+1 = "http://zkevm-node:8123"
 
 [RPC]
 Host = "0.0.0.0"
