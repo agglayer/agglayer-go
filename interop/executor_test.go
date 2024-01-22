@@ -51,7 +51,7 @@ func TestExecutor_CheckTx(t *testing.T) {
 
 	// Create a sample signed transaction for testing
 	signedTx := tx.SignedTx{
-		Tx: tx.Tx{
+		Data: tx.Tx{
 			LastVerifiedBatch: 0,
 			NewVerifiedBatch:  1,
 			ZKP: tx.ZKP{
@@ -65,7 +65,7 @@ func TestExecutor_CheckTx(t *testing.T) {
 	assert.NoError(t, err)
 
 	signedTx = tx.SignedTx{
-		Tx: tx.Tx{
+		Data: tx.Tx{
 			LastVerifiedBatch: 0,
 			NewVerifiedBatch:  1,
 			ZKP: tx.ZKP{
@@ -118,7 +118,7 @@ func TestExecutor_VerifyZKP(t *testing.T) {
 
 	// Create a sample signed transaction for testing
 	signedTx := tx.SignedTx{
-		Tx: tnx,
+		Data: tnx,
 	}
 
 	err := executor.verifyZKP(context.Background(), signedTx)
@@ -162,47 +162,6 @@ func TestExecutor_VerifySignature(t *testing.T) {
 	etherman.AssertExpectations(t)
 }
 
-func TestExecutor_Execute(t *testing.T) {
-	cfg := &config.Config{}
-	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := mocks.NewEthermanMock(t)
-	ethTxManager := mocks.NewEthTxManagerMock(t)
-
-	executor := New(log.WithFields("test", "test"), cfg, interopAdminAddr, etherman, ethTxManager)
-
-	// Create a sample signed transaction for testing
-	signedTx := tx.SignedTx{
-		Tx: tx.Tx{
-			LastVerifiedBatch: 0,
-			NewVerifiedBatch:  1,
-			ZKP: tx.ZKP{
-				NewStateRoot: common.BytesToHash([]byte("sampleNewStateRoot")),
-				Proof:        []byte("sampleProof"),
-			},
-		},
-	}
-
-	// Mock the ZkEVMClientCreator.NewClient method
-	mockZkEVMClientCreator := mocks.NewZkEVMClientClientCreatorMock(t)
-	mockZkEVMClient := mocks.NewZkEVMClientMock(t)
-
-	mockZkEVMClientCreator.On("NewClient", mock.Anything).Return(mockZkEVMClient).Once()
-	mockZkEVMClient.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).
-		Return(&rpctypes.Batch{
-			StateRoot:     signedTx.Tx.ZKP.NewStateRoot,
-			LocalExitRoot: signedTx.Tx.ZKP.NewLocalExitRoot,
-			// Add other necessary fields here
-		}, nil).Once()
-
-	// Set the ZkEVMClientCreator to return the mock ZkEVMClient
-	executor.ZkEVMClientCreator = mockZkEVMClientCreator
-
-	err := executor.Execute(context.Background(), signedTx)
-	require.NoError(t, err)
-	mockZkEVMClientCreator.AssertExpectations(t)
-	mockZkEVMClient.AssertExpectations(t)
-}
-
 func TestExecutor_Settle(t *testing.T) {
 	cfg := &config.Config{}
 	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
@@ -213,7 +172,7 @@ func TestExecutor_Settle(t *testing.T) {
 	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
 
 	signedTx := tx.SignedTx{
-		Tx: tx.Tx{
+		Data: tx.Tx{
 			LastVerifiedBatch: 0,
 			NewVerifiedBatch:  1,
 			ZKP: tx.ZKP{
@@ -226,9 +185,9 @@ func TestExecutor_Settle(t *testing.T) {
 	l1TxData := []byte("sampleL1TxData")
 	etherman.On(
 		"BuildTrustedVerifyBatchesTxData",
-		uint64(signedTx.Tx.LastVerifiedBatch),
-		uint64(signedTx.Tx.NewVerifiedBatch),
-		signedTx.Tx.ZKP,
+		uint64(signedTx.Data.LastVerifiedBatch),
+		uint64(signedTx.Data.NewVerifiedBatch),
+		signedTx.Data.ZKP,
 		uint32(1),
 	).Return(
 		l1TxData,
@@ -236,7 +195,7 @@ func TestExecutor_Settle(t *testing.T) {
 	).Once()
 
 	ctx := context.Background()
-	txHash := signedTx.Tx.Hash().Hex()
+	txHash := signedTx.Data.Hash().Hex()
 	ethTxManager.On(
 		"Add",
 		ctx, ethTxManOwner,
@@ -253,7 +212,7 @@ func TestExecutor_Settle(t *testing.T) {
 
 	hash, err := executor.Settle(ctx, signedTx, dbTx)
 	require.NoError(t, err)
-	assert.Equal(t, signedTx.Tx.Hash(), hash)
+	assert.Equal(t, signedTx.Data.Hash(), hash)
 
 	etherman.AssertExpectations(t)
 	ethTxManager.AssertExpectations(t)

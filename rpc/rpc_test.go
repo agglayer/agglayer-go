@@ -160,7 +160,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 			},
 			RollupID: 1,
 		}
-		signedTx := &tx.SignedTx{Tx: tnx}
+		signedTx := &tx.SignedTx{Data: tnx}
 		ethermanMock := mocks.NewEthermanMock(t)
 		zkEVMClientCreatorMock := mocks.NewZkEVMClientClientCreatorMock(t)
 		zkEVMClientMock := mocks.NewZkEVMClientMock(t)
@@ -189,7 +189,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 				require.ErrorContains(t, err, cfg.expectedError)
 			} else {
 				require.NoError(t, err)
-				require.Equal(t, signedTx.Tx.Hash(), result)
+				require.Equal(t, signedTx.Data.Hash(), result)
 			}
 
 			ethermanMock.AssertExpectations(t)
@@ -322,7 +322,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 			zkEVMClientMock.On(
 				"BatchByNumber",
 				mock.Anything,
-				big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
+				big.NewInt(int64(signedTx.Data.NewVerifiedBatch)),
 			).Return(
 				nil,
 				errors.New("error"),
@@ -337,7 +337,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 			zkEVMClientMock.On(
 				"BatchByNumber",
 				mock.Anything,
-				big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
+				big.NewInt(int64(signedTx.Data.NewVerifiedBatch)),
 			).Return(
 				&validiumTypes.Batch{
 					StateRoot: common.BigToHash(big.NewInt(12)),
@@ -353,7 +353,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 		zkEVMClientMock.On(
 			"BatchByNumber",
 			mock.Anything,
-			big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
+			big.NewInt(int64(signedTx.Data.NewVerifiedBatch)),
 		).Return(
 			&validiumTypes.Batch{
 				StateRoot:     common.BigToHash(big.NewInt(11)),
@@ -389,7 +389,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 				"Add",
 				mock.Anything,
 				ethTxManOwner,
-				signedTx.Tx.Hash().Hex(),
+				signedTx.Data.Hash().Hex(),
 				mock.Anything,
 				mock.Anything,
 				mock.Anything,
@@ -427,7 +427,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 			"Add",
 			mock.Anything,
 			ethTxManOwner,
-			signedTx.Tx.Hash().Hex(),
+			signedTx.Data.Hash().Hex(),
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
