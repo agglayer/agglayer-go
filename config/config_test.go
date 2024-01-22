@@ -11,6 +11,6 @@ func TestLoad(t *testing.T) {
 	ctx := cli.NewContext(nil, nil, nil)
 	ctx.Set(FlagCfg, "/path/to/config.yaml")
 
-	cfg, err := Load(ctx)
+	_, err := Load(ctx)
 	assert.NoError(t, err)
 }
