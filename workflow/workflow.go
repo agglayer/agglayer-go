@@ -3,13 +3,9 @@ package workflow
 import (
 	"context"
 
-	"github.com/0xPolygonHermez/zkevm-node/pool"
-	"github.com/0xPolygonHermez/zkevm-node/sequencer"
-	"github.com/0xPolygonHermez/zkevm-node/state"
 	abciTypes "github.com/cometbft/cometbft/abci/types"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/0xPolygon/beethoven/aggregator"
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/silencer"
 	"github.com/0xPolygon/beethoven/tx"
@@ -18,23 +14,31 @@ import (
 
 var _ abciTypes.Application = (*Workflow)(nil)
 
+type workflowOption func(*Workflow)
+
 type Workflow struct {
-	silencer   *silencer.Silencer
-	sequencer  *sequencer.Sequencer
-	aggregator *aggregator.Aggregator
+	silencer silencer.ISilencer
+	// sequencer  *sequencer.Sequencer
+	// aggregator *aggregator.Aggregator
 }
 
-func New(cfg *config.Config, interopAdmin common.Address, etherman types.IEtherman) (*Workflow, error) {
-	seq, err := sequencer.New(sequencer.Config{}, state.BatchConfig{}, pool.Config{}, nil, nil, nil, nil)
-	if err != nil {
-		return nil, err
+func New(cfg *config.Config, interopAdmin common.Address, etherman types.IEtherman, opts ...workflowOption) *Workflow {
+	// TODO: instantiate sequencer and aggregator
+	w := &Workflow{
+		silencer: silencer.New(cfg, interopAdmin, etherman, &types.ZkEVMClientCreator{}),
 	}
 
-	return &Workflow{
-		silencer:   silencer.New(cfg, interopAdmin, etherman, &types.ZkEVMClientCreator{}),
-		aggregator: aggregator.New(),
-		sequencer:  seq,
-	}, nil
+	for _, opt := range opts {
+		opt(w)
+	}
+
+	return w
+}
+
+func WithCustomSilencer(silencer silencer.ISilencer) workflowOption {
+	return func(w *Workflow) {
+		w.silencer = silencer
+	}
 }
 
 func (w *Workflow) Execute(ctx context.Context, stx tx.SignedTx) error {

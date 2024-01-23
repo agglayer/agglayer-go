@@ -9,9 +9,7 @@ import (
 	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	rpctypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
-	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -34,132 +32,6 @@ func TestNewExecutor(t *testing.T) {
 	assert.Equal(t, cfg, executor.config)
 	assert.Equal(t, ethTxManager, executor.ethTxMan)
 	assert.Equal(t, etherman, executor.etherman)
-	assert.NotNil(t, executor.ZkEVMClientCreator)
-}
-
-func TestExecutor_CheckTx(t *testing.T) {
-	cfg := &config.Config{
-		FullNodeRPCs: map[uint32]string{
-			1: "http://localhost:8545",
-		},
-	}
-	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := mocks.NewEthermanMock(t)
-	ethTxManager := mocks.NewEthTxManagerMock(t)
-
-	executor := New(log.WithFields("test", "test"), cfg, interopAdminAddr, etherman, ethTxManager)
-
-	// Create a sample signed transaction for testing
-	signedTx := tx.SignedTx{
-		Data: tx.Tx{
-			LastVerifiedBatch: 0,
-			NewVerifiedBatch:  1,
-			ZKP: tx.ZKP{
-				Proof: []byte("sampleProof"),
-			},
-			RollupID: 1,
-		},
-	}
-
-	err := executor.CheckTx(signedTx)
-	assert.NoError(t, err)
-
-	signedTx = tx.SignedTx{
-		Data: tx.Tx{
-			LastVerifiedBatch: 0,
-			NewVerifiedBatch:  1,
-			ZKP: tx.ZKP{
-				Proof: []byte("sampleProof"),
-			},
-			RollupID: 0,
-		},
-	}
-
-	err = executor.CheckTx(signedTx)
-	assert.Error(t, err)
-}
-
-func TestExecutor_VerifyZKP(t *testing.T) {
-	cfg := &config.Config{}
-	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := mocks.NewEthermanMock(t)
-	ethTxManager := mocks.NewEthTxManagerMock(t)
-	tnx := tx.Tx{
-		LastVerifiedBatch: 0,
-		NewVerifiedBatch:  1,
-		ZKP: tx.ZKP{
-			Proof: []byte("sampleProof"),
-		},
-		RollupID: 1,
-	}
-
-	etherman.On(
-		"BuildTrustedVerifyBatchesTxData",
-		uint64(tnx.LastVerifiedBatch),
-		uint64(tnx.NewVerifiedBatch),
-		mock.Anything,
-		uint32(1),
-	).Return(
-		[]byte{},
-		nil,
-	).Once()
-
-	etherman.On(
-		"CallContract",
-		mock.Anything,
-		mock.Anything,
-		mock.Anything,
-	).Return(
-		[]byte{},
-		nil,
-	).Once()
-
-	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
-
-	// Create a sample signed transaction for testing
-	signedTx := tx.SignedTx{
-		Data: tnx,
-	}
-
-	err := executor.verifyZKP(context.Background(), signedTx)
-	assert.NoError(t, err)
-	etherman.AssertExpectations(t)
-}
-
-func TestExecutor_VerifySignature(t *testing.T) {
-	cfg := &config.Config{}
-	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := mocks.NewEthermanMock(t)
-	ethTxManager := mocks.NewEthTxManagerMock(t)
-
-	executor := New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
-
-	txn := tx.Tx{
-		LastVerifiedBatch: 0,
-		NewVerifiedBatch:  1,
-		ZKP: tx.ZKP{
-			Proof: []byte("sampleProof"),
-		},
-		RollupID: 1,
-	}
-
-	pk, err := crypto.GenerateKey()
-	require.NoError(t, err)
-
-	signedTx, err := txn.Sign(pk)
-	require.NoError(t, err)
-
-	etherman.On(
-		"GetSequencerAddr",
-		uint32(1),
-	).Return(
-		crypto.PubkeyToAddress(pk.PublicKey),
-		nil,
-	).Once()
-
-	err = executor.verifySignature(*signedTx)
-	require.NoError(t, err)
-	etherman.AssertExpectations(t)
 }
 
 func TestExecutor_Settle(t *testing.T) {

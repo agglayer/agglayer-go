@@ -108,7 +108,11 @@ func (s *Silencer) verifyZKProof(ctx context.Context, stx tx.SignedTx) error {
 	}
 	res, err := s.etherman.CallContract(ctx, msg, nil)
 	if err != nil {
-		return fmt.Errorf("failed to call ZK proof verification (response: %s): %w", res, err)
+		if len(res) > 0 {
+			return fmt.Errorf("failed to call ZK proof verification (response: %s): %w", res, err)
+		}
+
+		return fmt.Errorf("failed to call ZK proof verification: %w", err)
 	}
 
 	return nil

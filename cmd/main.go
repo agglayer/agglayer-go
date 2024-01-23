@@ -29,6 +29,7 @@ import (
 	"github.com/0xPolygon/beethoven/interop"
 	"github.com/0xPolygon/beethoven/network"
 	"github.com/0xPolygon/beethoven/rpc"
+	"github.com/0xPolygon/beethoven/workflow"
 )
 
 const appName = "cdk-beethoven"
@@ -135,13 +136,15 @@ func start(cliCtx *cli.Context) error {
 		etm,
 	)
 
+	workflow := workflow.New(c, addr, &ethMan)
+
 	// Register services
 	server := jRPC.NewServer(
 		c.RPC,
 		[]jRPC.Service{
 			{
 				Name:    rpc.INTEROP,
-				Service: rpc.NewInteropEndpoints(ctx, executor, storage),
+				Service: rpc.NewInteropEndpoints(ctx, executor, workflow, storage),
 			},
 		},
 	)
