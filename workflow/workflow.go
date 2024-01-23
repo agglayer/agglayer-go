@@ -52,7 +52,7 @@ func (w *Workflow) Query(_ context.Context, _ *types.RequestQuery) (*types.Respo
 // Mempool Connection
 // Validate a tx for the mempool
 func (w *Workflow) CheckTx(_ context.Context, _ *types.RequestCheckTx) (*types.ResponseCheckTx, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented") // TODO: It should do the soundness check
 }
 
 // Consensus Connection
@@ -62,15 +62,11 @@ func (w *Workflow) InitChain(_ context.Context, _ *types.RequestInitChain) (*typ
 }
 
 func (w *Workflow) PrepareProposal(_ context.Context, _ *types.RequestPrepareProposal) (*types.ResponsePrepareProposal, error) {
-	if err := w.Execute(); err != nil {
-		return nil, err
-	}
-
-	return &types.ResponsePrepareProposal{}, nil
+	panic("not implemented") // TODO: It should do the aggregation and ordering/sequencing
 }
 
 func (w *Workflow) ProcessProposal(_ context.Context, _ *types.RequestProcessProposal) (*types.ResponseProcessProposal, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented") // TODO: It should do the verification of the final proof and perform the soundness check
 }
 
 // Deliver the decided block with its txs to the Application
