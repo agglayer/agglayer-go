@@ -6,10 +6,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/0xPolygon/beethoven/config"
-	"github.com/0xPolygon/beethoven/mocks"
-	"github.com/0xPolygon/beethoven/tx"
-
+	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	rpctypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/log"
@@ -18,6 +15,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/0xPolygon/beethoven/config"
+	"github.com/0xPolygon/beethoven/mocks"
+	"github.com/0xPolygon/beethoven/tx"
 )
 
 func TestNewExecutor(t *testing.T) {
@@ -269,7 +270,7 @@ func TestExecutor_GetTxStatus(t *testing.T) {
 
 	hash := common.HexToHash("0x1234567890abcdef")
 	expectedResult := "0x1"
-	expectedError := rpctypes.NewRPCError(rpctypes.DefaultErrorCode, "failed to get tx, error: sampleError")
+	expectedError := jRPC.NewRPCError(rpctypes.DefaultErrorCode, "failed to get tx, error: sampleError")
 
 	ethTxManager.On("Result", mock.Anything, ethTxManOwner, hash.Hex(), dbTx).
 		Return(ethtxmanager.MonitoredTxResult{

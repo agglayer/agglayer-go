@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/0xPolygon/beethoven/interop"
-	"github.com/0xPolygon/beethoven/types"
-
-	rpctypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
+	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/common"
 
+	"github.com/0xPolygon/beethoven/interop"
 	"github.com/0xPolygon/beethoven/tx"
+	"github.com/0xPolygon/beethoven/types"
 )
 
 // INTEROP is the namespace of the interop service
@@ -40,25 +39,25 @@ func NewInteropEndpoints(
 	}
 }
 
-func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, rpctypes.Error) {
+func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, jRPC.Error) {
 	// Check if the RPC is actually registered, if not it won't be possible to assert soundness (in the future once we are stateless won't be needed)
 	if err := i.executor.CheckTx(signedTx); err != nil {
-		return "0x0", rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("there is no RPC registered for %d", signedTx.Tx.RollupID))
+		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("there is no RPC registered for %d", signedTx.Tx.RollupID))
 	}
 
 	// Verify ZKP using eth_call
 	if err := i.executor.Verify(i.ctx, signedTx); err != nil {
-		return "0x0", rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("failed to verify tx: %s", err))
+		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to verify tx: %s", err))
 	}
 
 	if err := i.executor.Execute(i.ctx, signedTx); err != nil {
-		return "0x0", rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("failed to execute tx: %s", err))
+		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to execute tx: %s", err))
 	}
 
 	// Send L1 tx
 	dbTx, err := i.db.BeginStateTransaction(i.ctx)
 	if err != nil {
-		return "0x0", rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", err))
+		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", err))
 	}
 
 	_, err = i.executor.Settle(i.ctx, signedTx, dbTx)
@@ -66,21 +65,21 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, rpctypes.E
 		if errRollback := dbTx.Rollback(i.ctx); errRollback != nil {
 			log.Error("rollback err: ", errRollback)
 		}
-		return "0x0", rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("failed to add tx to ethTxMan, error: %s", err))
+		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to add tx to ethTxMan, error: %s", err))
 	}
 	if err := dbTx.Commit(i.ctx); err != nil {
-		return "0x0", rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("failed to commit dbTx, error: %s", err))
+		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to commit dbTx, error: %s", err))
 	}
 	log.Debugf("successfuly added tx %s to ethTxMan", signedTx.Tx.Hash().Hex())
 
 	return signedTx.Tx.Hash(), nil
 }
 
-func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, err rpctypes.Error) {
+func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, err jRPC.Error) {
 	dbTx, innerErr := i.db.BeginStateTransaction(i.ctx)
 	if innerErr != nil {
 		result = "0x0"
-		err = rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", innerErr))
+		err = jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", innerErr))
 
 		return
 	}
@@ -88,14 +87,14 @@ func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, er
 	defer func() {
 		if innerErr := dbTx.Rollback(i.ctx); innerErr != nil {
 			result = "0x0"
-			err = rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("failed to rollback dbTx, error: %s", innerErr))
+			err = jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to rollback dbTx, error: %s", innerErr))
 		}
 	}()
 
 	result, innerErr = i.executor.GetTxStatus(i.ctx, hash, dbTx)
 	if innerErr != nil {
 		result = "0x0"
-		err = rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", innerErr))
+		err = jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", innerErr))
 
 		return
 	}
