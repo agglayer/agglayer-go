@@ -10,8 +10,8 @@ import (
 	"github.com/0xPolygon/beethoven/tx"
 	"github.com/0xPolygon/beethoven/types"
 
+	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
-	rpctypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -168,11 +168,11 @@ func (e *Executor) Settle(ctx context.Context, signedTx tx.SignedTx, dbTx pgx.Tx
 	return signedTx.Tx.Hash(), nil
 }
 
-func (e *Executor) GetTxStatus(ctx context.Context, hash common.Hash, dbTx pgx.Tx) (result string, err rpctypes.Error) {
+func (e *Executor) GetTxStatus(ctx context.Context, hash common.Hash, dbTx pgx.Tx) (result string, err jRPC.Error) {
 	res, innerErr := e.ethTxMan.Result(ctx, ethTxManOwner, hash.Hex(), dbTx)
 	if innerErr != nil {
 		result = "0x0"
-		err = rpctypes.NewRPCError(rpctypes.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", innerErr))
+		err = jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", innerErr))
 
 		return
 	}
