@@ -8,11 +8,10 @@ import (
 	"time"
 
 	"github.com/0xPolygon/beethoven/rpc/types"
+	"github.com/0xPolygon/beethoven/tx"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
 	"github.com/ethereum/go-ethereum/common"
-
-	"github.com/0xPolygon/beethoven/tx"
 )
 
 // ClientFactoryInterface interface for the client factory
