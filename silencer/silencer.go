@@ -123,7 +123,7 @@ func (s *Silencer) verifySignature(stx tx.SignedTx) error {
 
 	trustedSequencer, err := s.etherman.GetSequencerAddr(stx.Data.RollupID)
 	if err != nil {
-		return errors.New("failed to get trusted sequencer address")
+		return fmt.Errorf("failed to get trusted sequencer address: %w", err)
 	}
 
 	if trustedSequencer != signer {

@@ -35,68 +35,259 @@ func TestSilencer_New(t *testing.T) {
 }
 
 func TestSilencer_Silence(t *testing.T) {
+	tests := []struct {
+		name               string
+		txStateRoot        common.Hash
+		txLocalExitRoot    common.Hash
+		batchStateRoot     common.Hash
+		batchLocalExitRoot common.Hash
+		clientErr          error
+		expectedErrMsg     string
+	}{
+		{
+			name:            "happy path",
+			txStateRoot:     common.BytesToHash([]byte("sampleNewStateRoot")),
+			txLocalExitRoot: common.BytesToHash([]byte("sampleExitRoot")),
+			clientErr:       nil,
+			expectedErrMsg:  "",
+		},
+		{
+			name:            "failed to retrieve batch",
+			txStateRoot:     common.BytesToHash([]byte("sampleNewStateRoot")),
+			txLocalExitRoot: common.BytesToHash([]byte("sampleExitRoot")),
+			clientErr:       errors.New("timeout"),
+			expectedErrMsg:  "failed to get batch from our node: timeout",
+		},
+		{
+			name:               "state roots mismatch",
+			txStateRoot:        common.BytesToHash([]byte("txStateRoot")),
+			txLocalExitRoot:    common.BytesToHash([]byte("txExitRoot")),
+			batchStateRoot:     common.BytesToHash([]byte("batchStateRoot")),
+			batchLocalExitRoot: common.BytesToHash([]byte("batchExitRoot")),
+			clientErr:          nil,
+			expectedErrMsg:     "mismatch in state roots detected",
+		},
+		{
+			name:               "local exit roots mismatch",
+			txStateRoot:        common.BytesToHash([]byte("stateRoot")),
+			txLocalExitRoot:    common.BytesToHash([]byte("txExitRoot")),
+			batchStateRoot:     common.BytesToHash([]byte("stateRoot")),
+			batchLocalExitRoot: common.BytesToHash([]byte("batchExitRoot")),
+			clientErr:          nil,
+			expectedErrMsg:     "mismatch in local exit roots detected",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			const rollupID = uint32(10)
+
+			cfg := &config.Config{FullNodeRPCs: map[uint32]string{rollupID: "http://localhost:10000"}}
+			interopAdminAddr := common.HexToAddress("0x1001")
+
+			createMockEtherman := func(sequencerAddr common.Address) *mocks.EthermanMock {
+				etherman := mocks.NewEthermanMock(t)
+				etherman.On("BuildTrustedVerifyBatchesTxData",
+					mock.Anything,
+					mock.Anything,
+					mock.Anything,
+					mock.Anything,
+				).Return([]byte{}, nil).Once()
+
+				etherman.On("CallContract",
+					mock.Anything,
+					mock.Anything,
+					mock.Anything,
+				).Return([]byte{}, nil).Once()
+
+				etherman.On(
+					"GetSequencerAddr",
+					mock.Anything,
+				).Return(
+					sequencerAddr,
+					nil,
+				).Once()
+
+				return etherman
+			}
+
+			setupMockZkEVMClient := func(batchStateRoot, batchLocalExitRoot common.Hash, err error) (
+				*mocks.ZkEVMClientClientCreatorMock,
+				*mocks.ZkEVMClientMock) {
+				clientMock := mocks.NewZkEVMClientMock(t)
+				if err == nil {
+					batch := &rpctypes.Batch{
+						StateRoot:     batchStateRoot,
+						LocalExitRoot: batchLocalExitRoot,
+					}
+					clientMock.On("BatchByNumber", mock.Anything, mock.Anything).
+						Return(batch, nil).Once()
+				} else {
+					clientMock.On("BatchByNumber", mock.Anything, mock.Anything).
+						Return(nil, err).Once()
+				}
+
+				clientCreatorMock := mocks.NewZkEVMClientClientCreatorMock(t)
+				clientCreatorMock.On("NewClient", mock.Anything).
+					Return(clientMock).Once()
+
+				return clientCreatorMock, clientMock
+			}
+
+			tx := tx.Tx{
+				LastVerifiedBatch: 1,
+				NewVerifiedBatch:  2,
+				RollupID:          rollupID,
+				ZKP: tx.ZKP{
+					NewStateRoot:     tt.txStateRoot,
+					NewLocalExitRoot: tt.txLocalExitRoot,
+				},
+			}
+
+			sequencerKey, err := crypto.GenerateKey()
+			require.NoError(t, err)
+
+			signedTx, err := tx.Sign(sequencerKey)
+			require.NoError(t, err)
+
+			etherman := createMockEtherman(crypto.PubkeyToAddress(sequencerKey.PublicKey))
+			batchStateRoot := tx.ZKP.NewStateRoot
+			batchLocalExitRoot := tx.ZKP.NewLocalExitRoot
+			if (tt.batchStateRoot != common.Hash{}) {
+				batchStateRoot = tt.batchStateRoot
+			}
+			if (tt.batchLocalExitRoot != common.Hash{}) {
+				batchLocalExitRoot = tt.batchLocalExitRoot
+			}
+			clientCreatorMock, clientMock := setupMockZkEVMClient(batchStateRoot, batchLocalExitRoot, tt.clientErr)
+
+			silencer := New(cfg, interopAdminAddr, etherman, clientCreatorMock)
+			err = silencer.Silence(context.Background(), *signedTx)
+
+			if tt.expectedErrMsg != "" {
+				require.ErrorContains(t, err, tt.expectedErrMsg)
+			} else {
+				require.NoError(t, err)
+			}
+
+			clientCreatorMock.AssertExpectations(t)
+			clientMock.AssertExpectations(t)
+		})
+	}
+}
+
+func TestSilencer_SilenceOld(t *testing.T) {
 	const rollupID = uint32(10)
 	cfg := &config.Config{FullNodeRPCs: map[uint32]string{
 		rollupID: "http://localhost:10000",
 	}}
-	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	tx := tx.Tx{
-		LastVerifiedBatch: 1,
-		NewVerifiedBatch:  2,
-		RollupID:          rollupID,
-		ZKP: tx.ZKP{
-			NewStateRoot: common.BytesToHash([]byte("sampleNewStateRoot")),
-			Proof:        []byte("sampleProof"),
-		},
+	interopAdminAddr := common.HexToAddress("0x1001")
+
+	createMockEtherman := func(sequencerAddr common.Address) *mocks.EthermanMock {
+		etherman := mocks.NewEthermanMock(t)
+		etherman.On("BuildTrustedVerifyBatchesTxData",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).Return([]byte{}, nil).Once()
+
+		etherman.On("CallContract",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).Return([]byte{}, nil).Once()
+
+		etherman.On(
+			"GetSequencerAddr",
+			mock.Anything,
+		).Return(
+			sequencerAddr,
+			nil,
+		).Once()
+
+		return etherman
 	}
 
-	etherman := mocks.NewEthermanMock(t)
-	etherman.On("BuildTrustedVerifyBatchesTxData",
-		mock.Anything,
-		mock.Anything,
-		mock.Anything,
-		mock.Anything,
-	).Return([]byte{}, nil).Once()
+	setupMockZkEVMClient := func(batchStateRoot, batchLocalExitRoot common.Hash, err error) (*mocks.ZkEVMClientClientCreatorMock, *mocks.ZkEVMClientMock) {
+		clientMock := mocks.NewZkEVMClientMock(t)
+		if err == nil {
+			batch := &rpctypes.Batch{
+				StateRoot:     batchStateRoot,
+				LocalExitRoot: batchLocalExitRoot,
+			}
+			clientMock.On("BatchByNumber", mock.Anything, mock.Anything).
+				Return(batch, nil).Once()
+		} else {
+			clientMock.On("BatchByNumber", mock.Anything, mock.Anything).
+				Return(nil, err).Once()
+		}
 
-	etherman.On("CallContract",
-		mock.Anything,
-		mock.Anything,
-		mock.Anything,
-	).Return([]byte{}, nil).Once()
+		clientCreatorMock := mocks.NewZkEVMClientClientCreatorMock(t)
+		clientCreatorMock.On("NewClient", mock.Anything).
+			Return(clientMock).Once()
 
-	// Mock the ZkEVMClientCreator.NewClient method
-	mockZkEVMClientCreator := mocks.NewZkEVMClientClientCreatorMock(t)
-	mockZkEVMClient := mocks.NewZkEVMClientMock(t)
+		return clientCreatorMock, clientMock
+	}
 
-	mockZkEVMClientCreator.On("NewClient", mock.Anything).
-		Return(mockZkEVMClient).Once()
-	mockZkEVMClient.On("BatchByNumber", mock.Anything, mock.Anything).
-		Return(&rpctypes.Batch{
-			StateRoot:     tx.ZKP.NewStateRoot,
-			LocalExitRoot: tx.ZKP.NewLocalExitRoot,
-		}, nil).Once()
+	t.Run("happy path", func(t *testing.T) {
+		tx := tx.Tx{
+			LastVerifiedBatch: 1,
+			NewVerifiedBatch:  2,
+			RollupID:          rollupID,
+			ZKP: tx.ZKP{
+				NewStateRoot: common.BytesToHash([]byte("sampleNewStateRoot")),
+				Proof:        []byte("sampleProof"),
+			},
+		}
 
-	pk, err := crypto.GenerateKey()
-	require.NoError(t, err)
+		sequencerKey, err := crypto.GenerateKey()
+		require.NoError(t, err)
 
-	signedTx, err := tx.Sign(pk)
-	require.NoError(t, err)
+		signedTx, err := tx.Sign(sequencerKey)
+		require.NoError(t, err)
 
-	etherman.On(
-		"GetSequencerAddr",
-		mock.Anything,
-	).Return(
-		crypto.PubkeyToAddress(pk.PublicKey),
-		nil,
-	).Once()
+		etherman := createMockEtherman(crypto.PubkeyToAddress(sequencerKey.PublicKey))
+		clientCreatorMock, clientMock := setupMockZkEVMClient(tx.ZKP.NewStateRoot, tx.ZKP.NewLocalExitRoot, nil)
 
-	silencer := New(cfg, interopAdminAddr, etherman, mockZkEVMClientCreator)
+		silencer := New(cfg, interopAdminAddr, etherman, clientCreatorMock)
 
-	err = silencer.Silence(context.Background(), *signedTx)
-	require.NoError(t, err)
+		err = silencer.Silence(context.Background(), *signedTx)
+		require.NoError(t, err)
 
-	mockZkEVMClientCreator.AssertExpectations(t)
-	mockZkEVMClient.AssertExpectations(t)
+		clientCreatorMock.AssertExpectations(t)
+		clientMock.AssertExpectations(t)
+	})
+
+	t.Run("failed to retrieve batch", func(t *testing.T) {
+		expectedErr := errors.New("timeout")
+		tx := tx.Tx{
+			LastVerifiedBatch: 1,
+			NewVerifiedBatch:  2,
+			RollupID:          rollupID,
+			ZKP: tx.ZKP{
+				NewStateRoot: common.BytesToHash([]byte("sampleNewStateRoot")),
+				Proof:        []byte("sampleProof"),
+			},
+		}
+
+		sequencerKey, err := crypto.GenerateKey()
+		require.NoError(t, err)
+
+		signedTx, err := tx.Sign(sequencerKey)
+		require.NoError(t, err)
+
+		etherman := createMockEtherman(crypto.PubkeyToAddress(sequencerKey.PublicKey))
+		clientCreatorMock, clientMock := setupMockZkEVMClient(common.Hash{}, common.Hash{}, expectedErr)
+
+		silencer := New(cfg, interopAdminAddr, etherman, clientCreatorMock)
+
+		err = silencer.Silence(context.Background(), *signedTx)
+		require.ErrorContains(t, err, fmt.Sprintf("failed to get batch from our node: %s", expectedErr.Error()))
+
+		clientCreatorMock.AssertExpectations(t)
+		clientMock.AssertExpectations(t)
+	})
 }
 
 func TestSilencer_verify(t *testing.T) {
@@ -158,7 +349,7 @@ func TestSilencer_verify(t *testing.T) {
 		etherman.AssertExpectations(t)
 	})
 
-	t.Run("signature verification failure", func(t *testing.T) {
+	t.Run("signature verification failure (no signature)", func(t *testing.T) {
 		etherman := mocks.NewEthermanMock(t)
 		etherman.On("BuildTrustedVerifyBatchesTxData",
 			mock.Anything,
@@ -177,5 +368,79 @@ func TestSilencer_verify(t *testing.T) {
 		stx := tx.SignedTx{Data: tx.Tx{RollupID: defaultRollupID}}
 		err := s.verify(context.Background(), stx)
 		require.ErrorContains(t, err, "failed to resolve signer: invalid signature length")
+	})
+
+	t.Run("signature verification failure (failed to retrieve sequencer addr)", func(t *testing.T) {
+		getSequencerAddrErr := errors.New("execution failed")
+
+		etherman := mocks.NewEthermanMock(t)
+		etherman.On("BuildTrustedVerifyBatchesTxData",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).Return([]byte{}, nil).Once()
+
+		etherman.On("CallContract",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).Return([]byte{}, nil).Once()
+
+		etherman.On(
+			"GetSequencerAddr",
+			mock.Anything,
+		).Return(
+			common.Address{},
+			getSequencerAddrErr,
+		).Once()
+
+		s := createSilencer(defaultCfg, etherman)
+		txData := tx.Tx{RollupID: defaultRollupID}
+
+		pk, err := crypto.GenerateKey()
+		require.NoError(t, err)
+
+		signedTx, err := txData.Sign(pk)
+		require.NoError(t, err)
+
+		err = s.verify(context.Background(), *signedTx)
+		require.ErrorContains(t, err, fmt.Sprintf("failed to get trusted sequencer address: %s", getSequencerAddrErr.Error()))
+	})
+
+	t.Run("signature verification failure (sequencer is not the tx signer)", func(t *testing.T) {
+		etherman := mocks.NewEthermanMock(t)
+		etherman.On("BuildTrustedVerifyBatchesTxData",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).Return([]byte{}, nil).Once()
+
+		etherman.On("CallContract",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).Return([]byte{}, nil).Once()
+
+		etherman.On(
+			"GetSequencerAddr",
+			mock.Anything,
+		).Return(
+			common.HexToAddress("0x12345"),
+			nil,
+		).Once()
+
+		s := createSilencer(defaultCfg, etherman)
+		txData := tx.Tx{RollupID: defaultRollupID}
+
+		pk, err := crypto.GenerateKey()
+		require.NoError(t, err)
+
+		signedTx, err := txData.Sign(pk)
+		require.NoError(t, err)
+
+		err = s.verify(context.Background(), *signedTx)
+		require.ErrorContains(t, err, "unexpected signer")
 	})
 }
