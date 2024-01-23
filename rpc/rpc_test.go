@@ -575,7 +575,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 			isSignerValid:     true,
 			canGetBatch:       true,
 			isBatchValid:      false,
-			expectedError:     "Mismatch detected",
+			expectedError:     "mismatch in state roots detected",
 		})
 	})
 
