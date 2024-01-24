@@ -48,7 +48,7 @@ func (e *Executor) Settle(ctx context.Context, signedTx tx.SignedTx, dbTx pgx.Tx
 		signedTx.Data.RollupID,
 	)
 	if err != nil {
-		return common.Hash{}, fmt.Errorf("failed to build verify ZKP tx: %s", err)
+		return common.Hash{}, fmt.Errorf("failed to build ZK proof verification tx data: %w", err)
 	}
 
 	if err := e.ethTxMan.Add(
@@ -62,7 +62,7 @@ func (e *Executor) Settle(ctx context.Context, signedTx tx.SignedTx, dbTx pgx.Tx
 		0,
 		dbTx,
 	); err != nil {
-		return common.Hash{}, fmt.Errorf("failed to add tx to ethTxMan, error: %s", err)
+		return common.Hash{}, fmt.Errorf("failed to add tx to ethTxMan, error: %w", err)
 	}
 	log.Debugf("successfuly added tx %s to ethTxMan", signedTx.Data.Hash().Hex())
 	return signedTx.Data.Hash(), nil
