@@ -1,0 +1,36 @@
+with-expecter: true
+dir: "mocks"
+filename: "{{.InterfaceName | lower }}.generated.go"
+mockname: "{{.InterfaceName}}"
+outpkg: "mocks"
+packages:
+  github.com/0xPolygon/beethoven/etherman:
+    config:
+    interfaces:
+      IEthereumClient:
+        config:
+          mockname: EthereumClientMock
+          filename: etherman_client.generated.go
+  github.com/0xPolygon/beethoven/types:
+    config:
+    interfaces:
+      IDB:
+        config:
+          mockname: DBMock
+          filename: db.generated.go
+      IEtherman:
+        config:
+          mockname: EthermanMock
+          filename: etherman.generated.go
+      IEthTxManager:
+        config:
+          mockname: EthTxManagerMock
+          filename: eth_tx_manager.generated.go
+      IZkEVMClient:
+        config:
+          mockname: ZkEVMClientMock
+          filename: zk_evm_client.generated.go
+      IZkEVMClientClientCreator:
+        config:
+          mockname: ZkEVMClientClientCreatorMock
+          filename: zk_evm_client_creator.generated.go

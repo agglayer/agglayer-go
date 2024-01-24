@@ -20,6 +20,14 @@ type EthermanMock struct {
 	mock.Mock
 }
 
+type EthermanMock_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *EthermanMock) EXPECT() *EthermanMock_Expecter {
+	return &EthermanMock_Expecter{mock: &_m.Mock}
+}
+
 // BuildTrustedVerifyBatchesTxData provides a mock function with given fields: lastVerifiedBatch, newVerifiedBatch, proof, rollupId
 func (_m *EthermanMock) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch uint64, newVerifiedBatch uint64, proof tx.ZKP, rollupId uint32) ([]byte, error) {
 	ret := _m.Called(lastVerifiedBatch, newVerifiedBatch, proof, rollupId)
@@ -48,6 +56,37 @@ func (_m *EthermanMock) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch uint64
 	}
 
 	return r0, r1
+}
+
+// EthermanMock_BuildTrustedVerifyBatchesTxData_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'BuildTrustedVerifyBatchesTxData'
+type EthermanMock_BuildTrustedVerifyBatchesTxData_Call struct {
+	*mock.Call
+}
+
+// BuildTrustedVerifyBatchesTxData is a helper method to define mock.On call
+//   - lastVerifiedBatch uint64
+//   - newVerifiedBatch uint64
+//   - proof tx.ZKP
+//   - rollupId uint32
+func (_e *EthermanMock_Expecter) BuildTrustedVerifyBatchesTxData(lastVerifiedBatch interface{}, newVerifiedBatch interface{}, proof interface{}, rollupId interface{}) *EthermanMock_BuildTrustedVerifyBatchesTxData_Call {
+	return &EthermanMock_BuildTrustedVerifyBatchesTxData_Call{Call: _e.mock.On("BuildTrustedVerifyBatchesTxData", lastVerifiedBatch, newVerifiedBatch, proof, rollupId)}
+}
+
+func (_c *EthermanMock_BuildTrustedVerifyBatchesTxData_Call) Run(run func(lastVerifiedBatch uint64, newVerifiedBatch uint64, proof tx.ZKP, rollupId uint32)) *EthermanMock_BuildTrustedVerifyBatchesTxData_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(uint64), args[1].(uint64), args[2].(tx.ZKP), args[3].(uint32))
+	})
+	return _c
+}
+
+func (_c *EthermanMock_BuildTrustedVerifyBatchesTxData_Call) Return(data []byte, err error) *EthermanMock_BuildTrustedVerifyBatchesTxData_Call {
+	_c.Call.Return(data, err)
+	return _c
+}
+
+func (_c *EthermanMock_BuildTrustedVerifyBatchesTxData_Call) RunAndReturn(run func(uint64, uint64, tx.ZKP, uint32) ([]byte, error)) *EthermanMock_BuildTrustedVerifyBatchesTxData_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // CallContract provides a mock function with given fields: ctx, call, blockNumber
@@ -80,6 +119,36 @@ func (_m *EthermanMock) CallContract(ctx context.Context, call ethereum.CallMsg,
 	return r0, r1
 }
 
+// EthermanMock_CallContract_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CallContract'
+type EthermanMock_CallContract_Call struct {
+	*mock.Call
+}
+
+// CallContract is a helper method to define mock.On call
+//   - ctx context.Context
+//   - call ethereum.CallMsg
+//   - blockNumber *big.Int
+func (_e *EthermanMock_Expecter) CallContract(ctx interface{}, call interface{}, blockNumber interface{}) *EthermanMock_CallContract_Call {
+	return &EthermanMock_CallContract_Call{Call: _e.mock.On("CallContract", ctx, call, blockNumber)}
+}
+
+func (_c *EthermanMock_CallContract_Call) Run(run func(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int)) *EthermanMock_CallContract_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(ethereum.CallMsg), args[2].(*big.Int))
+	})
+	return _c
+}
+
+func (_c *EthermanMock_CallContract_Call) Return(_a0 []byte, _a1 error) *EthermanMock_CallContract_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *EthermanMock_CallContract_Call) RunAndReturn(run func(context.Context, ethereum.CallMsg, *big.Int) ([]byte, error)) *EthermanMock_CallContract_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetSequencerAddr provides a mock function with given fields: rollupId
 func (_m *EthermanMock) GetSequencerAddr(rollupId uint32) (common.Address, error) {
 	ret := _m.Called(rollupId)
@@ -108,6 +177,34 @@ func (_m *EthermanMock) GetSequencerAddr(rollupId uint32) (common.Address, error
 	}
 
 	return r0, r1
+}
+
+// EthermanMock_GetSequencerAddr_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetSequencerAddr'
+type EthermanMock_GetSequencerAddr_Call struct {
+	*mock.Call
+}
+
+// GetSequencerAddr is a helper method to define mock.On call
+//   - rollupId uint32
+func (_e *EthermanMock_Expecter) GetSequencerAddr(rollupId interface{}) *EthermanMock_GetSequencerAddr_Call {
+	return &EthermanMock_GetSequencerAddr_Call{Call: _e.mock.On("GetSequencerAddr", rollupId)}
+}
+
+func (_c *EthermanMock_GetSequencerAddr_Call) Run(run func(rollupId uint32)) *EthermanMock_GetSequencerAddr_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(uint32))
+	})
+	return _c
+}
+
+func (_c *EthermanMock_GetSequencerAddr_Call) Return(_a0 common.Address, _a1 error) *EthermanMock_GetSequencerAddr_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *EthermanMock_GetSequencerAddr_Call) RunAndReturn(run func(uint32) (common.Address, error)) *EthermanMock_GetSequencerAddr_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // NewEthermanMock creates a new instance of EthermanMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

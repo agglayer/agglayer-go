@@ -16,6 +16,14 @@ type ZkEVMClientMock struct {
 	mock.Mock
 }
 
+type ZkEVMClientMock_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *ZkEVMClientMock) EXPECT() *ZkEVMClientMock_Expecter {
+	return &ZkEVMClientMock_Expecter{mock: &_m.Mock}
+}
+
 // BatchByNumber provides a mock function with given fields: ctx, number
 func (_m *ZkEVMClientMock) BatchByNumber(ctx context.Context, number *big.Int) (*types.Batch, error) {
 	ret := _m.Called(ctx, number)
@@ -44,6 +52,35 @@ func (_m *ZkEVMClientMock) BatchByNumber(ctx context.Context, number *big.Int) (
 	}
 
 	return r0, r1
+}
+
+// ZkEVMClientMock_BatchByNumber_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'BatchByNumber'
+type ZkEVMClientMock_BatchByNumber_Call struct {
+	*mock.Call
+}
+
+// BatchByNumber is a helper method to define mock.On call
+//   - ctx context.Context
+//   - number *big.Int
+func (_e *ZkEVMClientMock_Expecter) BatchByNumber(ctx interface{}, number interface{}) *ZkEVMClientMock_BatchByNumber_Call {
+	return &ZkEVMClientMock_BatchByNumber_Call{Call: _e.mock.On("BatchByNumber", ctx, number)}
+}
+
+func (_c *ZkEVMClientMock_BatchByNumber_Call) Run(run func(ctx context.Context, number *big.Int)) *ZkEVMClientMock_BatchByNumber_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*big.Int))
+	})
+	return _c
+}
+
+func (_c *ZkEVMClientMock_BatchByNumber_Call) Return(_a0 *types.Batch, _a1 error) *ZkEVMClientMock_BatchByNumber_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *ZkEVMClientMock_BatchByNumber_Call) RunAndReturn(run func(context.Context, *big.Int) (*types.Batch, error)) *ZkEVMClientMock_BatchByNumber_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // NewZkEVMClientMock creates a new instance of ZkEVMClientMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

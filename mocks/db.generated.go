@@ -14,6 +14,14 @@ type DBMock struct {
 	mock.Mock
 }
 
+type DBMock_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *DBMock) EXPECT() *DBMock_Expecter {
+	return &DBMock_Expecter{mock: &_m.Mock}
+}
+
 // BeginStateTransaction provides a mock function with given fields: ctx
 func (_m *DBMock) BeginStateTransaction(ctx context.Context) (pgx.Tx, error) {
 	ret := _m.Called(ctx)
@@ -42,6 +50,34 @@ func (_m *DBMock) BeginStateTransaction(ctx context.Context) (pgx.Tx, error) {
 	}
 
 	return r0, r1
+}
+
+// DBMock_BeginStateTransaction_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'BeginStateTransaction'
+type DBMock_BeginStateTransaction_Call struct {
+	*mock.Call
+}
+
+// BeginStateTransaction is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *DBMock_Expecter) BeginStateTransaction(ctx interface{}) *DBMock_BeginStateTransaction_Call {
+	return &DBMock_BeginStateTransaction_Call{Call: _e.mock.On("BeginStateTransaction", ctx)}
+}
+
+func (_c *DBMock_BeginStateTransaction_Call) Run(run func(ctx context.Context)) *DBMock_BeginStateTransaction_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *DBMock_BeginStateTransaction_Call) Return(_a0 pgx.Tx, _a1 error) *DBMock_BeginStateTransaction_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *DBMock_BeginStateTransaction_Call) RunAndReturn(run func(context.Context) (pgx.Tx, error)) *DBMock_BeginStateTransaction_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // NewDBMock creates a new instance of DBMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
