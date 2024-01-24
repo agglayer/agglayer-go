@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/tx"
 	"github.com/0xPolygon/beethoven/types"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
 )
 
-//go:generate mockery --name ISilencer --structname SilencerMock --output ../mocks --case=underscore --filename silencer.generated.go
 type ISilencer interface {
 	Silence(ctx context.Context, signedTx tx.SignedTx) error
 }

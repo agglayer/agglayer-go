@@ -11,6 +11,13 @@ packages:
         config:
           mockname: EthereumClientMock
           filename: etherman_client.generated.go
+  github.com/0xPolygon/beethoven/silencer:
+    config:
+    interfaces:
+      ISilencer:
+        config:
+          mockname: SilencerMock
+          filename: silencer.generated.go
   github.com/0xPolygon/beethoven/types:
     config:
     interfaces:
