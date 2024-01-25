@@ -65,6 +65,7 @@ services:
 
   zkevm-prover:
     image: hermeznetwork/zkevm-prover:v3.0.2
+    platform: linux/amd64
     command: [
       "zkProver",
       "-c",
@@ -82,7 +83,8 @@ services:
       - agglayer-localnet
 
   zkevm-node:
-    image: hermeznetwork/cdk-validium-node:agglayer-v0.0.1
+    image: 0xpolygon/cdk-validium-node:agglayer-v0.0.1
+    platform: linux/amd64
     command:
       - "/bin/sh"
       - "-c"
