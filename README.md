@@ -1,4 +1,4 @@
-# agglayer
+# Agglayer
 
 Agglayer is a web service that receives ZKPs from different CDK chains and checks the soundness of them before sending the ZKP to L1 for verification.
 
