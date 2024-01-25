@@ -19,22 +19,22 @@ type ISilencer interface {
 }
 
 type Silencer struct {
-	cfg                *config.Config
-	interopAdmin       common.Address
-	etherman           types.IEtherman
-	zkEVMClientCreator types.IZkEVMClientClientCreator
+	cfg               *config.Config
+	interopAdmin      common.Address
+	etherman          types.IEtherman
+	zkEVMClientsCache types.IZkEVMClientCache
 }
 
 // New returns new instance of Silencer
 func New(cfg *config.Config,
 	interopAdmin common.Address,
 	etherman types.IEtherman,
-	clientCreator types.IZkEVMClientClientCreator) *Silencer {
+	zkEVMClientsCache types.IZkEVMClientCache) *Silencer {
 	return &Silencer{
-		cfg:                cfg,
-		interopAdmin:       interopAdmin,
-		etherman:           etherman,
-		zkEVMClientCreator: clientCreator,
+		cfg:               cfg,
+		interopAdmin:      interopAdmin,
+		etherman:          etherman,
+		zkEVMClientsCache: zkEVMClientsCache,
 	}
 }
 
@@ -48,7 +48,7 @@ func (s *Silencer) Silence(ctx context.Context, signedTx tx.SignedTx) error {
 	// TODO: go stateless, depends on https://github.com/0xPolygonHermez/zkevm-prover/issues/581
 	// when this happens we should go async from here, since processing all the batches could take a lot of time
 	txData := signedTx.Data
-	zkEVMClient := s.zkEVMClientCreator.NewClient(s.cfg.FullNodeRPCs[txData.RollupID])
+	zkEVMClient := s.zkEVMClientsCache.GetClient(s.cfg.FullNodeRPCs[txData.RollupID])
 
 	batchNumber := new(big.Int).SetUint64(uint64(txData.NewVerifiedBatch))
 	batch, err := zkEVMClient.BatchByNumber(ctx, batchNumber)

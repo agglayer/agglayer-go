@@ -137,7 +137,7 @@ func start(cliCtx *cli.Context) error {
 		&ethMan,
 		etm,
 	)
-	silencer := silencer.New(c, addr, &ethMan, &types.ZkEVMClientCreator{})
+	silencer := silencer.New(c, addr, &ethMan, &types.ZkEVMClientCache{})
 	workflow := workflow.New(silencer)
 
 	// Register services

@@ -30,7 +30,7 @@ func TestSilencer_New(t *testing.T) {
 	require.Equal(t, interopAdmin, executor.interopAdmin)
 	require.Equal(t, cfg, executor.cfg)
 	require.Equal(t, etherman, executor.etherman)
-	require.Equal(t, clientCreator, executor.zkEVMClientCreator)
+	require.Equal(t, clientCreator, executor.zkEVMClientsCache)
 
 }
 
@@ -112,7 +112,7 @@ func TestSilencer_Silence(t *testing.T) {
 			}
 
 			setupMockZkEVMClient := func(batchStateRoot, batchLocalExitRoot common.Hash, err error) (
-				*mocks.ZkEVMClientClientCreatorMock,
+				*mocks.ZkEVMClientCacheMock,
 				*mocks.ZkEVMClientMock) {
 				clientMock := mocks.NewZkEVMClientMock(t)
 				if err == nil {
@@ -128,7 +128,7 @@ func TestSilencer_Silence(t *testing.T) {
 				}
 
 				clientCreatorMock := mocks.NewZkEVMClientClientCreatorMock(t)
-				clientCreatorMock.On("NewClient", mock.Anything).
+				clientCreatorMock.On("GetClient", mock.Anything).
 					Return(clientMock).Once()
 
 				return clientCreatorMock, clientMock
