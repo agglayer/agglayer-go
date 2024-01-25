@@ -25,10 +25,10 @@ Level = "debug"
 Outputs = ["stderr"]
 
 [DB]
-User = "beethoven_user"
-Password = "beethoven_password"
-Name = "beethoven_db"
-Host = "beethoven-db"
+User = "agglayer_user"
+Password = "agglayer_password"
+Name = "agglayer_db"
+Host = "agglayer-db"
 Port = "5432"
 EnableLog = false
 MaxConns = 200

@@ -22,16 +22,16 @@ import (
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/sdk/metric"
 
-	beethoven "github.com/0xPolygon/beethoven"
-	"github.com/0xPolygon/beethoven/config"
-	"github.com/0xPolygon/beethoven/db"
-	"github.com/0xPolygon/beethoven/etherman"
-	"github.com/0xPolygon/beethoven/interop"
-	"github.com/0xPolygon/beethoven/network"
-	"github.com/0xPolygon/beethoven/rpc"
+	agglayer "github.com/0xPolygon/agglayer"
+	"github.com/0xPolygon/agglayer/config"
+	"github.com/0xPolygon/agglayer/db"
+	"github.com/0xPolygon/agglayer/etherman"
+	"github.com/0xPolygon/agglayer/interop"
+	"github.com/0xPolygon/agglayer/network"
+	"github.com/0xPolygon/agglayer/rpc"
 )
 
-const appName = "cdk-beethoven"
+const appName = "cdk-agglayer"
 
 var (
 	configFileFlag = cli.StringFlag{
@@ -45,7 +45,7 @@ var (
 func main() {
 	app := cli.NewApp()
 	app.Name = appName
-	app.Version = beethoven.Version
+	app.Version = agglayer.Version
 	app.Commands = []*cli.Command{
 		{
 			Name:    "run",

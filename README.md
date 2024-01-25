@@ -1,6 +1,6 @@
-# Beethoven
+# Agglayer
 
-Beethoven is a web service that receives ZKPs from different CDK chains and checks the soundness of them before sending the ZKP to L1 for verification.
+Agglayer is a web service that receives ZKPs from different CDK chains and checks the soundness of them before sending the ZKP to L1 for verification.
 
 To find out more about Polygon, visit the [official website](https://wiki.polygon.technology/docs/cdk/).
 
@@ -25,13 +25,13 @@ make run-docker
 
 ## Production setup
 
-Currently only one instance of Beethoven can be running at the same time, so it should be automatically started in the case of failure using a containerized setup or an OS level service manager/monitoring system.
+Currently only one instance of agglayer can be running at the same time, so it should be automatically started in the case of failure using a containerized setup or an OS level service manager/monitoring system.
 
 ### Installation
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/0xPolygon/beethoven.git
+   git clone https://github.com/0xPolygon/agglayer.git
    ```
 3. Install Golang dependencies
    ```sh
@@ -43,7 +43,7 @@ Currently only one instance of Beethoven can be running at the same time, so it 
 * For each CDK chain it's necessary to configure it's corresponding RPC node, synced with the target CDK, this node is for checking the state root after executions of L2 batches.
 * It's recommended to have a durable HA PostgresDB for storage, prefer AWS Aurora Postgres or Cloud SQL for postgres in GCP.
 
-### Configuration of `beethoven.toml`
+### Configuration of `agglayer.toml`
     * Configure `[FullNodeRPCs]` to point to the corresponding L2 full node.
     * Configure `[L1]` to point to the corresponding L1 chain.
     * Configure the `[DB]` section with the managed database details.

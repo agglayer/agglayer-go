@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/0xPolygon/beethoven/rpc/types"
-	"github.com/0xPolygon/beethoven/tx"
+	"github.com/0xPolygon/agglayer/rpc/types"
+	"github.com/0xPolygon/agglayer/tx"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
 	"github.com/ethereum/go-ethereum/common"

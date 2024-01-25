@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/0xPolygon/beethoven/config"
+	"github.com/0xPolygon/agglayer/config"
 
 	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonrollupmanager"
 	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonzkevm"
@@ -20,7 +20,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jackc/pgx/v4"
 
-	"github.com/0xPolygon/beethoven/tx"
+	"github.com/0xPolygon/agglayer/tx"
 )
 
 const (
