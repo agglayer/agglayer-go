@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/0xPolygon/beethoven/config"
-	"github.com/0xPolygon/beethoven/tx"
-	"github.com/0xPolygon/beethoven/types"
+	"github.com/0xPolygon/agglayer/config"
+	"github.com/0xPolygon/agglayer/tx"
+	"github.com/0xPolygon/agglayer/types"
 
 	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"

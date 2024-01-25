@@ -54,41 +54,41 @@ GOBASE := $(shell pwd)
 GOBIN := $(GOBASE)/dist
 GOOS := $(shell uname -s  | tr '[:upper:]' '[:lower:]')
 GOENVVARS := GOBIN=$(GOBIN) CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(ARCH)
-GOBINARY := beethoven
+GOBINARY := agglayer
 GOCMD := $(GOBASE)/cmd
 
-LDFLAGS += -X 'github.com/0xPolygon/beethoven.Version=$(VERSION)'
-LDFLAGS += -X 'github.com/0xPolygon/beethoven.GitRev=$(GITREV)'
-LDFLAGS += -X 'github.com/0xPolygon/beethoven.GitBranch=$(GITBRANCH)'
-LDFLAGS += -X 'github.com/0xPolygon/beethoven.BuildDate=$(DATE)'
+LDFLAGS += -X 'github.com/0xPolygon/agglayer.Version=$(VERSION)'
+LDFLAGS += -X 'github.com/0xPolygon/agglayer.GitRev=$(GITREV)'
+LDFLAGS += -X 'github.com/0xPolygon/agglayer.GitBranch=$(GITBRANCH)'
+LDFLAGS += -X 'github.com/0xPolygon/agglayer.BuildDate=$(DATE)'
 
 .PHONY: build
 build: ## Builds the binary locally into ./dist
 	$(GOENVVARS) go build -ldflags "all=$(LDFLAGS)" -o $(GOBIN)/$(GOBINARY) $(GOCMD)
 
 .PHONY: build-docker
-build-docker: ## Builds a docker image with the beethoven binary
-	docker compose -f ./docker/docker-compose.yaml build beethoven
+build-docker: ## Builds a docker image with the agglayer binary
+	docker compose -f ./docker/docker-compose.yaml build agglayer
 
 .PHONY: build-docker-nc
-build-docker-nc: ## Builds a docker image with the beethoven binary - but without build cache
-	docker compose -f ./docker/docker-compose.yaml build --no-cache beethoven
+build-docker-nc: ## Builds a docker image with the agglayer binary - but without build cache
+	docker compose -f ./docker/docker-compose.yaml build --no-cache agglayer
 
 .PHONY: run-docker
-run-docker: ## Builds and runs beethoven with the default list of required services such as l1 and zkevm node
+run-docker: ## Builds and runs agglayer with the default list of required services such as l1 and zkevm node
 	docker compose -f ./docker/docker-compose.yaml up -d l1 zkevm-prover zkevm-node
-	docker compose -f ./docker/docker-compose.yaml up -d --build beethoven
+	docker compose -f ./docker/docker-compose.yaml up -d --build agglayer
 
 .PHONY: run-docker-bo
-run-docker-bo: ## Builds and runs beethoven only
-	docker compose -f ./docker/docker-compose.yaml up -d --build beethoven
+run-docker-bo: ## Builds and runs agglayer only
+	docker compose -f ./docker/docker-compose.yaml up -d --build agglayer
 
 .PHONY: stop-docker
-stop-docker: ## Stops beethoven container and other side services without removing state
+stop-docker: ## Stops agglayer container and other side services without removing state
 	docker compose -f ./docker/docker-compose.yaml stop
 
 .PHONY: destroy-docker
-destroy-docker: ## Stops and removes beethoven container and other side services
+destroy-docker: ## Stops and removes agglayer container and other side services
 	docker compose -f ./docker/docker-compose.yaml down
 
 .PHONY: install-linter
@@ -112,7 +112,7 @@ help: ## Prints the help
 
 .PHONY: e2e-tests
 e2e-tests: ## Runs E2E tests
-	go test -v -timeout=30m github.com/0xPolygon/beethoven/test
+	go test -v -timeout=30m github.com/0xPolygon/agglayer/test
 
 .PHONY: unit-tests
 unit-tests: ## Runs unit tests

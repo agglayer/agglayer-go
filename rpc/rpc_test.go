@@ -6,11 +6,11 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/0xPolygon/beethoven/config"
-	"github.com/0xPolygon/beethoven/interop"
-	"github.com/0xPolygon/beethoven/mocks"
+	"github.com/0xPolygon/agglayer/config"
+	"github.com/0xPolygon/agglayer/interop"
+	"github.com/0xPolygon/agglayer/mocks"
 
-	beethovenTypes "github.com/0xPolygon/beethoven/rpc/types"
+	agglayerTypes "github.com/0xPolygon/agglayer/rpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	validiumTypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/log"
@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/0xPolygon/beethoven/tx"
+	"github.com/0xPolygon/agglayer/tx"
 )
 
 func TestInteropEndpointsGetTxStatus(t *testing.T) {
@@ -152,8 +152,8 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 			1: "someRPC",
 		}
 		tnx := tx.Tx{
-			LastVerifiedBatch: beethovenTypes.ArgUint64(1),
-			NewVerifiedBatch:  *beethovenTypes.ArgUint64Ptr(2),
+			LastVerifiedBatch: agglayerTypes.ArgUint64(1),
+			NewVerifiedBatch:  *agglayerTypes.ArgUint64Ptr(2),
 			ZKP: tx.ZKP{
 				NewStateRoot:     common.BigToHash(big.NewInt(11)),
 				NewLocalExitRoot: common.BigToHash(big.NewInt(11)),
