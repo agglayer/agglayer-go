@@ -29,6 +29,8 @@ import (
 	"github.com/0xPolygon/beethoven/interop"
 	"github.com/0xPolygon/beethoven/network"
 	"github.com/0xPolygon/beethoven/rpc"
+	"github.com/0xPolygon/beethoven/silencer"
+	"github.com/0xPolygon/beethoven/types"
 	"github.com/0xPolygon/beethoven/workflow"
 )
 
@@ -135,8 +137,8 @@ func start(cliCtx *cli.Context) error {
 		&ethMan,
 		etm,
 	)
-
-	workflow := workflow.New(c, addr, &ethMan)
+	silencer := silencer.New(c, addr, &ethMan, &types.ZkEVMClientCreator{})
+	workflow := workflow.New(silencer)
 
 	// Register services
 	server := jRPC.NewServer(

@@ -40,7 +40,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			etherman,
 			mocks.NewEthTxManagerMock(t),
 		)
-		w := workflow.New(&config.Config{}, interopAdmin, etherman)
+		w := workflow.New(mocks.NewSilencerMock(t))
 		i := NewInteropEndpoints(context.Background(), e, w, dbMock)
 
 		result, err := i.GetTxStatus(common.HexToHash("0xsomeTxHash"))
@@ -76,7 +76,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			etherman,
 			txManagerMock,
 		)
-		w := workflow.New(&config.Config{}, interopAdmin, etherman)
+		w := workflow.New(mocks.NewSilencerMock(t))
 		i := NewInteropEndpoints(context.Background(), e, w, dbMock)
 
 		result, err := i.GetTxStatus(txHash)
@@ -124,7 +124,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			etherman,
 			txManagerMock,
 		)
-		w := workflow.New(&config.Config{}, interopAdmin, etherman)
+		w := workflow.New(mocks.NewSilencerMock(t))
 		i := NewInteropEndpoints(context.Background(), e, w, dbMock)
 
 		status, err := i.GetTxStatus(txHash)
@@ -164,7 +164,7 @@ func TestInteropEndpoints_SendTx(t *testing.T) {
 			tc.ethermanMock,
 			ethTxManagerMock,
 		)
-		w := workflow.New(&config.Config{}, interopAdmin, tc.ethermanMock, workflow.WithCustomSilencer(tc.silencerMock))
+		w := workflow.New(tc.silencerMock)
 		i := NewInteropEndpoints(context.Background(), e, w, tc.dbMock)
 
 		stx := tc.tx

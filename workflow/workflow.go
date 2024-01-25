@@ -4,17 +4,12 @@ import (
 	"context"
 
 	abciTypes "github.com/cometbft/cometbft/abci/types"
-	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/silencer"
 	"github.com/0xPolygon/beethoven/tx"
-	"github.com/0xPolygon/beethoven/types"
 )
 
 var _ abciTypes.Application = (*Workflow)(nil)
-
-type workflowOption func(*Workflow)
 
 type Workflow struct {
 	silencer silencer.ISilencer
@@ -22,22 +17,9 @@ type Workflow struct {
 	// aggregator *aggregator.Aggregator
 }
 
-func New(cfg *config.Config, interopAdmin common.Address, etherman types.IEtherman, opts ...workflowOption) *Workflow {
-	// TODO: instantiate sequencer and aggregator
-	w := &Workflow{
-		silencer: silencer.New(cfg, interopAdmin, etherman, &types.ZkEVMClientCreator{}),
-	}
-
-	for _, opt := range opts {
-		opt(w)
-	}
-
-	return w
-}
-
-func WithCustomSilencer(silencer silencer.ISilencer) workflowOption {
-	return func(w *Workflow) {
-		w.silencer = silencer
+func New(silencer silencer.ISilencer) *Workflow {
+	return &Workflow{
+		silencer: silencer,
 	}
 }
 
