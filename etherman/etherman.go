@@ -69,7 +69,7 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(
 	}
 
 	const pendStateNum uint64 = 0 // TODO hardcoded for now until we implement the pending state feature
-	abi, err := polygonzkevm.PolygonzkevmMetaData.GetAbi()
+	abi, err := polygonrollupmanager.PolygonrollupmanagerMetaData.GetAbi()
 	if err != nil {
 		log.Errorf("error geting ABI: %v, Proof: %s", err)
 		return nil, err
