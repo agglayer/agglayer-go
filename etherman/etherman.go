@@ -75,6 +75,12 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(
 		return nil, err
 	}
 
+	sa, err := e.getTrustedSequencerAddress(rollupId)
+	if err != nil {
+		log.Errorf("error getting trusted sequencer address: %v", err)
+		return nil, err
+	}
+
 	return abi.Pack(
 		"verifyBatchesTrustedAggregator",
 		rollupId,
@@ -83,6 +89,7 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(
 		newVerifiedBatch,
 		newLocalExitRoot,
 		newStateRoot,
+		sa,
 		finalProof,
 	)
 }
