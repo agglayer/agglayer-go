@@ -23,7 +23,7 @@ services:
       - '8545:8545'
       - '8546:8546'
     networks:
-      - beethoven-localnet
+      - agglayer-localnet
 
   zkevm-state-db:
     image: postgres:16.0-alpine
@@ -43,7 +43,7 @@ services:
     volumes:
       - ./data/zkevm/init_prover_db.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - beethoven-localnet
+      - agglayer-localnet
 
   zkevm-pool-db:
     image: postgres:16.0-alpine
@@ -61,10 +61,11 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      - beethoven-localnet
+      - agglayer-localnet
 
   zkevm-prover:
     image: hermeznetwork/zkevm-prover:v3.0.2
+    platform: linux/amd64
     command: [
       "zkProver",
       "-c",
@@ -79,10 +80,11 @@ services:
     volumes:
       - ./data/zkevm/prover.json:/usr/src/app/config.json
     networks:
-      - beethoven-localnet
+      - agglayer-localnet
 
   zkevm-node:
-    image: hermeznetwork/cdk-validium-node:beethoven-v0.0.1
+    image: 0xpolygon/cdk-validium-node:agglayer-v0.0.1
+    platform: linux/amd64
     command:
       - "/bin/sh"
       - "-c"
@@ -105,51 +107,51 @@ services:
       - ./data/zkevm/node.toml:/app/config.toml
       - ./data/zkevm/genesis.json:/app/genesis.json
     networks:
-      - beethoven-localnet
+      - agglayer-localnet
 
-  beethoven-db:
+  agglayer-db:
     image: postgres:16.0-alpine
     ports:
       - '5434:5432'
     environment:
-      POSTGRES_USER: beethoven_user
-      POSTGRES_PASSWORD: beethoven_password
-      POSTGRES_DB: beethoven_db
+      POSTGRES_USER: agglayer_user
+      POSTGRES_PASSWORD: agglayer_password
+      POSTGRES_DB: agglayer_db
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready", "-d", "beethoven_db" ]
+      test: [ "CMD-SHELL", "pg_isready", "-d", "agglayer_db" ]
       interval: 30s
       timeout: 60s
       retries: 5
       start_period: 10s
     networks:
-      - beethoven-localnet
+      - agglayer-localnet
     restart: always
 
-  # beethoven requires L1 working and available. The config file "./data/beethoven/beethoven.toml"
-  # has "l1" (see above) service defined as L1 so make sure "l1" service is started before running beethoven.
+  # agglayer requires L1 working and available. The config file "./data/agglayer/agglayer.toml"
+  # has "l1" (see above) service defined as L1 so make sure "l1" service is started before running agglayer.
   # Same point with "zkevm-node" service.
-  # In order to run "beethoven" attached to an external L1 and zkevm node, the config file should be
+  # In order to run "agglayer" attached to an external L1 and zkevm node, the config file should be
   # updated accordingly.
-  beethoven:
-    image: beethoven:local
+  agglayer:
+    image: agglayer:local
     build:
       context: ../
       dockerfile: ./docker/Dockerfile
-    command: [ 'run', '--cfg', '/config/beethoven.toml' ]
+    command: [ 'run', '--cfg', '/config/agglayer.toml' ]
     depends_on:
-      beethoven-db:
+      agglayer-db:
         condition: service_healthy
     ports:
       - '8444:8444'
       - '2223:2223'
     volumes:
-      - ./data/beethoven/beethoven.keystore:/pk/beethoven.keystore
-      - ./data/beethoven/beethoven.toml:/config/beethoven.toml
+      - ./data/agglayer/agglayer.keystore:/pk/agglayer.keystore
+      - ./data/agglayer/agglayer.toml:/config/agglayer.toml
     networks:
-      - beethoven-localnet
+      - agglayer-localnet
     restart: always
 
 networks:
-  beethoven-localnet:
+  agglayer-localnet:
     driver: bridge
 

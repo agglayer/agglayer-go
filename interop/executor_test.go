@@ -14,9 +14,9 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/0xPolygon/beethoven/config"
-	"github.com/0xPolygon/beethoven/mocks"
-	"github.com/0xPolygon/beethoven/tx"
+	"github.com/0xPolygon/agglayer/config"
+	"github.com/0xPolygon/agglayer/mocks"
+	"github.com/0xPolygon/agglayer/tx"
 )
 
 func TestNewExecutor(t *testing.T) {

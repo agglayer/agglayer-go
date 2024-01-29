@@ -4,21 +4,21 @@ filename: "{{.InterfaceName | lower }}.generated.go"
 mockname: "{{.InterfaceName}}"
 outpkg: "mocks"
 packages:
-  github.com/0xPolygon/beethoven/etherman:
+  github.com/0xPolygon/agglayer/etherman:
     config:
     interfaces:
       IEthereumClient:
         config:
           mockname: EthereumClientMock
           filename: etherman_client.generated.go
-  github.com/0xPolygon/beethoven/silencer:
+  github.com/0xPolygon/agglayer/silencer:
     config:
     interfaces:
       ISilencer:
         config:
           mockname: SilencerMock
           filename: silencer.generated.go
-  github.com/0xPolygon/beethoven/types:
+  github.com/0xPolygon/agglayer/types:
     config:
     interfaces:
       IDB:

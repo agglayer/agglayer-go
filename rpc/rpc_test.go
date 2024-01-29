@@ -7,11 +7,11 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/0xPolygon/beethoven/config"
-	"github.com/0xPolygon/beethoven/interop"
-	"github.com/0xPolygon/beethoven/mocks"
-	"github.com/0xPolygon/beethoven/tx"
-	"github.com/0xPolygon/beethoven/workflow"
+	"github.com/0xPolygon/agglayer/config"
+	"github.com/0xPolygon/agglayer/interop"
+	"github.com/0xPolygon/agglayer/mocks"
+	"github.com/0xPolygon/agglayer/tx"
+	"github.com/0xPolygon/agglayer/workflow"
 
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	"github.com/0xPolygonHermez/zkevm-node/log"

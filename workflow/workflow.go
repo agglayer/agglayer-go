@@ -5,8 +5,8 @@ import (
 
 	abciTypes "github.com/cometbft/cometbft/abci/types"
 
-	"github.com/0xPolygon/beethoven/silencer"
-	"github.com/0xPolygon/beethoven/tx"
+	"github.com/0xPolygon/agglayer/silencer"
+	"github.com/0xPolygon/agglayer/tx"
 )
 
 var _ abciTypes.Application = (*Workflow)(nil)

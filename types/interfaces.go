@@ -4,7 +4,7 @@ import (
 	"context"
 	"math/big"
 
-	"github.com/0xPolygon/beethoven/tx"
+	"github.com/0xPolygon/agglayer/tx"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/ethereum/go-ethereum"

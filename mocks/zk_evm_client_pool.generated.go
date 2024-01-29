@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	types "github.com/0xPolygon/beethoven/types"
+	types "github.com/0xPolygon/agglayer/types"
 	mock "github.com/stretchr/testify/mock"
 )
 

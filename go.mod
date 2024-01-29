@@ -1,4 +1,4 @@
-module github.com/0xPolygon/beethoven
+module github.com/0xPolygon/agglayer
 
 go 1.21
 

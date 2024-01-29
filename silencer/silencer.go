@@ -9,9 +9,9 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/0xPolygon/beethoven/config"
-	"github.com/0xPolygon/beethoven/tx"
-	"github.com/0xPolygon/beethoven/types"
+	"github.com/0xPolygon/agglayer/config"
+	"github.com/0xPolygon/agglayer/tx"
+	"github.com/0xPolygon/agglayer/types"
 )
 
 type ISilencer interface {

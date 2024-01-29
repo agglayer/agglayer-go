@@ -3,9 +3,10 @@ package tx
 import (
 	"crypto/ecdsa"
 
-	"github.com/0xPolygon/beethoven/rpc/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+
+	"github.com/0xPolygon/agglayer/rpc/types"
 )
 
 // type L1Consensus string

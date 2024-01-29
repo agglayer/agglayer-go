@@ -6,12 +6,12 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/0xPolygon/beethoven/config"
-	cdkTypes "github.com/0xPolygon/beethoven/rpc/types"
-	"github.com/0xPolygon/beethoven/tx"
+	"github.com/0xPolygon/agglayer/config"
+	cdkTypes "github.com/0xPolygon/agglayer/rpc/types"
+	"github.com/0xPolygon/agglayer/tx"
 	"github.com/ethereum/go-ethereum/crypto"
 
-	"github.com/0xPolygon/beethoven/mocks"
+	"github.com/0xPolygon/agglayer/mocks"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"

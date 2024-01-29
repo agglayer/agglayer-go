@@ -8,10 +8,10 @@ import (
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/0xPolygon/beethoven/interop"
-	"github.com/0xPolygon/beethoven/tx"
-	"github.com/0xPolygon/beethoven/types"
-	"github.com/0xPolygon/beethoven/workflow"
+	"github.com/0xPolygon/agglayer/interop"
+	"github.com/0xPolygon/agglayer/tx"
+	"github.com/0xPolygon/agglayer/types"
+	"github.com/0xPolygon/agglayer/workflow"
 )
 
 // INTEROP is the namespace of the interop service
