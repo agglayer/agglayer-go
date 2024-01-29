@@ -29,6 +29,9 @@ import (
 	"github.com/0xPolygon/beethoven/interop"
 	"github.com/0xPolygon/beethoven/network"
 	"github.com/0xPolygon/beethoven/rpc"
+	"github.com/0xPolygon/beethoven/silencer"
+	"github.com/0xPolygon/beethoven/types"
+	"github.com/0xPolygon/beethoven/workflow"
 )
 
 const appName = "cdk-beethoven"
@@ -134,6 +137,8 @@ func start(cliCtx *cli.Context) error {
 		&ethMan,
 		etm,
 	)
+	silencer := silencer.New(c, addr, &ethMan, &types.ZkEVMClientCache{})
+	workflow := workflow.New(silencer)
 
 	// Register services
 	server := jRPC.NewServer(
@@ -141,7 +146,7 @@ func start(cliCtx *cli.Context) error {
 		[]jRPC.Service{
 			{
 				Name:    rpc.INTEROP,
-				Service: rpc.NewInteropEndpoints(ctx, executor, storage),
+				Service: rpc.NewInteropEndpoints(ctx, executor, workflow, storage),
 			},
 		},
 	)

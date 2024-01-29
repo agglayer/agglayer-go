@@ -33,6 +33,6 @@ type IZkEVMClient interface {
 	BatchByNumber(ctx context.Context, number *big.Int) (*types.Batch, error)
 }
 
-type IZkEVMClientClientCreator interface {
-	NewClient(rpc string) IZkEVMClient
+type IZkEVMClientCache interface {
+	GetClient(rpc string) IZkEVMClient
 }

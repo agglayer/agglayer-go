@@ -3,24 +3,22 @@ package rpc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/big"
 	"testing"
 
 	"github.com/0xPolygon/beethoven/config"
 	"github.com/0xPolygon/beethoven/interop"
 	"github.com/0xPolygon/beethoven/mocks"
+	"github.com/0xPolygon/beethoven/tx"
+	"github.com/0xPolygon/beethoven/workflow"
 
-	beethovenTypes "github.com/0xPolygon/beethoven/rpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
-	validiumTypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-
-	"github.com/0xPolygon/beethoven/tx"
 )
 
 func TestInteropEndpointsGetTxStatus(t *testing.T) {
@@ -32,14 +30,18 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		dbMock := mocks.NewDBMock(t)
 		dbMock.On("BeginStateTransaction", mock.Anything).Return(nil, errors.New("error")).Once()
 
+		interopAdmin := common.HexToAddress("0xadmin")
+		etherman := mocks.NewEthermanMock(t)
+
 		e := interop.New(
 			log.WithFields("module", "test"),
 			&config.Config{},
-			common.HexToAddress("0xadmin"),
-			mocks.NewEthermanMock(t),
+			interopAdmin,
+			etherman,
 			mocks.NewEthTxManagerMock(t),
 		)
-		i := NewInteropEndpoints(context.Background(), e, dbMock)
+		w := workflow.New(mocks.NewSilencerMock(t))
+		i := NewInteropEndpoints(context.Background(), e, w, dbMock)
 
 		result, err := i.GetTxStatus(common.HexToHash("0xsomeTxHash"))
 
@@ -64,14 +66,18 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		txManagerMock.On("Result", mock.Anything, ethTxManOwner, txHash.Hex(), txMock).
 			Return(ethtxmanager.MonitoredTxResult{}, errors.New("error")).Once()
 
+		interopAdmin := common.HexToAddress("0xadmin")
+		etherman := mocks.NewEthermanMock(t)
+
 		e := interop.New(
 			log.WithFields("module", "test"),
 			&config.Config{},
-			common.HexToAddress("0xadmin"),
-			mocks.NewEthermanMock(t),
+			interopAdmin,
+			etherman,
 			txManagerMock,
 		)
-		i := NewInteropEndpoints(context.Background(), e, dbMock)
+		w := workflow.New(mocks.NewSilencerMock(t))
+		i := NewInteropEndpoints(context.Background(), e, w, dbMock)
 
 		result, err := i.GetTxStatus(txHash)
 
@@ -108,14 +114,18 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		txManagerMock.On("Result", mock.Anything, ethTxManOwner, txHash.Hex(), txMock).
 			Return(result, nil).Once()
 
+		interopAdmin := common.HexToAddress("0xadmin")
+		etherman := mocks.NewEthermanMock(t)
+
 		e := interop.New(
 			log.WithFields("module", "test"),
 			&config.Config{},
-			common.HexToAddress("0xadmin"),
-			mocks.NewEthermanMock(t),
+			interopAdmin,
+			etherman,
 			txManagerMock,
 		)
-		i := NewInteropEndpoints(context.Background(), e, dbMock)
+		w := workflow.New(mocks.NewSilencerMock(t))
+		i := NewInteropEndpoints(context.Background(), e, w, dbMock)
 
 		status, err := i.GetTxStatus(txHash)
 
@@ -128,518 +138,192 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 	})
 }
 
-func TestInteropEndpointsSendTx(t *testing.T) {
-	t.Parallel()
+func TestInteropEndpoints_SendTx(t *testing.T) {
+	interopAdmin := common.HexToAddress("0x2002")
 
-	type testConfig struct {
-		isL1ContractInMap   bool
-		canBuildZKProof     bool
-		isZKProofValid      bool
-		isTxSigned          bool
-		isAdminRetrieved    bool
-		isSignerValid       bool
-		canGetBatch         bool
-		isBatchValid        bool
-		isDbTxOpen          bool
-		isTxAddedToEthTxMan bool
-		isTxCommitted       bool
-
-		expectedError string
+	type testCase struct {
+		dbMock           *mocks.DBMock
+		ethermanMock     *mocks.EthermanMock
+		silencerMock     *mocks.SilencerMock
+		ethTxManagerMock *mocks.EthTxManagerMock
+		tx               *tx.SignedTx
+		expectedRes      interface{}
+		expectedErr      error
 	}
 
-	testFn := func(cfg testConfig) {
-		fullNodeRPCs := config.FullNodeRPCs{
-			1: "someRPC",
-		}
-		tnx := tx.Tx{
-			LastVerifiedBatch: beethovenTypes.ArgUint64(1),
-			NewVerifiedBatch:  *beethovenTypes.ArgUint64Ptr(2),
-			ZKP: tx.ZKP{
-				NewStateRoot:     common.BigToHash(big.NewInt(11)),
-				NewLocalExitRoot: common.BigToHash(big.NewInt(11)),
-			},
-			RollupID: 1,
-		}
-		signedTx := &tx.SignedTx{Tx: tnx}
-		ethermanMock := mocks.NewEthermanMock(t)
-		zkEVMClientCreatorMock := mocks.NewZkEVMClientClientCreatorMock(t)
-		zkEVMClientMock := mocks.NewZkEVMClientMock(t)
-		dbMock := mocks.NewDBMock(t)
-		txMock := new(mocks.TxMock)
-		ethTxManagerMock := mocks.NewEthTxManagerMock(t)
-
-		executeTestFn := func() {
-			e := interop.New(
-				log.WithFields("module", "test"),
-				&config.Config{
-					FullNodeRPCs: fullNodeRPCs,
-					L1:           config.L1Config{RollupManagerContract: common.HexToAddress("0xdeadbeef")},
-				},
-				common.HexToAddress("0xadmin"),
-				ethermanMock,
-				ethTxManagerMock,
-			)
-			i := NewInteropEndpoints(context.Background(), e, dbMock)
-			i.executor.ZkEVMClientCreator = zkEVMClientCreatorMock
-
-			result, err := i.SendTx(*signedTx)
-
-			if cfg.expectedError != "" {
-				require.Equal(t, "0x0", result)
-				require.ErrorContains(t, err, cfg.expectedError)
-			} else {
-				require.NoError(t, err)
-				require.Equal(t, signedTx.Tx.Hash(), result)
-			}
-
-			ethermanMock.AssertExpectations(t)
-			zkEVMClientCreatorMock.AssertExpectations(t)
-			zkEVMClientMock.AssertExpectations(t)
-			dbMock.AssertExpectations(t)
-			txMock.AssertExpectations(t)
-			ethTxManagerMock.AssertExpectations(t)
+	runTest := func(t *testing.T, tc testCase) {
+		ethTxManagerMock := tc.ethTxManagerMock
+		if ethTxManagerMock == nil {
+			ethTxManagerMock = mocks.NewEthTxManagerMock(t)
 		}
 
-		if !cfg.isL1ContractInMap {
-			fullNodeRPCs = config.FullNodeRPCs{}
-			executeTestFn()
-
-			return
-		}
-
-		if !cfg.canBuildZKProof {
-			ethermanMock.On(
-				"BuildTrustedVerifyBatchesTxData",
-				uint64(tnx.LastVerifiedBatch),
-				uint64(tnx.NewVerifiedBatch),
-				mock.Anything,
-				uint32(1),
-			).Return(
-				[]byte{},
-				errors.New("error"),
-			).Once()
-
-			executeTestFn()
-
-			return
-		}
-
-		ethermanMock.On(
-			"BuildTrustedVerifyBatchesTxData",
-			uint64(tnx.LastVerifiedBatch),
-			uint64(tnx.NewVerifiedBatch),
-			mock.Anything,
-			uint32(1),
-		).Return(
-			[]byte{1, 2},
-			nil,
-		).Once()
-
-		if !cfg.isZKProofValid {
-			ethermanMock.On(
-				"CallContract",
-				mock.Anything,
-				mock.Anything,
-				mock.Anything,
-			).Return(
-				[]byte{},
-				errors.New("error"),
-			).Once()
-
-			executeTestFn()
-
-			return
-		}
-
-		ethermanMock.On(
-			"CallContract",
-			mock.Anything,
-			mock.Anything,
-			mock.Anything,
-		).Return(
-			[]byte{1, 2},
-			nil,
-		).Once()
-
-		if !cfg.isTxSigned {
-			executeTestFn()
-
-			return
-		}
-
-		privateKey, err := crypto.GenerateKey()
-		require.NoError(t, err)
-
-		stx, err := tnx.Sign(privateKey)
-		require.NoError(t, err)
-
-		signedTx = stx
-
-		if !cfg.isAdminRetrieved {
-			ethermanMock.On(
-				"GetSequencerAddr",
-				uint32(1),
-			).Return(
-				common.Address{},
-				errors.New("error"),
-			).Once()
-
-			executeTestFn()
-
-			return
-		}
-
-		if !cfg.isSignerValid {
-			ethermanMock.On(
-				"GetSequencerAddr",
-				uint32(1),
-			).Return(
-				common.BytesToAddress([]byte{1, 2, 3, 4}),
-				nil,
-			).Once()
-
-			executeTestFn()
-
-			return
-		}
-
-		ethermanMock.On(
-			"GetSequencerAddr",
-			uint32(1),
-		).Return(
-			crypto.PubkeyToAddress(privateKey.PublicKey),
-			nil,
-		).Once()
-
-		zkEVMClientCreatorMock.On(
-			"NewClient",
-			mock.Anything,
-		).Return(
-			zkEVMClientMock,
+		e := interop.New(
+			log.WithFields("module", "test"),
+			&config.Config{},
+			interopAdmin,
+			tc.ethermanMock,
+			ethTxManagerMock,
 		)
+		w := workflow.New(tc.silencerMock)
+		i := NewInteropEndpoints(context.Background(), e, w, tc.dbMock)
 
-		if !cfg.canGetBatch {
-			zkEVMClientMock.On(
-				"BatchByNumber",
-				mock.Anything,
-				big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
-			).Return(
-				nil,
-				errors.New("error"),
-			).Once()
-
-			executeTestFn()
-
-			return
+		stx := tc.tx
+		if tc.tx == nil {
+			stx = &tx.SignedTx{}
 		}
 
-		if !cfg.isBatchValid {
-			zkEVMClientMock.On(
-				"BatchByNumber",
-				mock.Anything,
-				big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
-			).Return(
-				&validiumTypes.Batch{
-					StateRoot: common.BigToHash(big.NewInt(12)),
-				},
-				nil,
-			).Once()
-
-			executeTestFn()
-
-			return
+		res, err := i.SendTx(*stx)
+		require.Equal(t, tc.expectedRes, res)
+		if tc.expectedErr != nil {
+			require.EqualError(t, err, tc.expectedErr.Error())
+		} else {
+			require.NoError(t, err)
 		}
 
-		zkEVMClientMock.On(
-			"BatchByNumber",
-			mock.Anything,
-			big.NewInt(int64(signedTx.Tx.NewVerifiedBatch)),
-		).Return(
-			&validiumTypes.Batch{
-				StateRoot:     common.BigToHash(big.NewInt(11)),
-				LocalExitRoot: common.BigToHash(big.NewInt(11)),
-			},
-			nil,
-		).Once()
-
-		if !cfg.isDbTxOpen {
-			dbMock.On(
-				"BeginStateTransaction",
-				mock.Anything,
-			).Return(
-				nil,
-				errors.New("error"),
-			).Once()
-
-			executeTestFn()
-
-			return
-		}
-
-		dbMock.On(
-			"BeginStateTransaction",
-			mock.Anything,
-		).Return(
-			txMock,
-			nil,
-		).Once()
-
-		if !cfg.isTxAddedToEthTxMan {
-			ethTxManagerMock.On(
-				"Add",
-				mock.Anything,
-				ethTxManOwner,
-				signedTx.Tx.Hash().Hex(),
-				mock.Anything,
-				mock.Anything,
-				mock.Anything,
-				mock.Anything,
-				mock.Anything,
-				txMock,
-			).Return(
-				errors.New("error"),
-			).Once()
-
-			txMock.On(
-				"Rollback",
-				mock.Anything,
-			).Return(
-				nil,
-			).Once()
-
-			ethermanMock.On(
-				"BuildTrustedVerifyBatchesTxData",
-				uint64(tnx.LastVerifiedBatch),
-				uint64(tnx.NewVerifiedBatch),
-				mock.Anything,
-				uint32(1),
-			).Return(
-				[]byte{1, 2},
-				nil,
-			).Once()
-
-			executeTestFn()
-
-			return
-		}
-
-		ethTxManagerMock.On(
-			"Add",
-			mock.Anything,
-			ethTxManOwner,
-			signedTx.Tx.Hash().Hex(),
-			mock.Anything,
-			mock.Anything,
-			mock.Anything,
-			mock.Anything,
-			mock.Anything,
-			txMock,
-		).Return(
-			nil,
-		).Once()
-
-		if !cfg.isTxCommitted {
-			txMock.On(
-				"Commit",
-				mock.Anything,
-			).Return(
-				errors.New("error"),
-			).Once()
-
-			ethermanMock.On(
-				"BuildTrustedVerifyBatchesTxData",
-				uint64(tnx.LastVerifiedBatch),
-				uint64(tnx.NewVerifiedBatch),
-				mock.Anything,
-				uint32(1),
-			).Return(
-				[]byte{1, 2},
-				nil,
-			).Once()
-
-			executeTestFn()
-
-			return
-		}
-
-		ethermanMock.On(
-			"BuildTrustedVerifyBatchesTxData",
-			uint64(tnx.LastVerifiedBatch),
-			uint64(tnx.NewVerifiedBatch),
-			mock.Anything,
-			uint32(1),
-		).Return(
-			[]byte{1, 2},
-			nil,
-		).Once()
-
-		txMock.On(
-			"Commit",
-			mock.Anything,
-		).Return(
-			nil,
-		).Once()
-
-		executeTestFn()
+		tc.dbMock.AssertExpectations(t)
+		tc.ethermanMock.AssertExpectations(t)
+		tc.silencerMock.AssertExpectations(t)
+		ethTxManagerMock.AssertExpectations(t)
 	}
 
-	t.Run("don't have given contract in map", func(t *testing.T) {
-		t.Parallel()
+	t.Run("silencer execution failed", func(t *testing.T) {
+		dbMock := mocks.NewDBMock(t)
+		expectedErr := errors.New("soundness check failed")
 
-		testFn(testConfig{
-			isL1ContractInMap: false,
-			expectedError:     "there is no RPC registered",
-		})
+		ethermanMock := mocks.NewEthermanMock(t)
+		silencerMock := mocks.NewSilencerMock(t)
+		silencerMock.On("Silence", mock.Anything, mock.Anything).Return(expectedErr).Once()
+
+		tc := testCase{
+			dbMock:       dbMock,
+			ethermanMock: ethermanMock,
+			silencerMock: silencerMock,
+			expectedRes:  "0x0",
+			expectedErr:  expectedErr,
+		}
+
+		runTest(t, tc)
 	})
 
-	t.Run("could not build verified ZKP tx data", func(t *testing.T) {
-		t.Parallel()
+	t.Run("begin state tx failed", func(t *testing.T) {
+		dbMock := mocks.NewDBMock(t)
+		dbMock.On("BeginStateTransaction", mock.Anything).Return(nil, errors.New("failure")).Once()
 
-		testFn(testConfig{
-			isL1ContractInMap: true,
-			canBuildZKProof:   false,
-			expectedError:     "failed to build verify ZKP tx",
-		})
+		ethermanMock := mocks.NewEthermanMock(t)
+		silencerMock := mocks.NewSilencerMock(t)
+		silencerMock.On("Silence", mock.Anything, mock.Anything).Return(nil).Once()
+
+		tc := testCase{
+			dbMock:       dbMock,
+			ethermanMock: ethermanMock,
+			silencerMock: silencerMock,
+			expectedRes:  "0x0",
+			expectedErr:  errors.New("failed to begin dbTx, error: failure"),
+		}
+
+		runTest(t, tc)
 	})
 
-	t.Run("could not verified ZKP", func(t *testing.T) {
-		t.Parallel()
+	t.Run("settle failed", func(t *testing.T) {
+		expectedErr := errors.New("ABI encoding is invalid")
 
-		testFn(testConfig{
-			isL1ContractInMap: true,
-			canBuildZKProof:   true,
-			isZKProofValid:    false,
-			expectedError:     "failed to call verify ZKP response",
-		})
+		txMock := new(mocks.TxMock)
+		txMock.On("Rollback", mock.Anything).Return(nil).Once()
+
+		dbMock := mocks.NewDBMock(t)
+		dbMock.On("BeginStateTransaction", mock.Anything).Return(txMock, nil).Once()
+
+		ethermanMock := mocks.NewEthermanMock(t)
+		ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+			mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, expectedErr).Once()
+
+		silencerMock := mocks.NewSilencerMock(t)
+		silencerMock.On("Silence", mock.Anything, mock.Anything).Return(nil).Once()
+
+		tc := testCase{
+			dbMock:       dbMock,
+			silencerMock: silencerMock,
+			ethermanMock: ethermanMock,
+			expectedRes:  "0x0",
+			expectedErr:  fmt.Errorf("failed to add tx to ethTxMan, error: failed to build ZK proof verification tx data: %w", expectedErr),
+		}
+
+		runTest(t, tc)
 	})
 
-	t.Run("could not get signer", func(t *testing.T) {
-		t.Parallel()
+	t.Run("db tx commit failed", func(t *testing.T) {
+		expectedErr := errors.New("commit has failed")
 
-		testFn(testConfig{
-			isL1ContractInMap: true,
-			canBuildZKProof:   true,
-			isZKProofValid:    true,
-			isTxSigned:        false,
-			expectedError:     "failed to get signer",
-		})
+		txMock := new(mocks.TxMock)
+		txMock.On("Commit", mock.Anything).Return(expectedErr).Once()
+
+		dbMock := mocks.NewDBMock(t)
+		dbMock.On("BeginStateTransaction", mock.Anything).Return(txMock, nil).Once()
+
+		ethermanMock := mocks.NewEthermanMock(t)
+		ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+			mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Once()
+
+		silencerMock := mocks.NewSilencerMock(t)
+		silencerMock.On("Silence", mock.Anything, mock.Anything).Return(nil).Once()
+
+		ethTxManagerMock := mocks.NewEthTxManagerMock(t)
+		ethTxManagerMock.On("Add",
+			mock.Anything, mock.Anything, mock.Anything,
+			mock.Anything, mock.Anything, mock.Anything,
+			mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+
+		tc := testCase{
+			dbMock:           dbMock,
+			silencerMock:     silencerMock,
+			ethermanMock:     ethermanMock,
+			ethTxManagerMock: ethTxManagerMock,
+			expectedRes:      "0x0",
+			expectedErr:      fmt.Errorf("failed to commit dbTx, error: %w", expectedErr),
+		}
+
+		runTest(t, tc)
 	})
 
-	t.Run("failed to get admin from L1", func(t *testing.T) {
-		t.Parallel()
+	t.Run("send tx successful", func(t *testing.T) {
+		txMock := new(mocks.TxMock)
+		txMock.On("Commit", mock.Anything).Return(nil).Once()
 
-		testFn(testConfig{
-			isL1ContractInMap: true,
-			canBuildZKProof:   true,
-			isZKProofValid:    true,
-			isTxSigned:        true,
-			isAdminRetrieved:  false,
-			expectedError:     "failed to get admin from L1",
-		})
-	})
+		dbMock := mocks.NewDBMock(t)
+		dbMock.On("BeginStateTransaction", mock.Anything).Return(txMock, nil).Once()
 
-	t.Run("unexpected signer", func(t *testing.T) {
-		t.Parallel()
+		ethermanMock := mocks.NewEthermanMock(t)
+		ethermanMock.On("BuildTrustedVerifyBatchesTxData",
+			mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Once()
 
-		testFn(testConfig{
-			isL1ContractInMap: true,
-			canBuildZKProof:   true,
-			isZKProofValid:    true,
-			isTxSigned:        true,
-			isAdminRetrieved:  true,
-			isSignerValid:     false,
-			expectedError:     "unexpected signer",
-		})
-	})
+		silencerMock := mocks.NewSilencerMock(t)
+		silencerMock.On("Silence", mock.Anything, mock.Anything).Return(nil).Once()
 
-	t.Run("error on batch retrieval", func(t *testing.T) {
-		testFn(testConfig{
-			isL1ContractInMap: true,
-			canBuildZKProof:   true,
-			isZKProofValid:    true,
-			isTxSigned:        true,
-			isAdminRetrieved:  true,
-			isSignerValid:     true,
-			canGetBatch:       false,
-			expectedError:     "failed to get batch from our node",
-		})
-	})
+		ethTxManagerMock := mocks.NewEthTxManagerMock(t)
+		ethTxManagerMock.On("Add",
+			mock.Anything, mock.Anything, mock.Anything,
+			mock.Anything, mock.Anything, mock.Anything,
+			mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
-	t.Run("unexpected batch", func(t *testing.T) {
-		testFn(testConfig{
-			isL1ContractInMap: true,
-			canBuildZKProof:   true,
-			isZKProofValid:    true,
-			isTxSigned:        true,
-			isAdminRetrieved:  true,
-			isSignerValid:     true,
-			canGetBatch:       true,
-			isBatchValid:      false,
-			expectedError:     "Mismatch detected",
-		})
-	})
+		signedTx := tx.SignedTx{
+			Data: tx.Tx{
+				RollupID:          uint32(10),
+				LastVerifiedBatch: 5,
+				NewVerifiedBatch:  10,
+			}}
 
-	t.Run("failed to begin dbTx", func(t *testing.T) {
-		testFn(testConfig{
-			isL1ContractInMap: true,
-			canBuildZKProof:   true,
-			isZKProofValid:    true,
-			isTxSigned:        true,
-			isAdminRetrieved:  true,
-			isSignerValid:     true,
-			canGetBatch:       true,
-			isBatchValid:      true,
-			isDbTxOpen:        false,
-			expectedError:     "failed to begin dbTx",
-		})
-	})
+		expectedHash := signedTx.Data.Hash()
 
-	t.Run("failed to add tx to ethTxMan", func(t *testing.T) {
-		testFn(testConfig{
-			isL1ContractInMap:   true,
-			canBuildZKProof:     true,
-			isZKProofValid:      true,
-			isTxSigned:          true,
-			isAdminRetrieved:    true,
-			isSignerValid:       true,
-			canGetBatch:         true,
-			isBatchValid:        true,
-			isDbTxOpen:          true,
-			isTxAddedToEthTxMan: false,
-			expectedError:       "failed to add tx to ethTxMan",
-		})
-	})
+		tc := testCase{
+			dbMock:           dbMock,
+			silencerMock:     silencerMock,
+			ethermanMock:     ethermanMock,
+			ethTxManagerMock: ethTxManagerMock,
+			tx:               &signedTx,
+			expectedRes:      expectedHash,
+			expectedErr:      nil,
+		}
 
-	t.Run("failed to commit tx", func(t *testing.T) {
-		testFn(testConfig{
-			isL1ContractInMap:   true,
-			canBuildZKProof:     true,
-			isZKProofValid:      true,
-			isTxSigned:          true,
-			isAdminRetrieved:    true,
-			isSignerValid:       true,
-			canGetBatch:         true,
-			isBatchValid:        true,
-			isDbTxOpen:          true,
-			isTxAddedToEthTxMan: true,
-			isTxCommitted:       false,
-			expectedError:       "failed to commit dbTx",
-		})
-	})
-
-	t.Run("happy path", func(t *testing.T) {
-		testFn(testConfig{
-			isL1ContractInMap:   true,
-			canBuildZKProof:     true,
-			isZKProofValid:      true,
-			isTxSigned:          true,
-			isAdminRetrieved:    true,
-			isSignerValid:       true,
-			canGetBatch:         true,
-			isBatchValid:        true,
-			isDbTxOpen:          true,
-			isTxAddedToEthTxMan: true,
-			isTxCommitted:       true,
-		})
+		runTest(t, tc)
 	})
 }

@@ -68,7 +68,7 @@ func (e *Etherman) BuildTrustedVerifyBatchesTxData(
 		return nil, err
 	}
 
-	const pendStateNum uint64 = 0 // TODO hardcoded for now until we implement the pending state feature
+	const pendStateNum = uint64(0) // TODO hardcoded for now until we implement the pending state feature
 	abi, err := polygonzkevm.PolygonzkevmMetaData.GetAbi()
 	if err != nil {
 		log.Errorf("error geting ABI: %v, Proof: %s", err)
