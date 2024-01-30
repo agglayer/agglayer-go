@@ -22,7 +22,6 @@ const (
 
 // InteropEndpoints contains implementations for the "interop" RPC endpoints
 type InteropEndpoints struct {
-	ctx      context.Context
 	executor *interop.Executor
 	db       types.IDB
 	config   *config.Config
@@ -42,7 +41,8 @@ func NewInteropEndpoints(
 }
 
 func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, jRPC.Error) {
-	ctx, _ := context.WithTimeout(context.Background(), i.config.RPC.WriteTimeout.Duration)
+	ctx, cancel := context.WithTimeout(context.Background(), i.config.RPC.WriteTimeout.Duration)
+	defer cancel()
 
 	// Check if the RPC is actually registered, if not it won't be possible to assert soundness (in the future once we are stateless won't be needed)
 	if err := i.executor.CheckTx(signedTx); err != nil {
@@ -80,7 +80,8 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, jRPC.Error
 }
 
 func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, err jRPC.Error) {
-	ctx, _ := context.WithTimeout(context.Background(), i.config.RPC.WriteTimeout.Duration)
+	ctx, cancel := context.WithTimeout(context.Background(), i.config.RPC.ReadTimeout.Duration)
+	defer cancel()
 
 	dbTx, innerErr := i.db.BeginStateTransaction(ctx)
 	if innerErr != nil {
