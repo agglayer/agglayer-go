@@ -52,6 +52,7 @@ func Load(ctx *cli.Context) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	configFilePath := ctx.String(FlagCfg)
 	if configFilePath != "" {
 		dirName, fileName := filepath.Split(configFilePath)
@@ -63,14 +64,13 @@ func Load(ctx *cli.Context) (*Config, error) {
 		viper.SetConfigName(fileNameWithoutExtension)
 		viper.SetConfigType(fileExtension)
 	}
+
 	viper.AutomaticEnv()
-	replacer := strings.NewReplacer(".", "_")
-	viper.SetEnvKeyReplacer(replacer)
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.SetEnvPrefix("DATA_NODE")
-	err = viper.ReadInConfig()
-	if err != nil {
-		_, ok := err.(viper.ConfigFileNotFoundError)
-		if ok {
+
+	if err = viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Infof("config file not found")
 		} else {
 			log.Infof("error reading config file: ", err)

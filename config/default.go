@@ -40,7 +40,7 @@ ForcedGas = 0
 GasPriceMarginFactor = 1
 MaxGasPriceLimit = 0
 PrivateKeys = [
-	{Path = "/pk/interop.keystore", Password = "testonly"},
+	{Path = "/pk/agglayer.keystore", Password = "testonly"},
 ]
 
 [L1]
