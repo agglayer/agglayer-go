@@ -3,7 +3,7 @@ version: '3.9'
 services:
   l1:
     container_name: l1
-    image: hermeznetwork/geth-cdk-validium-contracts:v0.0.2
+    image: hermeznetwork/geth-cdk-validium-contracts:v0.0.4
     command: [
       "--http",
       "--http.api", "admin,eth,debug,miner,net,txpool,personal,web3",
@@ -77,6 +77,8 @@ services:
     ports:
       - '50061:50061' # MT
       - '50071:50071' # Executor
+    environment:
+      EXPERIMENTAL_DOCKER_DESKTOP_FORCE_QEMU: 1
     volumes:
       - ./data/zkevm/prover.json:/usr/src/app/config.json
     networks:
