@@ -77,6 +77,8 @@ services:
     ports:
       - '50061:50061' # MT
       - '50071:50071' # Executor
+    environment:
+      EXPERIMENTAL_DOCKER_DESKTOP_FORCE_QEMU: 1
     volumes:
       - ./data/zkevm/prover.json:/usr/src/app/config.json
     networks:
