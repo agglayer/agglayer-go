@@ -2,9 +2,11 @@ package tx
 
 import (
 	"crypto/ecdsa"
-	"github.com/0xPolygon/agglayer/rpc/types"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+
+	"github.com/0xPolygon/agglayer/rpc/types"
 )
 
 // type L1Consensus string
@@ -48,19 +50,19 @@ func (t *Tx) Sign(privateKey *ecdsa.PrivateKey) (*SignedTx, error) {
 		return nil, err
 	}
 	return &SignedTx{
-		Tx:        *t,
+		Data:      *t,
 		Signature: sig,
 	}, nil
 }
 
 type SignedTx struct {
-	Tx        Tx             `json:"tx"`
+	Data      Tx             `json:"tx"`
 	Signature types.ArgBytes `json:"signature"`
 }
 
 // Signer returns the address of the signer
 func (s *SignedTx) Signer() (common.Address, error) {
-	pubKey, err := crypto.SigToPub(s.Tx.Hash().Bytes(), s.Signature)
+	pubKey, err := crypto.SigToPub(s.Data.Hash().Bytes(), s.Signature)
 	if err != nil {
 		return common.Address{}, err
 	}

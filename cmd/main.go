@@ -29,6 +29,9 @@ import (
 	"github.com/0xPolygon/agglayer/interop"
 	"github.com/0xPolygon/agglayer/network"
 	"github.com/0xPolygon/agglayer/rpc"
+	"github.com/0xPolygon/agglayer/silencer"
+	"github.com/0xPolygon/agglayer/types"
+	"github.com/0xPolygon/agglayer/workflow"
 )
 
 const appName = "cdk-agglayer"
@@ -134,6 +137,8 @@ func start(cliCtx *cli.Context) error {
 		&ethMan,
 		etm,
 	)
+	silencer := silencer.New(c, addr, &ethMan, &types.ZkEVMClientCache{})
+	workflow := workflow.New(silencer)
 
 	// Register services
 	server := jRPC.NewServer(
@@ -141,7 +146,7 @@ func start(cliCtx *cli.Context) error {
 		[]jRPC.Service{
 			{
 				Name:    rpc.INTEROP,
-				Service: rpc.NewInteropEndpoints(ctx, executor, storage),
+				Service: rpc.NewInteropEndpoints(ctx, executor, workflow, storage),
 			},
 		},
 	)

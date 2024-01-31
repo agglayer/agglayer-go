@@ -11,6 +11,7 @@ import (
 	"github.com/0xPolygon/agglayer/interop"
 	"github.com/0xPolygon/agglayer/tx"
 	"github.com/0xPolygon/agglayer/types"
+	"github.com/0xPolygon/agglayer/workflow"
 )
 
 // INTEROP is the namespace of the interop service
@@ -23,6 +24,7 @@ const (
 type InteropEndpoints struct {
 	ctx      context.Context
 	executor *interop.Executor
+	workflow *workflow.Workflow
 	db       types.IDB
 }
 
@@ -30,28 +32,20 @@ type InteropEndpoints struct {
 func NewInteropEndpoints(
 	ctx context.Context,
 	executor *interop.Executor,
+	workflow *workflow.Workflow,
 	db types.IDB,
 ) *InteropEndpoints {
 	return &InteropEndpoints{
 		ctx:      ctx,
 		executor: executor,
+		workflow: workflow,
 		db:       db,
 	}
 }
 
 func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, jRPC.Error) {
-	// Check if the RPC is actually registered, if not it won't be possible to assert soundness (in the future once we are stateless won't be needed)
-	if err := i.executor.CheckTx(signedTx); err != nil {
-		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("there is no RPC registered for %d", signedTx.Tx.RollupID))
-	}
-
-	// Verify ZKP using eth_call
-	if err := i.executor.Verify(i.ctx, signedTx); err != nil {
-		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to verify tx: %s", err))
-	}
-
-	if err := i.executor.Execute(i.ctx, signedTx); err != nil {
-		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to execute tx: %s", err))
+	if err := i.workflow.Execute(i.ctx, signedTx); err != nil {
+		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, err.Error())
 	}
 
 	// Send L1 tx
@@ -70,9 +64,9 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, jRPC.Error
 	if err := dbTx.Commit(i.ctx); err != nil {
 		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to commit dbTx, error: %s", err))
 	}
-	log.Debugf("successfuly added tx %s to ethTxMan", signedTx.Tx.Hash().Hex())
+	log.Debugf("successfuly added tx %s to ethTxMan", signedTx.Data.Hash().Hex())
 
-	return signedTx.Tx.Hash(), nil
+	return signedTx.Data.Hash(), nil
 }
 
 func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, err jRPC.Error) {

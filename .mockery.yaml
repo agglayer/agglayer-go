@@ -11,6 +11,13 @@ packages:
         config:
           mockname: EthereumClientMock
           filename: etherman_client.generated.go
+  github.com/0xPolygon/agglayer/silencer:
+    config:
+    interfaces:
+      ISilencer:
+        config:
+          mockname: SilencerMock
+          filename: silencer.generated.go
   github.com/0xPolygon/agglayer/types:
     config:
     interfaces:
@@ -30,7 +37,7 @@ packages:
         config:
           mockname: ZkEVMClientMock
           filename: zk_evm_client.generated.go
-      IZkEVMClientClientCreator:
+      IZkEVMClientPool:
         config:
-          mockname: ZkEVMClientClientCreatorMock
-          filename: zk_evm_client_creator.generated.go
+          mockname: ZkEVMClientCacheMock
+          filename: zk_evm_client_cache.generated.go
