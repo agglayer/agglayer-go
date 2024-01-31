@@ -124,9 +124,6 @@ func start(cliCtx *cli.Context) error {
 		log.Fatal(err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), c.RPC.ReadTimeout.Duration)
-	defer cancel()
-
 	executor := interop.New(
 		log.WithFields("module", "executor"),
 		c,
@@ -141,7 +138,7 @@ func start(cliCtx *cli.Context) error {
 		[]jRPC.Service{
 			{
 				Name:    rpc.INTEROP,
-				Service: rpc.NewInteropEndpoints(ctx, executor, storage),
+				Service: rpc.NewInteropEndpoints(executor, storage, c),
 			},
 		},
 	)

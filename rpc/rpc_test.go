@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"context"
 	"errors"
 	"math/big"
 	"testing"
@@ -32,14 +31,15 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		dbMock := mocks.NewDBMock(t)
 		dbMock.On("BeginStateTransaction", mock.Anything).Return(nil, errors.New("error")).Once()
 
+		cfg := &config.Config{}
 		e := interop.New(
 			log.WithFields("module", "test"),
-			&config.Config{},
+			cfg,
 			common.HexToAddress("0xadmin"),
 			mocks.NewEthermanMock(t),
 			mocks.NewEthTxManagerMock(t),
 		)
-		i := NewInteropEndpoints(context.Background(), e, dbMock)
+		i := NewInteropEndpoints(e, dbMock, cfg)
 
 		result, err := i.GetTxStatus(common.HexToHash("0xsomeTxHash"))
 
@@ -64,14 +64,15 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		txManagerMock.On("Result", mock.Anything, ethTxManOwner, txHash.Hex(), txMock).
 			Return(ethtxmanager.MonitoredTxResult{}, errors.New("error")).Once()
 
+		cfg := &config.Config{}
 		e := interop.New(
 			log.WithFields("module", "test"),
-			&config.Config{},
+			cfg,
 			common.HexToAddress("0xadmin"),
 			mocks.NewEthermanMock(t),
 			txManagerMock,
 		)
-		i := NewInteropEndpoints(context.Background(), e, dbMock)
+		i := NewInteropEndpoints(e, dbMock, cfg)
 
 		result, err := i.GetTxStatus(txHash)
 
@@ -108,14 +109,15 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 		txManagerMock.On("Result", mock.Anything, ethTxManOwner, txHash.Hex(), txMock).
 			Return(result, nil).Once()
 
+		cfg := &config.Config{}
 		e := interop.New(
 			log.WithFields("module", "test"),
-			&config.Config{},
+			cfg,
 			common.HexToAddress("0xadmin"),
 			mocks.NewEthermanMock(t),
 			txManagerMock,
 		)
-		i := NewInteropEndpoints(context.Background(), e, dbMock)
+		i := NewInteropEndpoints(e, dbMock, cfg)
 
 		status, err := i.GetTxStatus(txHash)
 
@@ -169,17 +171,19 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 		ethTxManagerMock := mocks.NewEthTxManagerMock(t)
 
 		executeTestFn := func() {
+			c := &config.Config{
+				FullNodeRPCs: fullNodeRPCs,
+				L1:           config.L1Config{RollupManagerContract: common.HexToAddress("0xdeadbeef")},
+			}
+
 			e := interop.New(
 				log.WithFields("module", "test"),
-				&config.Config{
-					FullNodeRPCs: fullNodeRPCs,
-					L1:           config.L1Config{RollupManagerContract: common.HexToAddress("0xdeadbeef")},
-				},
+				c,
 				common.HexToAddress("0xadmin"),
 				ethermanMock,
 				ethTxManagerMock,
 			)
-			i := NewInteropEndpoints(context.Background(), e, dbMock)
+			i := NewInteropEndpoints(e, dbMock, c)
 			i.executor.ZkEVMClientCreator = zkEVMClientCreatorMock
 
 			result, err := i.SendTx(*signedTx)
