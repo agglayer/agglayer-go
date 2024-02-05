@@ -57,4 +57,4 @@ The SPDX license identifier for this project is `AGPL-3.0-or-later`.
 
 ### Contribution
 
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the AGPL-3.0-or-later, shall be licensed as above, without any additional terms or conditions.
