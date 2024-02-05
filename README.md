@@ -48,9 +48,13 @@ Currently only one instance of agglayer can be running at the same time, so it s
     * Configure `[L1]` to point to the corresponding L1 chain.
     * Configure the `[DB]` section with the managed database details.
 
-## Copyright 2022 Polygon Technology
+## License
+Copyright (c) 2024 PT Services DMCC
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+Licensed under GNU Affero General Public License v3.0 or later ([LICENSE](https://spdx.org/licenses/AGPL-3.0-or-later.html))
 
-   http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+The SPDX license identifier for this project is `AGPL-3.0-or-later`.
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
