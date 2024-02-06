@@ -37,6 +37,7 @@ cloud.google.com/go/storage v1.6.0/go.mod h1:N7U0C8pVQ/+NIKOBQyamJIeKQKkZ+mxpohl
 cloud.google.com/go/storage v1.8.0/go.mod h1:Wv1Oy7z6Yz3DshWRJFhqM/UCfaWIRTdp0RXyy7KQOVs=
 cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9ullr3+Kg0=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
+github.com/0xPolygon/cdk-data-availability v0.0.0-20240206100330-c7db2a847caa/go.mod h1:aGwqHiJhL+mJbdepl3s58wsY18EuViDa9vZCpPuIYGw=
 github.com/0xPolygon/cdk-data-availability v0.0.3 h1:ft0j1H7Q8hYT0AcapM9DmZS9FkAC1JGD+7QrOBhWRWA=
 github.com/0xPolygon/cdk-data-availability v0.0.3/go.mod h1:nA2O2ZzuvrR1pJLAmzTjuhUBSlCT0Noz2WI6HZfhvsg=
 github.com/0xPolygonHermez/zkevm-data-streamer v0.1.17 h1:pCA2k5ke1otBTNAyE8yiSlkDwpZxvJQH55Nf0GXWvfk=

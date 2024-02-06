@@ -3,7 +3,7 @@ module github.com/0xPolygon/agglayer
 go 1.21
 
 require (
-	github.com/0xPolygon/cdk-data-availability v0.0.3
+	github.com/0xPolygon/cdk-data-availability v0.0.0-20240206100330-c7db2a847caa
 	github.com/0xPolygonHermez/zkevm-node v0.5.0-RC4
 	github.com/ethereum/go-ethereum v1.13.8
 	github.com/gobuffalo/packr/v2 v2.8.3
