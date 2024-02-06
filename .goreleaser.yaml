@@ -1,0 +1,22 @@
+# .goreleaser.yaml
+project_name: agglayer
+
+builds:
+- main: ./cmd/
+  goos:
+    - linux
+    - darwin
+  goarch:
+    - amd64
+    - arm64
+  env:
+    - CGO_ENABLED=0
+  ldflags:
+    - -X github.com/0xPolygon/agglayer.Version={{.Version}}
+    - -X github.com/0xPolygon/agglayer.GitRev={{.Commit}} 
+    - -X github.com/0xPolygon/agglayer.BuildDate={{.Date}}
+    - -X github.com/0xPolygon/agglayer.GitBranch={{.Branch}}
+release:
+  disable: false
+  draft: true
+  prerelease: auto
