@@ -11,7 +11,7 @@ require (
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/prometheus/client_golang v1.18.0
-	github.com/rubenv/sql-migrate v1.6.0
+	github.com/rubenv/sql-migrate v1.6.1
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.26.0
