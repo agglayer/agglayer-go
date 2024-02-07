@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	cloud.google.com/go/kms v1.15.6
-	github.com/0xPolygon/cdk-data-availability v0.0.3
+	github.com/0xPolygon/cdk-data-availability v0.0.5
 	github.com/0xPolygonHermez/zkevm-node v0.5.0-RC4
 	github.com/ethereum/go-ethereum v1.13.8
 	github.com/gobuffalo/packr/v2 v2.8.3
@@ -93,6 +93,7 @@ require (
 	github.com/jackc/pgtype v1.14.0 // indirect
 	github.com/jackc/puddle v1.3.0 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
+	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/karrick/godirwalk v1.17.0 // indirect
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -105,6 +106,7 @@ require (
 	github.com/markbates/safe v1.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
+	github.com/miguelmota/go-solidity-sha3 v0.1.1 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
