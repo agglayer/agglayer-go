@@ -3,6 +3,7 @@ module github.com/0xPolygon/agglayer
 go 1.21
 
 require (
+	cloud.google.com/go/kms v1.15.6
 	github.com/0xPolygon/cdk-data-availability v0.0.3
 	github.com/0xPolygonHermez/zkevm-node v0.5.0-RC4
 	github.com/ethereum/go-ethereum v1.13.8
@@ -10,6 +11,7 @@ require (
 	github.com/jackc/pgconn v1.14.1
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/pascaldekloe/etherkeyms v1.1.0
 	github.com/prometheus/client_golang v1.18.0
 	github.com/rubenv/sql-migrate v1.6.0
 	github.com/spf13/viper v1.18.2
@@ -23,7 +25,6 @@ require (
 	cloud.google.com/go/compute v1.23.3 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.5 // indirect
-	cloud.google.com/go/kms v1.15.6 // indirect
 	github.com/0xPolygonHermez/zkevm-data-streamer v0.1.17 // indirect
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
@@ -106,7 +107,6 @@ require (
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/pascaldekloe/etherkeyms v1.1.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect

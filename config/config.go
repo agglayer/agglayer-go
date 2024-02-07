@@ -34,6 +34,7 @@ type Config struct {
 	EthTxManager ethtxmanager.Config `mapstructure:"EthTxManager"`
 	L1           L1Config            `mapstructure:"L1"`
 	Telemetry    Telemetry           `mapstructure:"Telemetry"`
+	KMSKeyName   string
 }
 
 type L1Config struct {

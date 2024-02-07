@@ -14,6 +14,8 @@ import (
 	dbConf "github.com/0xPolygonHermez/zkevm-node/db"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	"github.com/0xPolygonHermez/zkevm-node/log"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -87,31 +89,38 @@ func start(cliCtx *cli.Context) error {
 	// Prepare Etherman
 
 	// Load private key
-	pk, err := config.NewKeyFromKeystore(c.EthTxManager.PrivateKeys[0])
-	if err != nil {
-		log.Fatal(err)
-	}
-	addr := crypto.PubkeyToAddress(pk.PublicKey)
+	var auth *bind.TransactOpts
+	var addr common.Address
+	if c.KMSKeyName != "" {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		client, err := kms.NewKeyManagementClient(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to create kms client: %w", err)
+		}
+		defer client.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	client, err := kms.NewKeyManagementClient(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to create kms client: %w", err)
-	}
-	defer client.Close()
+		mk, err := etherkeyms.NewManagedKey(ctx, client, c.KMSKeyName)
+		if err != nil {
+			return fmt.Errorf("failed to create managed key: %w", err)
+		}
+		signer := types.LatestSignerForChainID(big.NewInt(c.L1.ChainID))
+		auth = mk.NewEthereumTransactor(ctx, signer)
+		addr = mk.EthereumAddr
+	} else if len(c.EthTxManager.PrivateKeys) > 0 {
+		pk, err := config.NewKeyFromKeystore(c.EthTxManager.PrivateKeys[0])
+		if err != nil {
+			return fmt.Errorf("failed to create private key from keystore: %w", err)
+		}
+		addr = crypto.PubkeyToAddress(pk.PublicKey)
 
-	mk, err := etherkeyms.NewManagedKey(ctx, client, c.EthTxManager.KMSKeyName)
-	if err != nil {
-		return fmt.Errorf("failed to create managed key: %w", err)
+		auth, err = bind.NewKeyedTransactorWithChainID(pk, big.NewInt(c.L1.ChainID))
+		if err != nil {
+			return fmt.Errorf("failed to create keyed transactor: %w", err)
+		}
+	} else {
+		log.Fatal("no private key found")
 	}
-	signer := types.LatestSignerForChainID(big.NewInt(c.L1.ChainID))
-	auth := mk.NewEthereumTransactor(ctx, signer)
-
-	// auth, err := bind.NewKeyedTransactorWithChainID(pk, big.NewInt(c.L1.ChainID))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 
 	// Connect to ethereum node
 	ethClient, err := ethclient.DialContext(cliCtx.Context, c.L1.NodeURL)
