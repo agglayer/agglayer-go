@@ -29,7 +29,7 @@ archives:
 dockers:
   - image_templates:
       - 0xpolygon/{{ .ProjectName }}:{{ .Version }}-amd64
-    dockerfile: docker/Dockerfile
+    dockerfile: Dockerfile.release
     use: buildx
     goos: linux
     goarch: amd64
@@ -48,7 +48,7 @@ dockers:
 
   - image_templates:
       - 0xpolygon/{{ .ProjectName }}:{{ .Version }}-arm64
-    dockerfile: docker/Dockerfile
+    dockerfile: Dockerfile.release
     use: buildx
     goos: linux
     goarch: arm64
