@@ -1,34 +1,16 @@
-# STAGE 1: CONTAINER FOR BUILDING BINARY
-FROM golang:1.21 AS build
-
-WORKDIR /go/src/github.com/0xPolygon/agglayer
-
-# Install tools
-RUN go install github.com/gobuffalo/packr/v2/packr2@v2.8.3
-
-# Copy go modules files
-COPY go.mod go.sum ./
-
-# Install modules
-RUN go mod download
-
-# Build binary
-COPY . .
-
-WORKDIR /go/src/github.com/0xPolygon/agglayer/db
-RUN packr2
-
-WORKDIR /go/src/github.com/0xPolygon/agglayer
-RUN make build
-
-# STAGE 2: CONTAINER FOR RUNNING BINARY
 FROM alpine:3.16.0
 
-# Copy built binary from build stage
-COPY --from=build /go/src/github.com/0xPolygon/agglayer/dist/agglayer /app/agglayer
+RUN set -x \
+    && apk add --update --no-cache \
+       ca-certificates \
+    && rm -rf /var/cache/apk/*
+COPY agglayer /usr/local/bin/
 
-# Expose port
 EXPOSE 8444
 
-# Define entrypoint
+RUN addgroup -S agglayer \
+    && adduser -S agglayer -G agglayer
+
+USER agglayer
+
 ENTRYPOINT ["/app/agglayer"]
