@@ -3,6 +3,7 @@ project_name: agglayer
 
 builds:
   - main: ./cmd/
+    binary: agglayer
     goos:
       - linux
       - darwin
