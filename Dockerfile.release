@@ -1,16 +1,7 @@
 FROM alpine:3.16.0
 
-RUN set -x \
-    && apk add --update --no-cache \
-       ca-certificates \
-    && rm -rf /var/cache/apk/*
-COPY agglayer /usr/local/bin/
-
 EXPOSE 8444
 
-RUN addgroup -S agglayer \
-    && adduser -S agglayer -G agglayer
+COPY agglayer /agglayer
 
-USER agglayer
-
-ENTRYPOINT ["/app/agglayer"]
+ENTRYPOINT ["/agglayer"]
