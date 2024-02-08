@@ -79,10 +79,10 @@ func start(cliCtx *cli.Context) error {
 	// Prepare DB
 	pg, err := dbConf.NewSQLDB(c.DB)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	if err = db.RunMigrationsUp(pg); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	storage := db.New(pg)
 
@@ -92,63 +92,46 @@ func start(cliCtx *cli.Context) error {
 	var auth *bind.TransactOpts
 	var addr common.Address
 	if c.KMSKeyName != "" {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		client, err := kms.NewKeyManagementClient(ctx)
+		auth, addr, err = useKMSAuth(c)
 		if err != nil {
-			return fmt.Errorf("failed to create kms client: %w", err)
+			return err
 		}
-		defer client.Close()
-
-		mk, err := etherkeyms.NewManagedKey(ctx, client, c.KMSKeyName)
-		if err != nil {
-			return fmt.Errorf("failed to create managed key: %w", err)
-		}
-		signer := types.LatestSignerForChainID(big.NewInt(c.L1.ChainID))
-		auth = mk.NewEthereumTransactor(ctx, signer)
-		addr = mk.EthereumAddr
 	} else if len(c.EthTxManager.PrivateKeys) > 0 {
-		pk, err := config.NewKeyFromKeystore(c.EthTxManager.PrivateKeys[0])
+		auth, addr, err = useLocalAuth(c)
 		if err != nil {
-			return fmt.Errorf("failed to create private key from keystore: %w", err)
-		}
-		addr = crypto.PubkeyToAddress(pk.PublicKey)
-
-		auth, err = bind.NewKeyedTransactorWithChainID(pk, big.NewInt(c.L1.ChainID))
-		if err != nil {
-			return fmt.Errorf("failed to create keyed transactor: %w", err)
+			return err
 		}
 	} else {
-		log.Fatal("no private key found")
+		return errors.New("no private key found")
 	}
 
 	// Connect to ethereum node
 	ethClient, err := ethclient.DialContext(cliCtx.Context, c.L1.NodeURL)
 	if err != nil {
-		log.Fatal("error connecting to %s: %+v", c.L1.NodeURL, err)
+		return fmt.Errorf("error connecting to %s: %+v", c.L1.NodeURL, err)
 	}
 
 	// Make sure the connection is okay
 	if _, err = ethClient.ChainID(cliCtx.Context); err != nil {
-		log.Fatal("error getting chain ID from l1 with address: %+v", err)
+		return fmt.Errorf("error getting chain ID from l1 with address: %+v", err)
 	}
 
 	ethMan, err := etherman.New(ethClient, *auth, c)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Prepare EthTxMan client
 	ethTxManagerStorage, err := ethtxmanager.NewPostgresStorage(c.DB)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	etm := ethtxmanager.New(c.EthTxManager, &ethMan, ethTxManagerStorage, &ethMan)
 
 	// Create opentelemetry metric provider
 	metricProvider, err := createMetricProvider()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	executor := interop.New(
@@ -183,7 +166,7 @@ func start(cliCtx *cli.Context) error {
 	// Run prometheus server
 	closePrometheus, err := runPrometheusServer(c)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Stop services
@@ -273,4 +256,37 @@ func waitSignal(cancelFuncs []context.CancelFunc) {
 			os.Exit(exitStatus)
 		}
 	}
+}
+
+func useKMSAuth(c *config.Config) (*bind.TransactOpts, common.Address, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	client, err := kms.NewKeyManagementClient(ctx)
+	if err != nil {
+		return nil, common.Address{}, fmt.Errorf("failed to create kms client: %w", err)
+	}
+	defer client.Close()
+
+	mk, err := etherkeyms.NewManagedKey(ctx, client, c.KMSKeyName)
+	if err != nil {
+		return nil, common.Address{}, fmt.Errorf("failed to create managed key: %w", err)
+	}
+	signer := types.LatestSignerForChainID(big.NewInt(c.L1.ChainID))
+
+	return mk.NewEthereumTransactor(ctx, signer), mk.EthereumAddr, nil
+}
+
+func useLocalAuth(c *config.Config) (*bind.TransactOpts, common.Address, error) {
+	pk, err := config.NewKeyFromKeystore(c.EthTxManager.PrivateKeys[0])
+	if err != nil {
+		return nil, common.Address{}, fmt.Errorf("failed to create private key from keystore: %w", err)
+	}
+	addr := crypto.PubkeyToAddress(pk.PublicKey)
+
+	auth, err := bind.NewKeyedTransactorWithChainID(pk, big.NewInt(c.L1.ChainID))
+	if err != nil {
+		return nil, common.Address{}, fmt.Errorf("failed to create keyed transactor: %w", err)
+	}
+
+	return auth, addr, nil
 }
