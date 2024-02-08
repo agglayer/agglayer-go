@@ -261,6 +261,7 @@ func waitSignal(cancelFuncs []context.CancelFunc) {
 func useKMSAuth(c *config.Config) (*bind.TransactOpts, common.Address, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
 	client, err := kms.NewKeyManagementClient(ctx)
 	if err != nil {
 		return nil, common.Address{}, fmt.Errorf("failed to create kms client: %w", err)
