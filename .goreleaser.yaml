@@ -1,11 +1,45 @@
 # .goreleaser.yaml
 project_name: agglayer
 
+release:
+  disable: false
+  draft: true
+  prerelease: auto
+
 builds:
-  - main: ./cmd/
+  - id: linux-amd64
+    main: ./cmd/
     binary: agglayer
     goos:
       - linux
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -X github.com/0xPolygon/agglayer.Version={{ .Version }}
+      - -X github.com/0xPolygon/agglayer.GitRev={{ .Commit }}
+      - -X github.com/0xPolygon/agglayer.BuildDate={{ .Date }}
+      - -X github.com/0xPolygon/agglayer.GitBranch={{ .Branch }}
+
+  - id: linux-arm64
+    main: ./cmd/
+    binary: agglayer
+    goos:
+      - linux
+    goarch:
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -X github.com/0xPolygon/agglayer.Version={{ .Version }}
+      - -X github.com/0xPolygon/agglayer.GitRev={{ .Commit }}
+      - -X github.com/0xPolygon/agglayer.BuildDate={{ .Date }}
+      - -X github.com/0xPolygon/agglayer.GitBranch={{ .Branch }}
+
+  - main: ./cmd/
+    binary: agglayer
+    goos:
       - darwin
     goarch:
       - amd64
@@ -17,15 +51,9 @@ builds:
       - -X github.com/0xPolygon/agglayer.GitRev={{ .Commit }}
       - -X github.com/0xPolygon/agglayer.BuildDate={{ .Date }}
       - -X github.com/0xPolygon/agglayer.GitBranch={{ .Branch }}
-release:
-  disable: false
-  draft: true
-  prerelease: auto
 
 archives:
   - files:
-      - go.mod
-      - go.sum
       - LICENSE.md
       - README.md
 
