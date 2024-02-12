@@ -13,7 +13,6 @@ import (
 	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	dbConf "github.com/0xPolygonHermez/zkevm-node/db"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
-	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -27,6 +26,7 @@ import (
 	"github.com/0xPolygon/agglayer/db"
 	"github.com/0xPolygon/agglayer/etherman"
 	"github.com/0xPolygon/agglayer/interop"
+	"github.com/0xPolygon/agglayer/log"
 	"github.com/0xPolygon/agglayer/network"
 	"github.com/0xPolygon/agglayer/rpc"
 )
@@ -181,7 +181,9 @@ func start(cliCtx *cli.Context) error {
 }
 
 func setupLog(c log.Config) {
-	log.Init(c)
+	if err := log.InitLogger(c); err != nil {
+		panic(fmt.Errorf("could not setup logger. Err: %w", err))
+	}
 }
 
 func createMetricProvider() (*metric.MeterProvider, error) {

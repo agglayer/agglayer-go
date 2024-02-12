@@ -3,10 +3,11 @@ package db
 import (
 	"embed"
 
-	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jackc/pgx/v4/stdlib"
 	migrate "github.com/rubenv/sql-migrate"
+
+	"github.com/0xPolygon/agglayer/log"
 )
 
 //go:embed migrations

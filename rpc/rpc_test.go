@@ -9,10 +9,10 @@ import (
 	"github.com/0xPolygon/agglayer/interop"
 	"github.com/0xPolygon/agglayer/mocks"
 
+	"github.com/0xPolygon/agglayer/log"
 	agglayerTypes "github.com/0xPolygon/agglayer/rpc/types"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	validiumTypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
-	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
