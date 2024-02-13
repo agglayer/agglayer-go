@@ -1,0 +1,7 @@
+FROM alpine:3.16.0
+
+EXPOSE 8444
+
+COPY agglayer /usr/local/bin
+
+ENTRYPOINT ["agglayer"]
