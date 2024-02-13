@@ -13,9 +13,6 @@ RUN go mod download
 # Build binary
 COPY . .
 
-WORKDIR /go/src/github.com/0xPolygon/agglayer/db
-RUN packr2
-
 WORKDIR /go/src/github.com/0xPolygon/agglayer
 RUN make build
 
