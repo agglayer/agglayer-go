@@ -30,20 +30,90 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - id: custom-action
-        uses: 0xPolygon/pipelines@v3
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/setup-gcloud@v1
+
+      - id: auth
+        uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
-          gar_location: ${{ env.GAR_LOCATION }}
-          docker_image: ${{ env.IMAGE_NAME }}
-          dockerfile_name: docker/Dockerfile
-          dockerfile_path: .
-          critical_count: ${{ env.CRITICAL_COUNT }}
-          helm_values_path: 'helm-values/dev-values.yaml'
-          attestor: ${{ env.ATTESTOR }}
-          attestor_project: ${{ env.ATTESTOR_PROJECT_ID }}
-          keyversion_project: ${{ env.ATTESTOR_PROJECT_ID }}
-          keyversion_location: ${{ env.GAR_LOCATION }}
-          keyversion_keyring: ${{ env.KEY_RING }}
-          keyversion_key: ${{ env.KEY }}
+          token_format: "access_token"
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+
+      - id: docker-auth
+        uses: docker/login-action@v1
+        with:
+          username: "oauth2accesstoken"
+          password: ${{ steps.auth.outputs.access_token }}
+          registry: ${{ env.GAR_LOCATION }}-docker.pkg.dev
+
+      - id: build-docker-image
+        run: |-
+          docker build -t "${{ env.DOCKER_IMAGE }}:${{ github.sha }}" -f ${{ env.DOCKERFILE_NAME }} ${{ env.DOCKERFILE_PATH }}
+        shell: bash
+
+      - id: push-docker-image
+        run: |-
+          docker push "${{ env.DOCKER_IMAGE }}:${{ github.sha }}"
+        shell: bash
+
+      - id: scan-vulnerabilities
+        run: |-
+          (gcloud artifacts docker images scan "${{ env.DOCKER_IMAGE }}:${{ github.sha }}" --format="value(response.scan)" --remote --quiet) > ./scan_id.txt
+        shell: bash
+
+      - id: check-critical-vulnerabilities
+        run: |-
+          #!/bin/bash
+          # Check if the scan_id.txt file exists
+          if [ ! -f ./scan_id.txt ]; then
+              echo "Error: scan_id.txt not found."
+              exit 1
+          fi
+          # Use gcloud to list vulnerabilities and check for CRITICAL severity
+          severity=$(gcloud artifacts docker images list-vulnerabilities \
+                          "$(cat ./scan_id.txt)" \
+                          --format="value(vulnerability.effectiveSeverity)")
+          
+          # Check if CRITICAL vulnerability is found
+          chk=$(echo "$severity" | grep -c "CRITICAL")
+          if [ "$chk" -gt ${{ env.CRITICAL_COUNT }} ]; then
+            echo "Failed vulnerability check for CRITICAL level"
+              exit 1
+          else
+              echo "No CRITICAL vulnerability found. Congratulations!"
+              exit 0
+          fi
+        shell: bash
+
+      - id: sign-docker-image
+        run: |-
+          export CLOUDSDK_CORE_DISABLE_PROMPTS=1
+          gcloud components install beta --quiet
+          
+          DIGEST=$(gcloud container images describe ${{ env.DOCKER_IMAGE }}:${{ github.sha }} --format='get(image_summary.digest)')
+          
+          gcloud beta container binauthz attestations sign-and-create \
+            --artifact-url="${{ env.DOCKER_IMAGE }}@${DIGEST}" \
+            --attestor="${{ env.ATTESTOR }}" \
+            --attestor-project="${{ env.ATTESTOR_PROJECT }}" \
+            --keyversion-project="${{ env.KEYVERSION_PROJECT }}" \
+            --keyversion-location="${{ env.KEYVERSION_LOCATION }}" \
+            --keyversion-keyring="${{ env.KEYVERSION_KEYRING }}" \
+            --keyversion-key="${{ env.KEYVERSION_KEY }}" \
+            --keyversion="1"
+        shell: bash
+
+      - id: update-helm-values
+        run: |-
+          DIGEST=$(gcloud container images describe ${{ env.DOCKER_IMAGE }}:${{ github.sha }} \
+                --format='get(image_summary.digest)')
+          
+          sed -i "s|image:.*|image: ${{ env.DOCKER_IMAGE }}@${DIGEST}|" ${{ env.HELM_VALUES_PATH }}
+        shell: bash
+
+      - id: push-back
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Apply automatic changes to Update image repository in Helm values
+          file_pattern: ${{ env.HELM_VALUES_PATH }}
