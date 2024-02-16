@@ -13,8 +13,8 @@ env:
 
   CRITICAL_COUNT: 5
   IMAGE_NAME: "europe-west2-docker.pkg.dev/prj-polygonlabs-shared-dev/polygonlabs-docker-dev/agglayer"
-  DOCKERFILE_NAME: "Dockerfile"
-  DOCKERFILE_PATH: "docker/"
+  DOCKERFILE_NAME: "docker/Dockerfile"
+  DOCKERFILE_PATH: "."
   HELM_VALUES_PATH: "helm-values/dev-values.yaml"
 
   ATTESTOR_PROJECT_ID: "prj-polygonlabs-shared-dev"
