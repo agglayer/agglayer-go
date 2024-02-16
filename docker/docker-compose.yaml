@@ -1,8 +1,8 @@
 version: '3.9'
 
 services:
-  l1:
-    container_name: l1
+  zkevm-mock-l1-network:
+    container_name: zkevm-mock-l1-network
     image: hermeznetwork/geth-cdk-validium-contracts:v0.0.4
     command: [
       "--http",
@@ -63,6 +63,28 @@ services:
     networks:
       - agglayer-localnet
 
+  zkevm-event-db:
+    container_name: zkevm-event-db
+    image: postgres:15
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    ports:
+      - 5435:5432
+    volumes:
+      - ../db/scripts/init_event_db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=event_user
+      - POSTGRES_PASSWORD=event_password
+      - POSTGRES_DB=event_db
+    command:
+      - "postgres"
+      - "-N"
+      - "500"
+
   zkevm-prover:
     image: hermeznetwork/zkevm-prover:v4.0.11
     platform: linux/amd64
@@ -99,9 +121,11 @@ services:
         condition: service_healthy
       zkevm-pool-db:
         condition: service_healthy
+      zkevm-event-db:
+        condition: service_healthy
       zkevm-prover:
         condition: service_started
-      l1:
+      zkevm-mock-l1-network:
         condition: service_started
     volumes:
       - ./data/zkevm/sequencer.keystore:/pk/sequencer.keystore
@@ -129,7 +153,7 @@ services:
     restart: always
 
   # agglayer requires L1 working and available. The config file "./data/agglayer/agglayer.toml"
-  # has "l1" (see above) service defined as L1 so make sure "l1" service is started before running agglayer.
+  # has "zkevm-mock-l1-network" (see above) service defined as L1 so make sure "zkevm-mock-l1-network" service is started before running agglayer.
   # Same point with "zkevm-node" service.
   # In order to run "agglayer" attached to an external L1 and zkevm node, the config file should be
   # updated accordingly.

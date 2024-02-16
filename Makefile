@@ -83,7 +83,7 @@ build-docker-nc: ## Builds a docker image with the agglayer binary - but without
 
 .PHONY: run-docker
 run-docker: ## Builds and runs agglayer with the default list of required services such as l1 and zkevm node
-	docker compose -f ./docker/docker-compose.yaml up -d l1 zkevm-prover zkevm-node
+	docker compose -f ./docker/docker-compose.yaml up -d zkevm-mock-l1-network zkevm-prover zkevm-node
 	docker compose -f ./docker/docker-compose.yaml up -d --build agglayer
 
 .PHONY: run-docker-bo

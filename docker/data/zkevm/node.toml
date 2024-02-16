@@ -6,62 +6,65 @@ Level = "debug"
 Outputs = ["stderr"]
 
 [State]
-[State.DB]
-User = "state_user"
-Password = "state_password"
-Name = "state_db"
-Host = "zkevm-state-db"
-Port = "5432"
-EnableLog = false
-MaxConns = 200
-[State.Batch]
-[State.Batch.Constraints]
-MaxTxsPerBatch = 300
-MaxBatchBytesSize = 120000
-MaxCumulativeGasUsed = 30000000
-MaxKeccakHashes = 2145
-MaxPoseidonHashes = 252357
-MaxPoseidonPaddings = 135191
-MaxMemAligns = 236585
-MaxArithmetics = 236585
-MaxBinaries = 473170
-MaxSteps = 7570538
+	[State.DB]
+	User = "state_user"
+	Password = "state_password"
+	Name = "state_db"
+	Host = "zkevm-state-db"
+	Port = "5432"
+	EnableLog = false	
+	MaxConns = 200
+	[State.Batch]
+		[State.Batch.Constraints]
+		MaxTxsPerBatch = 300
+		MaxBatchBytesSize = 120000
+		MaxCumulativeGasUsed = 1125899906842624
+		MaxKeccakHashes = 2145
+		MaxPoseidonHashes = 252357
+		MaxPoseidonPaddings = 135191
+		MaxMemAligns = 236585
+		MaxArithmetics = 236585
+		MaxBinaries = 473170
+		MaxSteps = 7570538
+		MaxSHA256Hashes = 1596
 
 [Pool]
 FreeClaimGasLimit = 1500000
 IntervalToRefreshBlockedAddresses = "5m"
 IntervalToRefreshGasPrices = "5s"
-MaxTxBytesSize = 100132
-MaxTxDataBytesSize = 100000
+MaxTxBytesSize=100132
+MaxTxDataBytesSize=100000
 DefaultMinGasPriceAllowed = 1000000000
 MinAllowedGasPriceInterval = "5m"
 PollMinAllowedGasPriceInterval = "15s"
 AccountQueue = 64
 GlobalQueue = 1024
-[Pool.EffectiveGasPrice]
-Enabled = false
-L1GasPriceFactor = 0.25
-ByteGasCost = 16
-ZeroByteGasCost = 4
-NetProfit = 1
-BreakEvenFactor = 1.1
-FinalDeviationPct = 10
-L2GasPriceSuggesterFactor = 0.5
-[Pool.DB]
-User = "pool_user"
-Password = "pool_password"
-Name = "pool_db"
-Host = "zkevm-pool-db"
-Port = "5432"
-EnableLog = false
-MaxConns = 200
+	[Pool.EffectiveGasPrice]
+		Enabled = false
+		L1GasPriceFactor = 0.25
+		ByteGasCost = 16
+		ZeroByteGasCost = 4
+		NetProfit = 1
+	    BreakEvenFactor = 1.1			
+		FinalDeviationPct = 10
+		EthTransferGasPrice = 0
+		EthTransferL1GasPriceFactor = 0			
+		L2GasPriceSuggesterFactor = 0.5
+	[Pool.DB]
+	User = "pool_user"
+	Password = "pool_password"
+	Name = "pool_db"
+	Host = "zkevm-pool-db"
+	Port = "5432"
+	EnableLog = false
+	MaxConns = 200
 
 [Etherman]
-URL = "http://l1:8545"
+URL = "http://zkevm-mock-l1-network:8545"
 ForkIDChunkSize = 20000
 MultiGasProvider = false
-[Etherscan]
-ApiKey = ""
+	[Etherscan]
+		ApiKey = ""
 
 [RPC]
 Host = "0.0.0.0"
@@ -71,58 +74,66 @@ WriteTimeout = "60s"
 MaxRequestsPerIPAndSecond = 5000
 SequencerNodeURI = ""
 EnableL2SuggestedGasPricePolling = true
-[RPC.WebSockets]
-Enabled = true
-Port = 8133
+	[RPC.WebSockets]
+		Enabled = true
+		Port = 8133
 
 [Synchronizer]
 SyncInterval = "1s"
 SyncChunkSize = 100
-TrustedSequencerURL = ""             # If it is empty or not specified, then the value is read from the smc.
-L1SynchronizationMode = "sequential" # "sequential" or "parallel"
-[Synchronizer.L1ParallelSynchronization]
-MaxClients = 10
-MaxPendingNoProcessedBlocks = 25
-RequestLastBlockPeriod = "5s"
-RequestLastBlockTimeout = "5s"
-RequestLastBlockMaxRetries = 3
-StatisticsPeriod = "5m"
-TimeoutMainLoop = "5m"
-RollupInfoRetriesSpacing = "5s"
-FallbackToSequentialModeOnSynchronized = false
-[Synchronizer.L1ParallelSynchronization.PerformanceWarning]
-AceptableInacctivityTime = "5s"
-ApplyAfterNumRollupReceived = 10
+TrustedSequencerURL = "" # If it is empty or not specified, then the value is read from the smc.
+L1SynchronizationMode = "parallel"
+	[Synchronizer.L1ParallelSynchronization]
+		MaxClients = 10
+		MaxPendingNoProcessedBlocks = 25
+		RequestLastBlockPeriod = "5s"
+		RequestLastBlockTimeout = "5s"
+		RequestLastBlockMaxRetries = 3
+		StatisticsPeriod = "5m"
+		TimeoutMainLoop = "5m"
+		RollupInfoRetriesSpacing= "5s"
+		FallbackToSequentialModeOnSynchronized = false
+		[Synchronizer.L1ParallelSynchronization.PerformanceWarning]
+			AceptableInacctivityTime = "5s"
+			ApplyAfterNumRollupReceived = 10
 
 [Sequencer]
-WaitPeriodPoolIsEmpty = "1s"
-LastBatchVirtualizationTimeMaxWaitPeriod = "10s"
-BlocksAmountForTxsToBeDeleted = 100
-FrequencyToCheckTxsForDelete = "12h"
-TxLifetimeCheckTimeout = "10m"
-MaxTxLifetime = "3h"
-[Sequencer.Finalizer]
-GERDeadlineTimeout = "2s"
-ForcedBatchDeadlineTimeout = "5s"
-SleepDuration = "100ms"
-ResourcePercentageToCloseBatch = 10
-GERFinalityNumberOfBlocks = 0
-ClosingSignalsManagerWaitForCheckingL1Timeout = "10s"
-ClosingSignalsManagerWaitForCheckingGER = "10s"
-ClosingSignalsManagerWaitForCheckingForcedBatches = "10s"
-ForcedBatchesFinalityNumberOfBlocks = 0
-TimestampResolution = "10s"
-StopSequencerOnBatchNum = 0
-[Sequencer.DBManager]
-PoolRetrievalInterval = "500ms"
-L2ReorgRetrievalInterval = "5s"
+DeletePoolTxsL1BlockConfirmations = 100
+DeletePoolTxsCheckInterval = "12h"
+TxLifetimeCheckInterval = "10m"
+TxLifetimeMax = "3h"
+LoadPoolTxsCheckInterval = "500ms"
+StateConsistencyCheckInterval = "5s"
+	[Sequencer.Finalizer]
+		NewTxsWaitInterval = "100ms"
+		ForcedBatchesTimeout = "5s"
+		ForcedBatchesL1BlockConfirmations = 0
+		ForcedBatchesCheckInterval = "10s"
+		L1InfoTreeL1BlockConfirmations = 0
+		L1InfoTreeCheckInterval = "10s"
+		BatchMaxDeltaTimestamp = "20s"
+		L2BlockMaxDeltaTimestamp = "4s"
+		ResourceExhaustedMarginPct = 10
+		HaltOnBatchNumber = 0
+		SequentialBatchSanityCheck = false
+		SequentialProcessL2Block = true
+	[Sequencer.StreamServer]
+		Port = 6900
+		Filename = "/datastreamer/datastream.bin"
+		Version = 1
+		ChainID = 1337
+		Enabled = true
+		
 
 [SequenceSender]
 WaitPeriodSendSequence = "15s"
 LastBatchVirtualizationTimeMaxWaitPeriod = "10s"
+L1BlockTimestampMargin = "5s"
 MaxTxSizeForL1 = 131072
 L2Coinbase = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
-PrivateKey = { Path = "/pk/sequencer.keystore", Password = "testonly" }
+PrivateKey = {Path = "/pk/sequencer.keystore", Password = "testonly"}
+	[SequenceSender.StreamClient]
+		Server = "zkevm-sequencer:6900"
 
 [Aggregator]
 Host = "0.0.0.0"
@@ -135,14 +146,18 @@ ProofStatePollingInterval = "5s"
 SenderAddress = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
 CleanupLockedProofsInterval = "2m"
 GeneratingProofCleanupThreshold = "10m"
+UpgradeEtrogBatchNumber = 0
 SettlementBackend = "agglayer"
+AggLayerTxTimeout = "5m"
 AggLayerURL = "http://agglayer:4444"
-AggLayerTxTimeout = "30s"
 SequencerPrivateKey = { Path = "/pk/sequencer.keystore", Password = "testonly" }
 
 [EthTxManager]
 ForcedGas = 0
-PrivateKeys = [{ Path = "/pk/sequencer.keystore", Password = "testonly" }]
+PrivateKeys = [
+	{Path = "/pk/sequencer.keystore", Password = "testonly"},
+	{Path = "/pk/aggregator.keystore", Password = "testonly"}
+]
 
 [L2GasPriceSuggester]
 Type = "default"
@@ -165,6 +180,16 @@ Enabled = true
 ProfilingHost = "0.0.0.0"
 ProfilingPort = 6060
 ProfilingEnabled = true
+
+[EventLog]
+	[EventLog.DB]
+	User = "event_user"
+	Password = "event_password"
+	Name = "event_db"
+	Host = "zkevm-event-db"
+	Port = "5432"
+	EnableLog = false
+	MaxConns = 200
 
 [HashDB]
 User = "prover_user"
