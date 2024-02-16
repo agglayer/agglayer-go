@@ -13,6 +13,9 @@ env:
 
   CRITICAL_COUNT: 5
   IMAGE_NAME: "europe-west2-docker.pkg.dev/prj-polygonlabs-shared-dev/polygonlabs-docker-dev/agglayer"
+  DOCKERFILE_NAME: "Dockerfile"
+  DOCKERFILE_PATH: "docker/"
+  HELM_VALUES_PATH: "helm-values/dev-values.yaml"
 
   ATTESTOR_PROJECT_ID: "prj-polygonlabs-shared-dev"
   KEY_RING: "gcp-apps-build-pipeline-ring"
@@ -37,8 +40,8 @@ jobs:
         uses: google-github-actions/auth@v1
         with:
           token_format: "access_token"
-          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ env.SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT
 
       - id: docker-auth
         uses: docker/login-action@v1
@@ -49,17 +52,17 @@ jobs:
 
       - id: build-docker-image
         run: |-
-          docker build -t "${{ env.DOCKER_IMAGE }}:${{ github.sha }}" -f ${{ env.DOCKERFILE_NAME }} ${{ env.DOCKERFILE_PATH }}
+          docker build -t "${{ env.IMAGE_NAME }}:${{ github.sha }}" -f ${{ env.DOCKERFILE_NAME }} ${{ env.DOCKERFILE_PATH }}
         shell: bash
 
       - id: push-docker-image
         run: |-
-          docker push "${{ env.DOCKER_IMAGE }}:${{ github.sha }}"
+          docker push "${{ env.IMAGE_NAME }}:${{ github.sha }}"
         shell: bash
 
       - id: scan-vulnerabilities
         run: |-
-          (gcloud artifacts docker images scan "${{ env.DOCKER_IMAGE }}:${{ github.sha }}" --format="value(response.scan)" --remote --quiet) > ./scan_id.txt
+          (gcloud artifacts docker images scan "${{ env.IMAGE_NAME }}:${{ github.sha }}" --format="value(response.scan)" --remote --quiet) > ./scan_id.txt
         shell: bash
 
       - id: check-critical-vulnerabilities
@@ -91,25 +94,25 @@ jobs:
           export CLOUDSDK_CORE_DISABLE_PROMPTS=1
           gcloud components install beta --quiet
           
-          DIGEST=$(gcloud container images describe ${{ env.DOCKER_IMAGE }}:${{ github.sha }} --format='get(image_summary.digest)')
+          DIGEST=$(gcloud container images describe ${{ env.IMAGE_NAME }}:${{ github.sha }} --format='get(image_summary.digest)')
           
           gcloud beta container binauthz attestations sign-and-create \
-            --artifact-url="${{ env.DOCKER_IMAGE }}@${DIGEST}" \
+            --artifact-url="${{ env.IMAGE_NAME }}@${DIGEST}" \
             --attestor="${{ env.ATTESTOR }}" \
-            --attestor-project="${{ env.ATTESTOR_PROJECT }}" \
-            --keyversion-project="${{ env.KEYVERSION_PROJECT }}" \
-            --keyversion-location="${{ env.KEYVERSION_LOCATION }}" \
-            --keyversion-keyring="${{ env.KEYVERSION_KEYRING }}" \
-            --keyversion-key="${{ env.KEYVERSION_KEY }}" \
+            --attestor-project="${{ env.ATTESTOR_PROJECT_ID }}" \
+            --keyversion-project="${{ env.ATTESTOR_PROJECT_ID }}" \
+            --keyversion-location="${{ env.GAR_LOCATION }}" \
+            --keyversion-keyring="${{ env.KEY_RING }}" \
+            --keyversion-key="${{ env.KEY }}" \
             --keyversion="1"
         shell: bash
 
       - id: update-helm-values
         run: |-
-          DIGEST=$(gcloud container images describe ${{ env.DOCKER_IMAGE }}:${{ github.sha }} \
+          DIGEST=$(gcloud container images describe ${{ env.IMAGE_NAME }}:${{ github.sha }} \
                 --format='get(image_summary.digest)')
           
-          sed -i "s|image:.*|image: ${{ env.DOCKER_IMAGE }}@${DIGEST}|" ${{ env.HELM_VALUES_PATH }}
+          sed -i "s|image:.*|image: ${{ env.IMAGE_NAME }}@${DIGEST}|" ${{ env.HELM_VALUES_PATH }}
         shell: bash
 
       - id: push-back
