@@ -1,0 +1,48 @@
+# Default values for AggLayer dev deployment
+name: agglayer
+commonLabels:
+  team: agglayer
+  location: europe-west2
+  host: gcp-openapi-gke-dev
+  env: dev
+  tag-version: v3
+  app: agglayer
+  p_service: agglayer
+
+replicaCount: 1
+
+podAnnotations:
+  operator.1password.io/inject: "agglayer" # wtf do I set this?
+
+strategy:
+  type: Recreate
+
+containers:
+  - name: agglayer
+    image: europe-west2-docker.pkg.dev/prj-polygonlabs-shared-dev/polygonlabs-docker-dev/agglayer:latest
+    imagePullPolicy: IfNotPresent
+    port: 8444
+    command:
+      - "run"
+      - "--cfg"
+      - "/config/agglayer.toml"
+    envFromEnabled: true
+    onePassword:
+      InjectorEnvs:
+        DATA_NODE_FULL_NODE_RPCS_1: op://cdk-dev/agglayer/DATA_NODE_FULLNODERPCS_1
+        DATA_NODE_RPC_HOST: op://cdk-dev/agglayer/DATA_NODE_RPC_HOST
+        DATA_NODE_RPC_PORT: op://cdk-dev/agglayer/DATA_NODE_RPC_PORT
+        DATA_NODE_DB_USER: op://cdk-dev/agglayer/DATA_NODE_DB_USER
+        DATA_NODE_DB_PASSWORD: op://cdk-dev/agglayer/DATA_NODE_DB_PASSWORD
+        DATA_NODE_DB_NAME: op://cdk-dev/agglayer/DATA_NODE_DB_NAME
+        DATA_NODE_DB_HOST: op://cdk-dev/agglayer/DATA_NODE_DB_HOST
+        DATA_NODE_ETHTXMANAGER_PRIVATEKEYS_0_PATH: op://cdk-dev/agglayer/DATA_NODE_ETHTXMANAGER_PRIVATEKEYS_0_PATH
+        DATA_NODE_ETHTXMANAGER_PRIVATEKEYS_0_PASSWORD: op://cdk-dev/agglayer/DATA_NODE_ETHTXMANAGER_PRIVATEKEYS_0_PASSWORD
+        DATA_NODE_L1_CHAINID: op://cdk-dev/agglayer/DATA_NODE_L1_CHAINID
+        DATA_NODE_L1_NODEURL: op://cdk-dev/agglayer/DATA_NODE_NODEURL
+        DATA_NODE_L1_ROLLUPMANAGERCONTRACT: op://cdk-dev/agglayer/DATA_NODE_ROLLUPMANAGERCONTRACT
+
+service:
+  type: NodePort
+  port: 8444
+  targetPort: 8444
