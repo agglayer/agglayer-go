@@ -4,4 +4,9 @@ EXPOSE 8444
 
 COPY agglayer /usr/local/bin
 
+RUN addgroup -S agglayer-user-group \
+    && adduser -S agglayer-user -G agglayer-user-group
+
+USER agglayer-user
+
 ENTRYPOINT ["agglayer"]
