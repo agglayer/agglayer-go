@@ -51,7 +51,6 @@ const DefaultValues = `
 
 [Telemetry]
 	PrometheusAddr = "0.0.0.0:2223"
-
 `
 
 // Default parses the default configuration values.
