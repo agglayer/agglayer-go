@@ -10,9 +10,9 @@ import (
 	"github.com/0xPolygon/agglayer/tx"
 	"github.com/0xPolygon/agglayer/types"
 
-	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
 	"github.com/0xPolygonHermez/zkevm-node/log"
+	jRPC "github.com/arnaubennassar/rpc/rpc"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jackc/pgx/v4"

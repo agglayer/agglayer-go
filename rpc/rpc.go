@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	"github.com/0xPolygonHermez/zkevm-node/log"
+	jRPC "github.com/arnaubennassar/rpc/rpc"
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/0xPolygon/agglayer/config"

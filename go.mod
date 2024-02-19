@@ -1,10 +1,10 @@
 module github.com/0xPolygon/agglayer
 
-go 1.21
+go 1.21.3
 
 require (
-	github.com/0xPolygon/cdk-data-availability v0.0.5
 	github.com/0xPolygonHermez/zkevm-node v0.5.0-RC4
+	github.com/arnaubennassar/rpc v0.0.0-20240219122721-99ecbc8180eb
 	github.com/ethereum/go-ethereum v1.13.8
 	github.com/gobuffalo/packr/v2 v2.8.3
 	github.com/jackc/pgconn v1.14.1
@@ -96,7 +96,6 @@ require (
 	github.com/markbates/safe v1.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
-	github.com/miguelmota/go-solidity-sha3 v0.1.1 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect

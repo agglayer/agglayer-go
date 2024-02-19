@@ -10,10 +10,10 @@ import (
 	"os/signal"
 	"time"
 
-	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	dbConf "github.com/0xPolygonHermez/zkevm-node/db"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	"github.com/0xPolygonHermez/zkevm-node/log"
+	jRPC "github.com/arnaubennassar/rpc/rpc"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
