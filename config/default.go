@@ -42,7 +42,7 @@ const DefaultValues = `
 	PrivateKeys = [
 		{Path = "/pk/agglayer.keystore", Password = "testonly"},
 	]
-	KMSKeyName = "foobar"
+	KMSKeyName = "gcp/resource/id"
 
 [L1]
 	ChainID = 1337
