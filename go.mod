@@ -1,6 +1,6 @@
 module github.com/0xPolygon/agglayer
 
-go 1.21
+go 1.21.3
 
 require (
 	github.com/0xPolygonHermez/zkevm-node v0.5.0-RC4
