@@ -89,8 +89,11 @@ func start(cliCtx *cli.Context) error {
 	// Prepare Etherman
 
 	// Load private key
-	var auth *bind.TransactOpts
-	var addr common.Address
+	var (
+		auth *bind.TransactOpts
+		addr common.Address
+	)
+
 	if c.KMSKeyName != "" {
 		auth, addr, err = useKMSAuth(c)
 		if err != nil {
@@ -108,12 +111,12 @@ func start(cliCtx *cli.Context) error {
 	// Connect to ethereum node
 	ethClient, err := ethclient.DialContext(cliCtx.Context, c.L1.NodeURL)
 	if err != nil {
-		return fmt.Errorf("error connecting to %s: %+v", c.L1.NodeURL, err)
+		return fmt.Errorf("error connecting to %s: %w", c.L1.NodeURL, err)
 	}
 
 	// Make sure the connection is okay
 	if _, err = ethClient.ChainID(cliCtx.Context); err != nil {
-		return fmt.Errorf("error getting chain ID from l1 with address: %+v", err)
+		return fmt.Errorf("error getting chain ID from l1 with address: %w", err)
 	}
 
 	ethMan, err := etherman.New(ethClient, *auth, c)
