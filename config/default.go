@@ -42,6 +42,7 @@ const DefaultValues = `
 	PrivateKeys = [
 		{Path = "/pk/agglayer.keystore", Password = "testonly"},
 	]
+	KMSKeyName = "foobar"
 
 [L1]
 	ChainID = 1337
@@ -50,6 +51,7 @@ const DefaultValues = `
 
 [Telemetry]
 	PrometheusAddr = "0.0.0.0:2223"
+
 `
 
 // Default parses the default configuration values.

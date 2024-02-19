@@ -94,7 +94,7 @@ func start(cliCtx *cli.Context) error {
 		addr common.Address
 	)
 
-	if c.KMSKeyName != "" {
+	if c.EthTxManager.KMSKeyName != "" {
 		auth, addr, err = useKMSAuth(c)
 		if err != nil {
 			return err
@@ -129,7 +129,7 @@ func start(cliCtx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	etm := ethtxmanager.New(c.EthTxManager, &ethMan, ethTxManagerStorage, &ethMan)
+	etm := ethtxmanager.New(c.EthTxManager.Config, &ethMan, ethTxManagerStorage, &ethMan)
 
 	// Create opentelemetry metric provider
 	metricProvider, err := createMetricProvider()
@@ -271,7 +271,7 @@ func useKMSAuth(c *config.Config) (*bind.TransactOpts, common.Address, error) {
 	}
 	defer client.Close()
 
-	mk, err := etherkeyms.NewManagedKey(ctx, client, c.KMSKeyName)
+	mk, err := etherkeyms.NewManagedKey(ctx, client, c.EthTxManager.KMSKeyName)
 	if err != nil {
 		return nil, common.Address{}, fmt.Errorf("failed to create managed key: %w", err)
 	}
