@@ -19,7 +19,7 @@ strategy:
 
 containers:
   - name: agglayer
-    image: europe-west2-docker.pkg.dev/prj-polygonlabs-shared-dev/polygonlabs-docker-dev/agglayer@sha256:e61d66152f0adb6bd6adc3c3c7028f9f70f3203bfe19cc28d0678f5c3df96330
+    image: europe-west2-docker.pkg.dev/prj-polygonlabs-shared-dev/polygonlabs-docker-dev/agglayer@sha256:2fb2abe2847841d627624def9d52ea38a67607c5e63189d9d4daac430b7b65eb
     imagePullPolicy: IfNotPresent
     port: 8444
     command:
