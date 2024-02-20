@@ -65,7 +65,7 @@ services:
 
   zkevm-event-db:
     container_name: zkevm-event-db
-    image: postgres:15
+    image: postgres:16.0-alpine
     deploy:
       resources:
         limits:
