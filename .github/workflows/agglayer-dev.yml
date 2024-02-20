@@ -2,7 +2,7 @@ name: "Build pipeline for agglayer-dev"
 on:
   push:
     branches:
-      - DEVOPS-2546/dev-deploy
+      - development
 
 env:
   PROJECT_ID: "prj-polygonlabs-shared-dev"
