@@ -164,7 +164,7 @@ func (e *Executor) Settle(ctx context.Context, signedTx tx.SignedTx, dbTx pgx.Tx
 		&e.config.L1.RollupManagerContract,
 		big.NewInt(0),
 		l1TxData,
-		0,
+		e.config.EthTxManager.GasOffset,
 		dbTx,
 	); err != nil {
 		return common.Hash{}, fmt.Errorf("failed to add tx to ethTxMan, error: %s", err)
