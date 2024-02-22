@@ -137,6 +137,11 @@ func (e *Etherman) CheckTxWasMined(ctx context.Context, txHash common.Hash) (boo
 	return true, receipt, nil
 }
 
+// PendingNonce returns the pending nonce for the provided account
+func (e *Etherman) PendingNonce(ctx context.Context, account common.Address) (uint64, error) {
+	return e.ethClient.PendingNonceAt(ctx, account)
+}
+
 // CurrentNonce returns the current nonce for the provided account
 func (e *Etherman) CurrentNonce(ctx context.Context, account common.Address) (uint64, error) {
 	return e.ethClient.NonceAt(ctx, account, nil)
