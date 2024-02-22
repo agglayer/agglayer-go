@@ -23,15 +23,14 @@
 	MaxConns = 200
 
 [EthTxManager]
-	[EthTxManager.Base]
-		FrequencyToMonitorTxs = "1s"
-		WaitTxToBeMined = "2m"
-		ForcedGas = 0
-		GasPriceMarginFactor = 1
-		MaxGasPriceLimit = 0
-		PrivateKeys = [
-			{Path = "/pk/agglayer.keystore", Password = "testonly"},
-		]
+	FrequencyToMonitorTxs = "1s"
+	WaitTxToBeMined = "2m"
+	ForcedGas = 0
+	GasPriceMarginFactor = 1
+	MaxGasPriceLimit = 0
+	PrivateKeys = [
+		{Path = "/pk/agglayer.keystore", Password = "testonly"},
+	]
 	GasOffset = 100000
 
 [L1]

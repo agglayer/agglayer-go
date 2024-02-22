@@ -47,7 +47,7 @@ type Telemetry struct {
 }
 
 type EthTxManagerConfig struct {
-	ethtxmanager.Config `mapstructure:"Base"`
+	ethtxmanager.Config `mapstructure:",squash"`
 	GasOffset           uint64 `mapstructure:"GasOffset"`
 }
 
