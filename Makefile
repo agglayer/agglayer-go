@@ -63,7 +63,7 @@ LDFLAGS += -X 'github.com/0xPolygon/agglayer.GitBranch=$(GITBRANCH)'
 LDFLAGS += -X 'github.com/0xPolygon/agglayer.BuildDate=$(DATE)'
 
 .PHONY: build
-build: generate-migrations ## Builds the binary locally into ./dist
+build: ## Builds the binary locally into ./dist
 	$(GOENVVARS) go build -ldflags "all=$(LDFLAGS)" -o $(GOBIN)/$(GOBINARY) $(GOCMD)
 
 .PHONY: build-docker
