@@ -7,41 +7,10 @@ release:
   prerelease: auto
 
 builds:
-  - id: linux-amd64
-    main: ./cmd/
-    binary: agglayer
-    goos:
-      - linux
-    goarch:
-      - amd64
-    env:
-      - CGO_ENABLED=0
-    ldflags:
-      - -s -w
-      - -X github.com/0xPolygon/agglayer.Version={{ .Version }}
-      - -X github.com/0xPolygon/agglayer.GitRev={{ .Commit }}
-      - -X github.com/0xPolygon/agglayer.BuildDate={{ .Date }}
-      - -X github.com/0xPolygon/agglayer.GitBranch={{ .Branch }}
-
-  - id: linux-arm64
-    main: ./cmd/
-    binary: agglayer
-    goos:
-      - linux
-    goarch:
-      - arm64
-    env:
-      - CGO_ENABLED=0
-    ldflags:
-      - -s -w
-      - -X github.com/0xPolygon/agglayer.Version={{ .Version }}
-      - -X github.com/0xPolygon/agglayer.GitRev={{ .Commit }}
-      - -X github.com/0xPolygon/agglayer.BuildDate={{ .Date }}
-      - -X github.com/0xPolygon/agglayer.GitBranch={{ .Branch }}
-
   - main: ./cmd/
     binary: agglayer
     goos:
+      - linux
       - darwin
     goarch:
       - amd64
@@ -67,8 +36,6 @@ dockers:
     use: buildx
     goos: linux
     goarch: amd64
-    ids:
-      - linux-amd64
     build_flag_templates:
       - --platform=linux/amd64
       - --label=org.opencontainers.image.title={{ .ProjectName }}
@@ -86,8 +53,6 @@ dockers:
     use: buildx
     goos: linux
     goarch: arm64
-    ids:
-      - linux-arm64
     build_flag_templates:
       - --platform=linux/arm64
       - --label=org.opencontainers.image.title={{ .ProjectName }}

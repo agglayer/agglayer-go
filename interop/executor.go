@@ -83,11 +83,14 @@ func (e *Executor) verifyZKP(ctx context.Context, stx tx.SignedTx) error {
 	if err != nil {
 		return fmt.Errorf("failed to build verify ZKP tx: %s", err)
 	}
+
 	msg := ethereum.CallMsg{
 		From: e.interopAdminAddr,
 		To:   &e.config.L1.RollupManagerContract,
 		Data: l1TxData,
 	}
+	log.Debugf("verify batches trusted L1 call: %v", msg)
+
 	res, err := e.etherman.CallContract(ctx, msg, nil)
 	if err != nil {
 		return fmt.Errorf("failed to call verify ZKP response: %s, error: %s", res, err)
@@ -126,6 +129,8 @@ func (e *Executor) Execute(ctx context.Context, signedTx tx.SignedTx) error {
 	if err != nil {
 		return fmt.Errorf("failed to get batch from our node, error: %s", err)
 	}
+	log.Debugf("get batch by number: %v", batch)
+
 	if batch.StateRoot != signedTx.Tx.ZKP.NewStateRoot || batch.LocalExitRoot != signedTx.Tx.ZKP.NewLocalExitRoot {
 		return fmt.Errorf(
 			"Mismatch detected,  expected local exit root: %s actual: %s. expected state root: %s actual: %s",

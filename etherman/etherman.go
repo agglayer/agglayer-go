@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/0xPolygon/agglayer/config"
+	"github.com/0xPolygon/agglayer/tx"
 
 	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonrollupmanager"
 	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonzkevm"
@@ -19,8 +20,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jackc/pgx/v4"
-
-	"github.com/0xPolygon/agglayer/tx"
 )
 
 const (
