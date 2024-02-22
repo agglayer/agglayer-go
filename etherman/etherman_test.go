@@ -359,6 +359,51 @@ func TestCheckTxWasMined(t *testing.T) {
 	})
 }
 
+func TestPendingNonce(t *testing.T) {
+	t.Parallel()
+	assert := assert.New(t)
+
+	t.Run("Returns the expected nonce value", func(t *testing.T) {
+		ethClient := mocks.NewEthereumClientMock(t)
+		ethman := getEtherman(ethClient)
+
+		ethClient.On(
+			"PendingNonceAt",
+			context.TODO(),
+			common.Address{},
+		).Return(
+			uint64(1),
+			nil,
+		).Once()
+
+		result, err := ethman.PendingNonce(context.TODO(), common.Address{})
+
+		assert.Equal(uint64(1), result)
+		assert.Nil(err)
+		ethClient.AssertExpectations(t)
+	})
+
+	t.Run("Returns the expected error", func(t *testing.T) {
+		ethClient := mocks.NewEthereumClientMock(t)
+		ethman := getEtherman(ethClient)
+
+		ethClient.On(
+			"PendingNonceAt",
+			context.TODO(),
+			common.Address{},
+		).Return(
+			uint64(0),
+			errors.New("NA NA NA!"),
+		).Once()
+
+		result, err := ethman.PendingNonce(context.TODO(), common.Address{})
+
+		assert.Equal(uint64(0), result)
+		assert.ErrorContains(err, "NA NA NA!")
+		ethClient.AssertExpectations(t)
+	})
+}
+
 func TestCurrentNonce(t *testing.T) {
 	t.Parallel()
 	assert := assert.New(t)
