@@ -72,6 +72,7 @@ func start(cliCtx *cli.Context) error {
 
 	setupLog(c.Log)
 
+	log.Errorf("EthTxManager config%+v", c.EthTxManager)
 	// Load private key
 	pk, err := config.NewKeyFromKeystore(c.EthTxManager.PrivateKeys[0])
 	if err != nil {
@@ -116,7 +117,7 @@ func start(cliCtx *cli.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	etm := ethtxmanager.New(c.EthTxManager, &ethMan, ethTxManagerStorage, &ethMan)
+	etm := ethtxmanager.New(c.EthTxManager.Config, &ethMan, ethTxManagerStorage, &ethMan)
 
 	// Create opentelemetry metric provider
 	metricProvider, err := createMetricProvider()

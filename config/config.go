@@ -27,13 +27,13 @@ type FullNodeRPCs map[uint32]string
 
 // Config represents the full configuration of the data node
 type Config struct {
-	FullNodeRPCs FullNodeRPCs        `mapstructure:"FullNodeRPCs"`
-	RPC          jRPC.Config         `mapstructure:"RPC"`
-	Log          log.Config          `mapstructure:"Log"`
-	DB           db.Config           `mapstructure:"DB"`
-	EthTxManager ethtxmanager.Config `mapstructure:"EthTxManager"`
-	L1           L1Config            `mapstructure:"L1"`
-	Telemetry    Telemetry           `mapstructure:"Telemetry"`
+	FullNodeRPCs FullNodeRPCs       `mapstructure:"FullNodeRPCs"`
+	RPC          jRPC.Config        `mapstructure:"RPC"`
+	Log          log.Config         `mapstructure:"Log"`
+	DB           db.Config          `mapstructure:"DB"`
+	EthTxManager EthTxManagerConfig `mapstructure:"EthTxManager"`
+	L1           L1Config           `mapstructure:"L1"`
+	Telemetry    Telemetry          `mapstructure:"Telemetry"`
 }
 
 type L1Config struct {
@@ -44,6 +44,11 @@ type L1Config struct {
 
 type Telemetry struct {
 	PrometheusAddr string
+}
+
+type EthTxManagerConfig struct {
+	ethtxmanager.Config `mapstructure:",squash"`
+	GasOffset           uint64 `mapstructure:"GasOffset"`
 }
 
 // Load loads the configuration baseed on the cli context
