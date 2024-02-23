@@ -30,7 +30,7 @@ func RunMigrationsDown(pg *pgxpool.Pool) error {
 func runMigrations(pg *pgxpool.Pool, direction migrate.MigrationDirection) error {
 	db := stdlib.OpenDB(*pg.Config().ConnConfig)
 
-	var migrations = &migrate.EmbedFileSystemMigrationSource{FileSystem: f}
+	var migrations = &migrate.EmbedFileSystemMigrationSource{FileSystem: f, Root: "migrations"}
 	nMigrations, err := migrate.Exec(db, "postgres", migrations, direction)
 	if err != nil {
 		return err
