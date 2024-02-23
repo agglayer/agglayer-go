@@ -8,7 +8,9 @@ import (
 	migrate "github.com/rubenv/sql-migrate"
 )
 
-//go:embed migrations
+const migrationsPath = "migrations"
+
+//go:embed migrations/*
 var f embed.FS
 
 // RunMigrationsUp runs migrate-up for the given config.
@@ -27,7 +29,7 @@ func RunMigrationsDown(db *sql.DB) error {
 // the database updated with the latest changes in either direction,
 // up or down.
 func runMigrations(db *sql.DB, direction migrate.MigrationDirection) error {
-	migrations := &migrate.EmbedFileSystemMigrationSource{FileSystem: f, Root: "migrations"}
+	migrations := &migrate.EmbedFileSystemMigrationSource{FileSystem: f, Root: migrationsPath}
 	nMigrations, err := migrate.Exec(db, "postgres", migrations, direction)
 	if err != nil {
 		return err

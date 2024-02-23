@@ -9,7 +9,7 @@ import (
 )
 
 func Test_runMigrations(t *testing.T) {
-	migrations := &migrate.EmbedFileSystemMigrationSource{FileSystem: f, Root: "migrations"}
+	migrations := &migrate.EmbedFileSystemMigrationSource{FileSystem: f, Root: migrationsPath}
 	m, err := migrations.FindMigrations()
 	require.NoError(t, err)
 
