@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/0xPolygon/agglayer/log"
 	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	"github.com/0xPolygonHermez/zkevm-node/config/types"
 	"github.com/0xPolygonHermez/zkevm-node/db"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
-	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/mitchellh/mapstructure"

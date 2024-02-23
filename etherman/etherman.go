@@ -10,9 +10,9 @@ import (
 	"github.com/0xPolygon/agglayer/config"
 	"github.com/0xPolygon/agglayer/tx"
 
+	"github.com/0xPolygon/agglayer/log"
 	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonrollupmanager"
 	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonzkevm"
-	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/0xPolygonHermez/zkevm-node/state"
 	"github.com/0xPolygonHermez/zkevm-node/test/operations"
 	"github.com/ethereum/go-ethereum"

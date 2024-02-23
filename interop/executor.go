@@ -9,10 +9,11 @@ import (
 	"github.com/0xPolygon/agglayer/config"
 	"github.com/0xPolygon/agglayer/tx"
 	"github.com/0xPolygon/agglayer/types"
+	"go.uber.org/zap"
 
+	"github.com/0xPolygon/agglayer/log"
 	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
-	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jackc/pgx/v4"
@@ -27,7 +28,7 @@ func (zc *zkEVMClientCreator) NewClient(rpc string) types.IZkEVMClient {
 }
 
 type Executor struct {
-	logger             *log.Logger
+	logger             *zap.SugaredLogger
 	interopAdminAddr   common.Address
 	config             *config.Config
 	ethTxMan           types.IEthTxManager
@@ -35,7 +36,7 @@ type Executor struct {
 	ZkEVMClientCreator types.IZkEVMClientClientCreator
 }
 
-func New(logger *log.Logger, cfg *config.Config,
+func New(logger *zap.SugaredLogger, cfg *config.Config,
 	interopAdminAddr common.Address,
 	etherman types.IEtherman,
 	ethTxManager types.IEthTxManager,
