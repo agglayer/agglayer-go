@@ -2,3 +2,4 @@ dist
 docker/data
 .idea
 coverage.out
+.vscode/launch.json

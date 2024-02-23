@@ -42,6 +42,7 @@ const DefaultValues = `
 	PrivateKeys = [
 		{Path = "/pk/agglayer.keystore", Password = "testonly"},
 	]
+	GasOffset = 100000
 
 [L1]
 	ChainID = 1337

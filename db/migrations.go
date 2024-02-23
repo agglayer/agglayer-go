@@ -6,6 +6,8 @@ import (
 
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	migrate "github.com/rubenv/sql-migrate"
+
+	"github.com/0xPolygon/agglayer/log"
 )
 
 const migrationsPath = "migrations"
