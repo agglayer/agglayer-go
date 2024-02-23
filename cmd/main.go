@@ -16,6 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/jackc/pgx/v4/stdlib"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/urfave/cli/v2"
 	"go.opentelemetry.io/otel/exporters/prometheus"
@@ -85,7 +86,9 @@ func start(cliCtx *cli.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = db.RunMigrationsUp(pg); err != nil {
+	sqldb := stdlib.OpenDB(*pg.Config().ConnConfig)
+
+	if err = db.RunMigrationsUp(sqldb); err != nil {
 		log.Fatal(err)
 	}
 	storage := db.New(pg)
