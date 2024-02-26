@@ -43,6 +43,7 @@ const DefaultValues = `
 		{Path = "/pk/agglayer.keystore", Password = "testonly"},
 	]
 	KMSKeyName = "gcp/resource/id"
+	GasOffset = 100000
 
 [L1]
 	ChainID = 1337

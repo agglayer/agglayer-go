@@ -13,12 +13,12 @@ import (
 	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	dbConf "github.com/0xPolygonHermez/zkevm-node/db"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
-	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/jackc/pgx/v4/stdlib"
 	"github.com/pascaldekloe/etherkeyms"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/urfave/cli/v2"
@@ -31,6 +31,7 @@ import (
 	"github.com/0xPolygon/agglayer/db"
 	"github.com/0xPolygon/agglayer/etherman"
 	"github.com/0xPolygon/agglayer/interop"
+	"github.com/0xPolygon/agglayer/log"
 	"github.com/0xPolygon/agglayer/network"
 	"github.com/0xPolygon/agglayer/rpc"
 )
@@ -81,7 +82,9 @@ func start(cliCtx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	if err = db.RunMigrationsUp(pg); err != nil {
+	sqldb := stdlib.OpenDB(*pg.Config().ConnConfig)
+
+	if err = db.RunMigrationsUp(sqldb); err != nil {
 		return err
 	}
 	storage := db.New(pg)
@@ -193,7 +196,9 @@ func start(cliCtx *cli.Context) error {
 }
 
 func setupLog(c log.Config) {
-	log.Init(c)
+	if err := log.InitLogger(c); err != nil {
+		panic(fmt.Errorf("could not setup logger. Err: %w", err))
+	}
 }
 
 func createMetricProvider() (*metric.MeterProvider, error) {

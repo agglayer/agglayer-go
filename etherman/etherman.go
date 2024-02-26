@@ -8,10 +8,11 @@ import (
 	"time"
 
 	"github.com/0xPolygon/agglayer/config"
+	"github.com/0xPolygon/agglayer/tx"
 
+	"github.com/0xPolygon/agglayer/log"
 	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonrollupmanager"
 	"github.com/0xPolygonHermez/zkevm-node/etherman/smartcontracts/polygonzkevm"
-	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/0xPolygonHermez/zkevm-node/state"
 	"github.com/0xPolygonHermez/zkevm-node/test/operations"
 	"github.com/ethereum/go-ethereum"
@@ -19,8 +20,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jackc/pgx/v4"
-
-	"github.com/0xPolygon/agglayer/tx"
 )
 
 const (
@@ -136,6 +135,11 @@ func (e *Etherman) CheckTxWasMined(ctx context.Context, txHash common.Hash) (boo
 	}
 
 	return true, receipt, nil
+}
+
+// PendingNonce returns the pending nonce for the provided account
+func (e *Etherman) PendingNonce(ctx context.Context, account common.Address) (uint64, error) {
+	return e.ethClient.PendingNonceAt(ctx, account)
 }
 
 // CurrentNonce returns the current nonce for the provided account
