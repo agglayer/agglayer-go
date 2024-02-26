@@ -4,8 +4,9 @@ go 1.21
 
 require (
 	github.com/0xPolygon/cdk-data-availability v0.0.5
-	github.com/0xPolygonHermez/zkevm-node v0.0.0-20240222104536-0204affc7436
+	github.com/0xPolygonHermez/zkevm-node v0.6.0
 	github.com/ethereum/go-ethereum v1.13.11
+	github.com/hermeznetwork/tracerr v0.3.2
 	github.com/jackc/pgconn v1.14.1
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/mitchellh/mapstructure v1.5.0
@@ -16,6 +17,7 @@ require (
 	github.com/urfave/cli/v2 v2.27.1
 	go.opentelemetry.io/otel/exporters/prometheus v0.44.0
 	go.opentelemetry.io/otel/sdk/metric v1.21.0
+	go.uber.org/zap v1.27.0
 )
 
 require (
@@ -69,7 +71,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hermeznetwork/tracerr v0.3.2 // indirect
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
 	github.com/holiman/uint256 v1.2.4 // indirect
 	github.com/huin/goupnp v1.3.0 // indirect
@@ -133,7 +134,6 @@ require (
 	go.opentelemetry.io/otel/sdk v1.21.0 // indirect
 	go.opentelemetry.io/otel/trace v1.21.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.19.0 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/mod v0.14.0 // indirect
