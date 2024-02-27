@@ -49,6 +49,7 @@ type Telemetry struct {
 type EthTxManagerConfig struct {
 	ethtxmanager.Config `mapstructure:",squash"`
 	GasOffset           uint64 `mapstructure:"GasOffset"`
+	KMSKeyName          string
 }
 
 // Load loads the configuration baseed on the cli context

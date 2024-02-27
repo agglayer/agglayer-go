@@ -23,6 +23,14 @@ Run
 make run-docker
 ```
 
+## Key Signing configuration
+
+* Install polygon-cli `go install github.com/maticnetwork/polygon-cli@latest`
+* Create a new signature `polygon-cli signer create --kms GCP --gcp-project-id gcp-project --key-id mykey-tmp`
+* Install gcloud cli https://cloud.google.com/sdk/docs/install
+* Setup ADC `gcloud auth application-default login`
+* Configure `KMSKeyName` in `agglayer.toml`
+
 ## Production setup
 
 Currently only one instance of agglayer can be running at the same time, so it should be automatically started in the case of failure using a containerized setup or an OS level service manager/monitoring system.
