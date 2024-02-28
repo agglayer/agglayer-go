@@ -115,7 +115,7 @@ services:
       - agglayer-localnet
 
   zkevm-node:
-    image: 0xpolygon/cdk-validium-node:0.5.13-cdk.1
+    image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
     command:
       - "/bin/sh"
       - "-c"
@@ -137,8 +137,10 @@ services:
         condition: service_started
     volumes:
       - ./data/zkevm/sequencer.keystore:/pk/sequencer.keystore
+      - ./data/zkevm/aggregator.keystore:/pk/aggregator.keystore
       - ./data/zkevm/node.toml:/app/config.toml
       - ./data/zkevm/genesis.json:/app/genesis.json
+      - ./data:/datastreamer
     networks:
       - agglayer-localnet
 
