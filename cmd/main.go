@@ -274,7 +274,7 @@ func useKMSAuth(c *config.Config) (*bind.TransactOpts, common.Address, error) {
 	if err != nil {
 		return nil, common.Address{}, fmt.Errorf("failed to create kms client: %w", err)
 	}
-	defer client.Close()
+	// defer client.Close()
 
 	mk, err := etherkeyms.NewManagedKey(ctx, client, c.EthTxManager.KMSKeyName)
 	if err != nil {
