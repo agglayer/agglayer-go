@@ -48,7 +48,7 @@ const DefaultValues = `
 
 [L1]
 	ChainID = 1337
-	NodeURL = "http://l1:8545"
+	NodeURL = "http://zkevm-mock-l1-network:8545"
 	RollupManagerContract = "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e" # v0.0.4
 
 [Telemetry]
