@@ -147,7 +147,7 @@ GeneratingProofCleanupThreshold = "10m"
 UpgradeEtrogBatchNumber = 0
 SettlementBackend = "agglayer"
 AggLayerTxTimeout = "5m"
-AggLayerURL = "http://agglayer:8444"
+AggLayerURL = "http://agglayer:4444"
 SequencerPrivateKey = { Path = "/pk/sequencer.keystore", Password = "testonly" }
 BatchProofL1BlockConfirmations = 2
 
