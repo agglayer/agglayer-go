@@ -118,11 +118,9 @@ StateConsistencyCheckInterval = "5s"
 		SequentialBatchSanityCheck = false
 		SequentialProcessL2Block = true
 	[Sequencer.StreamServer]
-		Port = 6900
-		Filename = "/datastreamer/datastream.bin"
-		Version = 1
-		ChainID = 1337
-		Enabled = true
+		Port = 0
+		Filename = ""
+		Enabled = false
 		
 
 [SequenceSender]
@@ -149,7 +147,7 @@ GeneratingProofCleanupThreshold = "10m"
 UpgradeEtrogBatchNumber = 0
 SettlementBackend = "agglayer"
 AggLayerTxTimeout = "5m"
-AggLayerURL = "http://agglayer:4444"
+AggLayerURL = "http://agglayer:8444"
 SequencerPrivateKey = { Path = "/pk/sequencer.keystore", Password = "testonly" }
 BatchProofL1BlockConfirmations = 2
 
