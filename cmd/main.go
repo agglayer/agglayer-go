@@ -98,11 +98,13 @@ func start(cliCtx *cli.Context) error {
 	)
 
 	if c.EthTxManager.KMSKeyName != "" {
+		log.Debugf("using KMS key: %s", c.EthTxManager.KMSKeyName)
 		auth, addr, err = useKMSAuth(c)
 		if err != nil {
 			return err
 		}
 	} else if len(c.EthTxManager.PrivateKeys) > 0 {
+		log.Debugf("using local private key: %s", c.EthTxManager.PrivateKeys[0].Path)
 		auth, addr, err = useLocalAuth(c)
 		if err != nil {
 			return err
