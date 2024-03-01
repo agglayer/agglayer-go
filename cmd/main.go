@@ -22,6 +22,7 @@ import (
 	"github.com/pascaldekloe/etherkeyms"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/urfave/cli/v2"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/sdk/metric"
 
@@ -137,10 +138,11 @@ func start(cliCtx *cli.Context) error {
 	etm := ethtxmanager.New(c.EthTxManager.Config, &ethMan, ethTxManagerStorage, &ethMan)
 
 	// Create opentelemetry metric provider
-	metricProvider, err := createMetricProvider()
+	meterProvider, err := createMeterProvider()
 	if err != nil {
 		return err
 	}
+	otel.SetMeterProvider(meterProvider)
 
 	executor := interop.New(
 		log.WithFields("module", "executor"),
@@ -188,7 +190,7 @@ func start(cliCtx *cli.Context) error {
 		ethTxManagerStorage.Close,
 		closePrometheus,
 		func() {
-			if err := metricProvider.Shutdown(cliCtx.Context); err != nil {
+			if err := meterProvider.Shutdown(cliCtx.Context); err != nil {
 				log.Error(err)
 			}
 		},
@@ -203,7 +205,7 @@ func setupLog(c log.Config) {
 	}
 }
 
-func createMetricProvider() (*metric.MeterProvider, error) {
+func createMeterProvider() (*metric.MeterProvider, error) {
 	// The exporter embeds a default OpenTelemetry Reader and
 	// implements prometheus.Collector, allowing it to be used as
 	// both a Reader and Collector.
