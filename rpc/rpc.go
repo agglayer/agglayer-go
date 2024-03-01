@@ -57,7 +57,7 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, jRPC.Error
 
 	c, err := i.meter.Int64Counter("send_tx")
 	if err != nil {
-		i.logger.Warnf("failed to create check_tx counter: %s", err)
+		i.logger.Warnf("failed to create send_tx counter: %s", err)
 	}
 	c.Add(ctx, 1)
 
