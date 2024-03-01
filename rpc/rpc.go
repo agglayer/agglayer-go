@@ -101,7 +101,7 @@ func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, er
 	defer cancel()
 
 	c, merr := i.meter.Int64Counter("get_tx_status")
-	if err != nil {
+	if merr != nil {
 		i.logger.Warnf("failed to create get_tx_status counter: %s", merr)
 	}
 	c.Add(ctx, 1)
