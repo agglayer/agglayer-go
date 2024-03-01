@@ -224,7 +224,7 @@ func (e *Executor) GetTxStatus(ctx context.Context, hash common.Hash, dbTx pgx.T
 	}
 
 	c, werr := e.meter.Int64Counter("get_tx_status")
-	if err != nil {
+	if werr != nil {
 		e.logger.Warnf("failed to create check_tx counter: %s", werr)
 	}
 	c.Add(context.Background(), 1)
