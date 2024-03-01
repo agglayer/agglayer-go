@@ -114,7 +114,7 @@ func (e *Executor) verifyZKP(ctx context.Context, stx tx.SignedTx) error {
 
 	c, err := e.meter.Int64Counter("verify_zkp")
 	if err != nil {
-		e.logger.Warnf("failed to create check_tx counter: %s", err)
+		e.logger.Warnf("failed to create verify_zkp counter: %s", err)
 	}
 	c.Add(context.Background(), 1)
 
