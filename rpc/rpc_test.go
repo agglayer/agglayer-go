@@ -39,7 +39,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			mocks.NewEthermanMock(t),
 			mocks.NewEthTxManagerMock(t),
 		)
-		i := NewInteropEndpoints(e, dbMock, cfg)
+		i := NewInteropEndpoints(log.WithFields("module", "rpc"), e, dbMock, cfg)
 
 		result, err := i.GetTxStatus(common.HexToHash("0xsomeTxHash"))
 
@@ -72,7 +72,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			mocks.NewEthermanMock(t),
 			txManagerMock,
 		)
-		i := NewInteropEndpoints(e, dbMock, cfg)
+		i := NewInteropEndpoints(log.WithFields("module", "rpc"), e, dbMock, cfg)
 
 		result, err := i.GetTxStatus(txHash)
 
@@ -117,7 +117,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 			mocks.NewEthermanMock(t),
 			txManagerMock,
 		)
-		i := NewInteropEndpoints(e, dbMock, cfg)
+		i := NewInteropEndpoints(log.WithFields("module", "rpc"), e, dbMock, cfg)
 
 		status, err := i.GetTxStatus(txHash)
 
@@ -183,7 +183,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 				ethermanMock,
 				ethTxManagerMock,
 			)
-			i := NewInteropEndpoints(e, dbMock, c)
+			i := NewInteropEndpoints(log.WithFields("module", "rpc"), e, dbMock, c)
 			i.executor.ZkEVMClientCreator = zkEVMClientCreatorMock
 
 			result, err := i.SendTx(*signedTx)

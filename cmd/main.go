@@ -158,7 +158,7 @@ func start(cliCtx *cli.Context) error {
 		[]jRPC.Service{
 			{
 				Name:    rpc.INTEROP,
-				Service: rpc.NewInteropEndpoints(executor, storage, c),
+				Service: rpc.NewInteropEndpoints(log.WithFields("module", "rpc"), executor, storage, c),
 			},
 		},
 	)

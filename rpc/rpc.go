@@ -7,6 +7,9 @@ import (
 	"github.com/0xPolygon/agglayer/log"
 	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	"github.com/ethereum/go-ethereum/common"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
+	"go.uber.org/zap"
 
 	"github.com/0xPolygon/agglayer/config"
 	"github.com/0xPolygon/agglayer/interop"
@@ -18,6 +21,7 @@ import (
 const (
 	INTEROP       = "interop"
 	ethTxManOwner = "interop"
+	meterName     = "github.com/0xPolygon/agglayer/rpc"
 )
 
 // InteropEndpoints contains implementations for the "interop" RPC endpoints
@@ -25,24 +29,37 @@ type InteropEndpoints struct {
 	executor *interop.Executor
 	db       types.IDB
 	config   *config.Config
+	meter    metric.Meter
+	logger   *zap.SugaredLogger
 }
 
 // NewInteropEndpoints returns InteropEndpoints
 func NewInteropEndpoints(
+	logger *zap.SugaredLogger,
 	executor *interop.Executor,
 	db types.IDB,
 	conf *config.Config,
 ) *InteropEndpoints {
+	meter := otel.Meter(meterName)
+
 	return &InteropEndpoints{
 		executor: executor,
 		db:       db,
 		config:   conf,
+		meter:    meter,
+		logger:   logger,
 	}
 }
 
 func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, jRPC.Error) {
 	ctx, cancel := context.WithTimeout(context.Background(), i.config.RPC.WriteTimeout.Duration)
 	defer cancel()
+
+	c, err := i.meter.Int64Counter("send_tx")
+	if err != nil {
+		i.logger.Warnf("failed to create check_tx counter: %s", err)
+	}
+	c.Add(ctx, 1)
 
 	// Check if the RPC is actually registered, if not it won't be possible to assert soundness (in the future once we are stateless won't be needed)
 	if err := i.executor.CheckTx(signedTx); err != nil {
@@ -82,6 +99,12 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, jRPC.Error
 func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, err jRPC.Error) {
 	ctx, cancel := context.WithTimeout(context.Background(), i.config.RPC.ReadTimeout.Duration)
 	defer cancel()
+
+	c, merr := i.meter.Int64Counter("get_tx_status")
+	if err != nil {
+		i.logger.Warnf("failed to create check_tx counter: %s", merr)
+	}
+	c.Add(ctx, 1)
 
 	dbTx, innerErr := i.db.BeginStateTransaction(ctx)
 	if innerErr != nil {
