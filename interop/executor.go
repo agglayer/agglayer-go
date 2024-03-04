@@ -9,6 +9,9 @@ import (
 	"github.com/0xPolygon/agglayer/config"
 	"github.com/0xPolygon/agglayer/tx"
 	"github.com/0xPolygon/agglayer/types"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
 
 	"github.com/0xPolygon/agglayer/log"
@@ -18,6 +21,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jackc/pgx/v4"
 )
+
+const meterName = "github.com/0xPolygon/agglayer/interop"
 
 var _ types.IZkEVMClientClientCreator = (*zkEVMClientCreator)(nil)
 
@@ -29,6 +34,7 @@ func (zc *zkEVMClientCreator) NewClient(rpc string) types.IZkEVMClient {
 
 type Executor struct {
 	logger             *zap.SugaredLogger
+	meter              metric.Meter
 	interopAdminAddr   common.Address
 	config             *config.Config
 	ethTxMan           types.IEthTxManager
@@ -36,13 +42,18 @@ type Executor struct {
 	ZkEVMClientCreator types.IZkEVMClientClientCreator
 }
 
-func New(logger *zap.SugaredLogger, cfg *config.Config,
+func New(
+	logger *zap.SugaredLogger,
+	cfg *config.Config,
 	interopAdminAddr common.Address,
 	etherman types.IEtherman,
 	ethTxManager types.IEthTxManager,
 ) *Executor {
+	meter := otel.Meter(meterName)
+
 	return &Executor{
 		logger:             logger,
+		meter:              meter,
 		interopAdminAddr:   interopAdminAddr,
 		config:             cfg,
 		ethTxMan:           ethTxManager,
@@ -54,12 +65,18 @@ func New(logger *zap.SugaredLogger, cfg *config.Config,
 const ethTxManOwner = "interop"
 
 func (e *Executor) CheckTx(tx tx.SignedTx) error {
-
 	// Check if the RPC is actually registered, if not it won't be possible to assert soundness (in the future once we are stateless won't be needed)
 	// TODO: The JSON parsing of the contract is incorrect
 	if _, ok := e.config.FullNodeRPCs[tx.Tx.RollupID]; !ok {
 		return fmt.Errorf("there is no RPC registered for %v", tx.Tx.RollupID)
 	}
+
+	opts := metric.WithAttributes(attribute.Key("rollup_id").Int(int(tx.Tx.RollupID)))
+	c, err := e.meter.Int64Counter("check_tx")
+	if err != nil {
+		e.logger.Warnf("failed to create check_tx counter: %s", err)
+	}
+	c.Add(context.Background(), 1, opts)
 
 	return nil
 }
@@ -97,6 +114,13 @@ func (e *Executor) verifyZKP(ctx context.Context, stx tx.SignedTx) error {
 		return fmt.Errorf("failed to call verify ZKP response: %s, error: %s", res, err)
 	}
 
+	opts := metric.WithAttributes(attribute.Key("rollup_id").Int(int(stx.Tx.RollupID)))
+	c, err := e.meter.Int64Counter("verify_zkp")
+	if err != nil {
+		e.logger.Warnf("failed to create verify_zkp counter: %s", err)
+	}
+	c.Add(context.Background(), 1, opts)
+
 	return nil
 }
 
@@ -114,6 +138,13 @@ func (e *Executor) verifySignature(stx tx.SignedTx) error {
 	if sequencer != signer {
 		return errors.New("unexpected signer")
 	}
+
+	opts := metric.WithAttributes(attribute.Key("rollup_id").Int(int(stx.Tx.RollupID)))
+	c, err := e.meter.Int64Counter("verify_signature")
+	if err != nil {
+		e.logger.Warnf("failed to create check_tx counter: %s", err)
+	}
+	c.Add(context.Background(), 1, opts)
 
 	return nil
 }
@@ -141,6 +172,13 @@ func (e *Executor) Execute(ctx context.Context, signedTx tx.SignedTx) error {
 			batch.StateRoot.Hex(),
 		)
 	}
+
+	opts := metric.WithAttributes(attribute.Key("rollup_id").Int(int(signedTx.Tx.RollupID)))
+	c, err := e.meter.Int64Counter("execute")
+	if err != nil {
+		e.logger.Warnf("failed to create check_tx counter: %s", err)
+	}
+	c.Add(context.Background(), 1, opts)
 
 	return nil
 }
@@ -170,7 +208,15 @@ func (e *Executor) Settle(ctx context.Context, signedTx tx.SignedTx, dbTx pgx.Tx
 	); err != nil {
 		return common.Hash{}, fmt.Errorf("failed to add tx to ethTxMan, error: %s", err)
 	}
+
 	log.Debugf("successfuly added tx %s to ethTxMan", signedTx.Tx.Hash().Hex())
+	opts := metric.WithAttributes(attribute.Key("rollup_id").Int(int(signedTx.Tx.RollupID)))
+	c, err := e.meter.Int64Counter("settle")
+	if err != nil {
+		e.logger.Warnf("failed to create check_tx counter: %s", err)
+	}
+	c.Add(context.Background(), 1, opts)
+
 	return signedTx.Tx.Hash(), nil
 }
 
@@ -184,6 +230,12 @@ func (e *Executor) GetTxStatus(ctx context.Context, hash common.Hash, dbTx pgx.T
 	}
 
 	result = res.Status.String()
+
+	c, werr := e.meter.Int64Counter("get_tx_status_" + result)
+	if werr != nil {
+		e.logger.Warnf("failed to create check_tx counter: %s", werr)
+	}
+	c.Add(context.Background(), 1)
 
 	return
 }
