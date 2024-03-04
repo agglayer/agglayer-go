@@ -8,6 +8,7 @@ import (
 	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
 	"github.com/ethereum/go-ethereum/common"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
 
@@ -55,11 +56,13 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, jRPC.Error
 	ctx, cancel := context.WithTimeout(context.Background(), i.config.RPC.WriteTimeout.Duration)
 	defer cancel()
 
+	i.logger.Debugf("received tx %v", signedTx.Tx)
+	opts := metric.WithAttributes(attribute.Key("rollup_id").Int(int(signedTx.Tx.RollupID)))
 	c, err := i.meter.Int64Counter("send_tx")
 	if err != nil {
 		i.logger.Warnf("failed to create send_tx counter: %s", err)
 	}
-	c.Add(ctx, 1)
+	c.Add(ctx, 1, opts)
 
 	// Check if the RPC is actually registered, if not it won't be possible to assert soundness (in the future once we are stateless won't be needed)
 	if err := i.executor.CheckTx(signedTx); err != nil {

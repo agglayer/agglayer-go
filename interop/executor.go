@@ -10,6 +10,7 @@ import (
 	"github.com/0xPolygon/agglayer/tx"
 	"github.com/0xPolygon/agglayer/types"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
 
@@ -70,11 +71,12 @@ func (e *Executor) CheckTx(tx tx.SignedTx) error {
 		return fmt.Errorf("there is no RPC registered for %v", tx.Tx.RollupID)
 	}
 
+	opts := metric.WithAttributes(attribute.Key("rollup_id").Int(int(tx.Tx.RollupID)))
 	c, err := e.meter.Int64Counter("check_tx")
 	if err != nil {
 		e.logger.Warnf("failed to create check_tx counter: %s", err)
 	}
-	c.Add(context.Background(), 1)
+	c.Add(context.Background(), 1, opts)
 
 	return nil
 }
@@ -112,11 +114,12 @@ func (e *Executor) verifyZKP(ctx context.Context, stx tx.SignedTx) error {
 		return fmt.Errorf("failed to call verify ZKP response: %s, error: %s", res, err)
 	}
 
+	opts := metric.WithAttributes(attribute.Key("rollup_id").Int(int(stx.Tx.RollupID)))
 	c, err := e.meter.Int64Counter("verify_zkp")
 	if err != nil {
 		e.logger.Warnf("failed to create verify_zkp counter: %s", err)
 	}
-	c.Add(context.Background(), 1)
+	c.Add(context.Background(), 1, opts)
 
 	return nil
 }
@@ -136,11 +139,12 @@ func (e *Executor) verifySignature(stx tx.SignedTx) error {
 		return errors.New("unexpected signer")
 	}
 
+	opts := metric.WithAttributes(attribute.Key("rollup_id").Int(int(stx.Tx.RollupID)))
 	c, err := e.meter.Int64Counter("verify_signature")
 	if err != nil {
 		e.logger.Warnf("failed to create check_tx counter: %s", err)
 	}
-	c.Add(context.Background(), 1)
+	c.Add(context.Background(), 1, opts)
 
 	return nil
 }
@@ -169,11 +173,12 @@ func (e *Executor) Execute(ctx context.Context, signedTx tx.SignedTx) error {
 		)
 	}
 
+	opts := metric.WithAttributes(attribute.Key("rollup_id").Int(int(signedTx.Tx.RollupID)))
 	c, err := e.meter.Int64Counter("execute")
 	if err != nil {
 		e.logger.Warnf("failed to create check_tx counter: %s", err)
 	}
-	c.Add(context.Background(), 1)
+	c.Add(context.Background(), 1, opts)
 
 	return nil
 }
@@ -205,11 +210,12 @@ func (e *Executor) Settle(ctx context.Context, signedTx tx.SignedTx, dbTx pgx.Tx
 	}
 
 	log.Debugf("successfuly added tx %s to ethTxMan", signedTx.Tx.Hash().Hex())
+	opts := metric.WithAttributes(attribute.Key("rollup_id").Int(int(signedTx.Tx.RollupID)))
 	c, err := e.meter.Int64Counter("settle")
 	if err != nil {
 		e.logger.Warnf("failed to create check_tx counter: %s", err)
 	}
-	c.Add(context.Background(), 1)
+	c.Add(context.Background(), 1, opts)
 
 	return signedTx.Tx.Hash(), nil
 }
