@@ -161,6 +161,16 @@ func start(cliCtx *cli.Context) error {
 				Service: rpc.NewInteropEndpoints(log.WithFields("module", "rpc"), executor, storage, c),
 			},
 		},
+		jRPC.WithHealthHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, err := storage.BeginStateTransaction(context.Background())
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			_, _ = w.Write([]byte("Healthy"))
+			w.WriteHeader(http.StatusOK)
+		})),
 	)
 
 	// Run RPC

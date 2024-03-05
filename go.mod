@@ -30,7 +30,7 @@ require (
 	cloud.google.com/go/compute v1.23.3 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.6 // indirect
-	github.com/0xPolygon/cdk-rpc v0.0.0-20240305171559-1accc911d05e // indirect
+	github.com/0xPolygon/cdk-rpc v0.0.0-20240305171901-8dbb68fe396a // indirect
 	github.com/0xPolygonHermez/zkevm-data-streamer v0.1.19 // indirect
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
