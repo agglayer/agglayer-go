@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/0xPolygon/agglayer/log"
-	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
+	jRPC "github.com/0xPolygon/cdk-rpc/rpc"
 	"github.com/ethereum/go-ethereum/common"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
