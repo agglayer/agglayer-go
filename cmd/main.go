@@ -161,16 +161,7 @@ func start(cliCtx *cli.Context) error {
 				Service: rpc.NewInteropEndpoints(log.WithFields("module", "rpc"), executor, storage, c),
 			},
 		},
-		jRPC.WithHealthHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			_, err := storage.BeginStateTransaction(context.Background())
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-
-			_, _ = w.Write([]byte("Healthy"))
-			w.WriteHeader(http.StatusOK)
-		})),
+		jRPC.WithHealthHandler(http.HandlerFunc(healthHandler(storage))),
 	)
 
 	// Run RPC
@@ -311,4 +302,24 @@ func useLocalAuth(c *config.Config) (*bind.TransactOpts, common.Address, error) 
 	}
 
 	return auth, addr, nil
+}
+
+// healthHandler returns a handler that checks the health of the application
+func healthHandler(storage *db.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		txctx := context.Background()
+		dbtx, err := storage.BeginStateTransaction(txctx)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		if err = dbtx.Rollback(txctx); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		_, _ = w.Write([]byte("Healthy"))
+		w.WriteHeader(http.StatusOK)
+	}
 }
