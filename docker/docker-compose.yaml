@@ -137,7 +137,6 @@ services:
         condition: service_started
     volumes:
       - ./data/zkevm/sequencer.keystore:/pk/sequencer.keystore
-      - ./data/zkevm/aggregator.keystore:/pk/aggregator.keystore
       - ./data/zkevm/node.toml:/app/config.toml
       - ./data/zkevm/genesis.json:/app/genesis.json
       - ./data:/datastreamer
@@ -168,6 +167,7 @@ services:
   # In order to run "agglayer" attached to an external L1 and zkevm node, the config file should be
   # updated accordingly.
   agglayer:
+    container_name: agglayer
     image: agglayer:local
     build:
       context: ../
