@@ -2,8 +2,6 @@ module github.com/0xPolygon/agglayer
 
 go 1.21.3
 
-toolchain go1.21.5
-
 require (
 	cloud.google.com/go/kms v1.15.7
 	github.com/0xPolygon/cdk-data-availability v0.0.5
