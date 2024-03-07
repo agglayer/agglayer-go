@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/kms v1.15.7
 	github.com/0xPolygon/cdk-rpc v0.0.0-20240305171901-8dbb68fe396a
 	github.com/0xPolygonHermez/zkevm-node v0.0.0-20240222104536-0204affc7436
-	github.com/ethereum/go-ethereum v1.13.11
+	github.com/ethereum/go-ethereum v1.13.14
 	github.com/hermeznetwork/tracerr v0.3.2
 	github.com/jackc/pgconn v1.14.1
 	github.com/jackc/pgx/v4 v4.18.1
