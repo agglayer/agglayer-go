@@ -168,6 +168,7 @@ services:
   # In order to run "agglayer" attached to an external L1 and zkevm node, the config file should be
   # updated accordingly.
   agglayer:
+    container_name: agglayer
     image: agglayer:local
     build:
       context: ../

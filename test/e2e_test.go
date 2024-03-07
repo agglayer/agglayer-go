@@ -43,11 +43,15 @@ func TestEthTransfer(t *testing.T) {
 	// Load eth client
 	client, err := ethclient.Dial(operations.DefaultL2NetworkURL)
 	require.NoError(t, err)
+
 	// Send txs
-	nTxs := 10
-	amount := big.NewInt(10000)
-	toAddress := common.HexToAddress("0x70997970C51812dc3A010C7d01b50e0d17dc79C8")
-	gasLimit, err := client.EstimateGas(ctx, ethereum.CallMsg{From: auth.From, To: &toAddress, Value: amount})
+	var (
+		amount    = big.NewInt(10000)
+		nTxs      = 10
+		recipient = common.HexToAddress("0x70997970C51812dc3A010C7d01b50e0d17dc79C8")
+	)
+
+	gasLimit, err := client.EstimateGas(ctx, ethereum.CallMsg{From: auth.From, To: &recipient, Value: amount})
 	require.NoError(t, err)
 	gasPrice, err := client.SuggestGasPrice(ctx)
 	require.NoError(t, err)
@@ -55,7 +59,7 @@ func TestEthTransfer(t *testing.T) {
 	require.NoError(t, err)
 	txs := make([]*types.Transaction, 0, nTxs)
 	for i := 0; i < nTxs; i++ {
-		tx := types.NewTransaction(nonce+uint64(i), toAddress, amount, gasLimit, gasPrice, nil)
+		tx := types.NewTransaction(nonce+uint64(i), recipient, amount, gasLimit, gasPrice, nil)
 		txs = append(txs, tx)
 	}
 
