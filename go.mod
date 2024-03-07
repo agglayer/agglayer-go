@@ -4,7 +4,7 @@ go 1.21.3
 
 require (
 	cloud.google.com/go/kms v1.15.7
-	github.com/0xPolygon/cdk-data-availability v0.0.5
+	github.com/0xPolygon/cdk-rpc v0.0.0-20240305171901-8dbb68fe396a
 	github.com/0xPolygonHermez/zkevm-node v0.0.0-20240222104536-0204affc7436
 	github.com/ethereum/go-ethereum v1.13.11
 	github.com/hermeznetwork/tracerr v0.3.2
@@ -28,7 +28,6 @@ require (
 	cloud.google.com/go/compute v1.23.3 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.6 // indirect
-	github.com/0xPolygon/cdk-rpc v0.0.0-20240305171901-8dbb68fe396a // indirect
 	github.com/0xPolygonHermez/zkevm-data-streamer v0.1.19 // indirect
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
@@ -109,7 +108,6 @@ require (
 	github.com/markbates/oncer v1.0.0 // indirect
 	github.com/markbates/safe v1.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
-	github.com/miguelmota/go-solidity-sha3 v0.1.1 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
