@@ -1,5 +1,5 @@
 {
-    "openrpc": "1.3.2",
+    "openrpc": "1.2.6",
     "info": {
         "version": "0.1.0",
         "title": "AggLayer"
@@ -31,14 +31,17 @@
                     "description": "Example of a transaction",
                     "params": [
                         {
-                            "tx": {
-                                "rollupID": 1,
-                                "lastVerifiedBatch": 0,
-                                "newVerifiedBatch": 1,
-                                "ZKP": {
-                                    "newStateRoot": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-                                    "newLocalExitRoot": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-                                    "proof": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                            "name": "signedTx",
+                            "value": {
+                                "tx": {
+                                    "rollupID": 1,
+                                    "lastVerifiedBatch": 0,
+                                    "newVerifiedBatch": 1,
+                                    "ZKP": {
+                                        "newStateRoot": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+                                        "newLocalExitRoot": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+                                        "proof": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                                    }
                                 }
                             },
                             "signature": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
@@ -64,6 +67,29 @@
                     }
                 }
             ],
+            "result": {
+                "name": "status",
+                "description": "The status of the transaction",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "examples": [
+                {
+                    "name": "getTxStatusExample",
+                    "description": "Example of a transaction status",
+                    "params": [
+                        {
+                            "name": "hash",
+                            "value": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                        }
+                    ],
+                    "result": {
+                        "name": "status",
+                        "value": "pending"
+                    }
+                }
+            ]
         }
     ],
     "components": {
