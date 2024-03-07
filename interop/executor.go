@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/0xPolygon/agglayer/log"
-	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
+	jRPC "github.com/0xPolygon/cdk-rpc/rpc"
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"

@@ -177,7 +177,7 @@ services:
       agglayer-db:
         condition: service_healthy
     ports:
-      - '8444:8444'
+      - '4444:4444'
       - '2223:2223'
     volumes:
       - ./data/agglayer/agglayer.keystore:/pk/agglayer.keystore

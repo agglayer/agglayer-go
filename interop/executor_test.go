@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/0xPolygon/agglayer/log"
-	jRPC "github.com/0xPolygon/cdk-data-availability/rpc"
+	jRPC "github.com/0xPolygon/cdk-rpc/rpc"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	rpctypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/ethereum/go-ethereum/common"

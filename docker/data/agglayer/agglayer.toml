@@ -32,7 +32,7 @@
 		{Path = "/pk/agglayer.keystore", Password = "testonly"},
 	]
 	GasOffset = 100000
-	KMSKeyName = "gcp/resource/id"
+	KMSKeyName = ""
 	KMSConnectionTimeout = "30s"
 
 [L1]
