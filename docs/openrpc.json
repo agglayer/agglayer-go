@@ -1,0 +1,144 @@
+{
+    "openrpc": "1.2.6",
+    "info": {
+        "version": "0.1.0",
+        "title": "AggLayer"
+    },
+    "methods": [
+        {
+            "name": "interop_sendTx",
+            "description": "Send a transaction to the AggLayer",
+            "params": [
+                {
+                    "name": "signedTx",
+                    "description": "The signed transaction to send",
+                    "schema": {
+                        "$ref": "#/components/schemas/SignedTx"
+                    }
+                }
+            ],
+            "result": {
+                "name": "txHash",
+                "description": "Hex representation of the transaction hash",
+                "schema": {
+                    "type": "string",
+                    "pattern": "^0x[a-fA-F\\d]{64}$"
+                }
+            },
+            "examples": [
+                {
+                    "name": "sendTxExample",
+                    "description": "Example of a transaction",
+                    "params": [
+                        {
+                            "name": "signedTx",
+                            "value": {
+                                "tx": {
+                                    "rollupID": 1,
+                                    "lastVerifiedBatch": 0,
+                                    "newVerifiedBatch": 1,
+                                    "ZKP": {
+                                        "newStateRoot": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+                                        "newLocalExitRoot": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+                                        "proof": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                                    }
+                                }
+                            },
+                            "signature": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                        }
+                    ],
+                    "result": {
+                        "name": "hash",
+                        "value": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "interop_getTxStatus",
+            "description": "Get the status of a transaction",
+            "params": [
+                {
+                    "name": "hash",
+                    "description": "The hash of the transaction",
+                    "schema": {
+                        "type": "string",
+                        "pattern": "^0x[a-fA-F\\d]{64}$"
+                    }
+                }
+            ],
+            "result": {
+                "name": "status",
+                "description": "The status of the transaction",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "examples": [
+                {
+                    "name": "getTxStatusExample",
+                    "description": "Example of a transaction status",
+                    "params": [
+                        {
+                            "name": "hash",
+                            "value": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                        }
+                    ],
+                    "result": {
+                        "name": "status",
+                        "value": "pending"
+                    }
+                }
+            ]
+        }
+    ],
+    "components": {
+        "schemas": {
+            "ZKP": {
+                "NewStateRoot": {
+                    "type": "string",
+                    "description": "Hex representation of the new state root"
+                },
+                "NewLocalExitRoot": {
+                    "type": "string",
+                    "description": "Hex representation of the new local exit root"
+                },
+                "Proof": {
+                    "type": "string",
+                    "description": "Hex representation of the proof"
+                }
+            },
+            "Tx": {
+                "RollupID": {
+                    "type": "integer",
+                    "description": "The ID of the rollup to send the transaction to"
+                },
+                "LastVerifiedBatch": {
+                    "type": "integer",
+                    "description": "The last verified batch number"
+                },
+                "NewVerifiedBatch": {
+                    "type": "integer",
+                    "description": "The new verified batch number"
+                },
+                "ZKP": {
+                    "$ref": "#/components/schemas/ZKP"
+                }
+            },
+            "SignedTx": {
+                "title": "signedTx",
+                "type": "object",
+                "properties": {
+                    "tx": {
+                        "$ref": "#/components/schemas/Tx"
+                    },
+                    "signature": {
+                        "type": "string",
+                        "description": "Hex representation of the signature",
+                        "pattern": "^0x[a-fA-F\\d]{64}$"
+                    }
+                }
+            }
+        }
+    }
+}
