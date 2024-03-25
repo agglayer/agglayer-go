@@ -3,6 +3,7 @@ package interop
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/big"
 	"testing"
 
@@ -176,31 +177,96 @@ func TestExecutor_Execute(t *testing.T) {
 			LastVerifiedBatch: 0,
 			NewVerifiedBatch:  1,
 			ZKP: tx.ZKP{
-				NewStateRoot: common.BytesToHash([]byte("sampleNewStateRoot")),
-				Proof:        []byte("sampleProof"),
+				NewStateRoot:     common.BytesToHash([]byte("sampleNewStateRoot")),
+				NewLocalExitRoot: common.BytesToHash([]byte("sampleNewLocalExitRoot")),
+				Proof:            []byte("sampleProof"),
 			},
 		},
 	}
 
-	// Mock the ZkEVMClientCreator.NewClient method
-	mockZkEVMClientCreator := mocks.NewZkEVMClientClientCreatorMock(t)
-	mockZkEVMClient := mocks.NewZkEVMClientMock(t)
+	t.Run("Batch is not nil and roots match", func(t *testing.T) {
+		t.Parallel()
 
-	mockZkEVMClientCreator.On("NewClient", mock.Anything).Return(mockZkEVMClient).Once()
-	mockZkEVMClient.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).
-		Return(&rpctypes.Batch{
-			StateRoot:     signedTx.Tx.ZKP.NewStateRoot,
-			LocalExitRoot: signedTx.Tx.ZKP.NewLocalExitRoot,
-			// Add other necessary fields here
-		}, nil).Once()
+		// Mock the ZkEVMClientCreator.NewClient method
+		mockZkEVMClientCreator := mocks.NewZkEVMClientClientCreatorMock(t)
+		mockZkEVMClient := mocks.NewZkEVMClientMock(t)
 
-	// Set the ZkEVMClientCreator to return the mock ZkEVMClient
-	executor.ZkEVMClientCreator = mockZkEVMClientCreator
+		mockZkEVMClientCreator.On("NewClient", mock.Anything).Return(mockZkEVMClient).Once()
+		mockZkEVMClient.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).
+			Return(&rpctypes.Batch{
+				StateRoot:     signedTx.Tx.ZKP.NewStateRoot,
+				LocalExitRoot: signedTx.Tx.ZKP.NewLocalExitRoot,
+				// Add other necessary fields here
+			}, nil).Once()
 
-	err := executor.Execute(context.Background(), signedTx)
-	require.NoError(t, err)
-	mockZkEVMClientCreator.AssertExpectations(t)
-	mockZkEVMClient.AssertExpectations(t)
+		// Set the ZkEVMClientCreator to return the mock ZkEVMClient
+		executor.ZkEVMClientCreator = mockZkEVMClientCreator
+
+		err := executor.Execute(context.Background(), signedTx)
+		require.NoError(t, err)
+		mockZkEVMClientCreator.AssertExpectations(t)
+		mockZkEVMClient.AssertExpectations(t)
+	})
+
+	t.Run("Returns expected error when Batch is nil and roots do not match", func(t *testing.T) {
+		t.Parallel()
+
+		// Mock the ZkEVMClientCreator.NewClient method
+		mockZkEVMClientCreator := mocks.NewZkEVMClientClientCreatorMock(t)
+		mockZkEVMClient := mocks.NewZkEVMClientMock(t)
+
+		mockZkEVMClientCreator.On("NewClient", mock.Anything).Return(mockZkEVMClient).Once()
+		mockZkEVMClient.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).
+			Return(nil, nil).Once()
+
+		// Set the ZkEVMClientCreator to return the mock ZkEVMClient
+		executor.ZkEVMClientCreator = mockZkEVMClientCreator
+
+		err := executor.Execute(context.Background(), signedTx)
+		require.Error(t, err)
+		expectedError := fmt.Sprintf(
+			"Mismatch detected, expected local exit root: %s actual: %s. expected state root: %s actual: %s",
+			common.Hash{}.Hex(),
+			signedTx.Tx.ZKP.NewLocalExitRoot.Hex(),
+			common.Hash{}.Hex(),
+			signedTx.Tx.ZKP.NewStateRoot.Hex(),
+		)
+		assert.Contains(t, err.Error(), expectedError)
+		mockZkEVMClientCreator.AssertExpectations(t)
+		mockZkEVMClient.AssertExpectations(t)
+	})
+
+	t.Run("Batch is nil and roots match", func(t *testing.T) {
+		t.Parallel()
+
+		// Mock the ZkEVMClientCreator.NewClient method
+		mockZkEVMClientCreator := mocks.NewZkEVMClientClientCreatorMock(t)
+		mockZkEVMClient := mocks.NewZkEVMClientMock(t)
+
+		mockZkEVMClientCreator.On("NewClient", mock.Anything).Return(mockZkEVMClient).Once()
+		mockZkEVMClient.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).
+			Return(nil, nil).Once()
+
+		// Set the ZkEVMClientCreator to return the mock ZkEVMClient
+		executor.ZkEVMClientCreator = mockZkEVMClientCreator
+
+		newSignedTx := tx.SignedTx{
+			Tx: tx.Tx{
+				LastVerifiedBatch: 0,
+				NewVerifiedBatch:  1,
+				ZKP: tx.ZKP{
+					NewStateRoot:     common.Hash{},
+					NewLocalExitRoot: common.Hash{},
+					Proof:            []byte("sampleProof"),
+				},
+			},
+		}
+
+		err := executor.Execute(context.Background(), newSignedTx)
+		require.NoError(t, err)
+		mockZkEVMClientCreator.AssertExpectations(t)
+		mockZkEVMClient.AssertExpectations(t)
+	})
 }
 
 func TestExecutor_Settle(t *testing.T) {
