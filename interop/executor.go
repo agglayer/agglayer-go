@@ -166,14 +166,14 @@ func (e *Executor) Execute(ctx context.Context, signedTx tx.SignedTx) error {
 	if batch == nil && (signedTx.Tx.ZKP.NewStateRoot != common.Hash{} || signedTx.Tx.ZKP.NewLocalExitRoot != common.Hash{}) {
 		return fmt.Errorf(
 			"Mismatch detected, expected local exit root: %s actual: %s. expected state root: %s actual: %s",
-			common.Hash{}.Hex(),
 			signedTx.Tx.ZKP.NewLocalExitRoot.Hex(),
 			common.Hash{}.Hex(),
 			signedTx.Tx.ZKP.NewStateRoot.Hex(),
+			common.Hash{}.Hex(),
 		)
 	} else if batch != nil && (batch.StateRoot != signedTx.Tx.ZKP.NewStateRoot || batch.LocalExitRoot != signedTx.Tx.ZKP.NewLocalExitRoot) {
 		return fmt.Errorf(
-			"Mismatch detected,  expected local exit root: %s actual: %s. expected state root: %s actual: %s",
+			"Mismatch detected, expected local exit root: %s actual: %s. expected state root: %s actual: %s",
 			signedTx.Tx.ZKP.NewLocalExitRoot.Hex(),
 			batch.LocalExitRoot.Hex(),
 			signedTx.Tx.ZKP.NewStateRoot.Hex(),
