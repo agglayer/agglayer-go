@@ -165,7 +165,7 @@ func (e *Executor) Execute(ctx context.Context, signedTx tx.SignedTx) error {
 
 	if batch == nil {
 		return fmt.Errorf(
-			"unable to perform soundness check because batch number %v is undefined",
+			"unable to perform soundness check because batch with number %v is undefined",
 			signedTx.Tx.NewVerifiedBatch,
 		)
 	}
