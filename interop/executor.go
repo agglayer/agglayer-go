@@ -163,9 +163,16 @@ func (e *Executor) Execute(ctx context.Context, signedTx tx.SignedTx) error {
 	}
 	log.Debugf("get batch by number: %v", batch)
 
+	if batch == nil {
+		return fmt.Errorf(
+			"unable to perform soundness check because batch with number %v is undefined",
+			signedTx.Tx.NewVerifiedBatch,
+		)
+	}
+
 	if batch.StateRoot != signedTx.Tx.ZKP.NewStateRoot || batch.LocalExitRoot != signedTx.Tx.ZKP.NewLocalExitRoot {
 		return fmt.Errorf(
-			"Mismatch detected,  expected local exit root: %s actual: %s. expected state root: %s actual: %s",
+			"Mismatch detected, expected local exit root: %s actual: %s. expected state root: %s actual: %s",
 			signedTx.Tx.ZKP.NewLocalExitRoot.Hex(),
 			batch.LocalExitRoot.Hex(),
 			signedTx.Tx.ZKP.NewStateRoot.Hex(),

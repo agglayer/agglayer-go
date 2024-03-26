@@ -3,6 +3,7 @@ package interop
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/big"
 	"testing"
 
@@ -163,12 +164,7 @@ func TestExecutor_VerifySignature(t *testing.T) {
 }
 
 func TestExecutor_Execute(t *testing.T) {
-	cfg := &config.Config{}
-	interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
-	etherman := mocks.NewEthermanMock(t)
-	ethTxManager := mocks.NewEthTxManagerMock(t)
-
-	executor := New(log.WithFields("test", "test"), cfg, interopAdminAddr, etherman, ethTxManager)
+	t.Parallel()
 
 	// Create a sample signed transaction for testing
 	signedTx := tx.SignedTx{
@@ -176,31 +172,75 @@ func TestExecutor_Execute(t *testing.T) {
 			LastVerifiedBatch: 0,
 			NewVerifiedBatch:  1,
 			ZKP: tx.ZKP{
-				NewStateRoot: common.BytesToHash([]byte("sampleNewStateRoot")),
-				Proof:        []byte("sampleProof"),
+				NewStateRoot:     common.BytesToHash([]byte("sampleNewStateRoot")),
+				NewLocalExitRoot: common.BytesToHash([]byte("sampleNewLocalExitRoot")),
+				Proof:            []byte("sampleProof"),
 			},
 		},
 	}
 
-	// Mock the ZkEVMClientCreator.NewClient method
-	mockZkEVMClientCreator := mocks.NewZkEVMClientClientCreatorMock(t)
-	mockZkEVMClient := mocks.NewZkEVMClientMock(t)
+	t.Run("Batch is not nil and roots match", func(t *testing.T) {
+		t.Parallel()
 
-	mockZkEVMClientCreator.On("NewClient", mock.Anything).Return(mockZkEVMClient).Once()
-	mockZkEVMClient.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).
-		Return(&rpctypes.Batch{
-			StateRoot:     signedTx.Tx.ZKP.NewStateRoot,
-			LocalExitRoot: signedTx.Tx.ZKP.NewLocalExitRoot,
-			// Add other necessary fields here
-		}, nil).Once()
+		cfg := &config.Config{}
+		interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
+		etherman := mocks.NewEthermanMock(t)
+		ethTxManager := mocks.NewEthTxManagerMock(t)
 
-	// Set the ZkEVMClientCreator to return the mock ZkEVMClient
-	executor.ZkEVMClientCreator = mockZkEVMClientCreator
+		executor := New(log.WithFields("test", "test"), cfg, interopAdminAddr, etherman, ethTxManager)
 
-	err := executor.Execute(context.Background(), signedTx)
-	require.NoError(t, err)
-	mockZkEVMClientCreator.AssertExpectations(t)
-	mockZkEVMClient.AssertExpectations(t)
+		// Mock the ZkEVMClientCreator.NewClient method
+		mockZkEVMClientCreator := mocks.NewZkEVMClientClientCreatorMock(t)
+		mockZkEVMClient := mocks.NewZkEVMClientMock(t)
+
+		mockZkEVMClientCreator.On("NewClient", mock.Anything).Return(mockZkEVMClient).Once()
+		mockZkEVMClient.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).
+			Return(&rpctypes.Batch{
+				StateRoot:     signedTx.Tx.ZKP.NewStateRoot,
+				LocalExitRoot: signedTx.Tx.ZKP.NewLocalExitRoot,
+				// Add other necessary fields here
+			}, nil).Once()
+
+		// Set the ZkEVMClientCreator to return the mock ZkEVMClient
+		executor.ZkEVMClientCreator = mockZkEVMClientCreator
+
+		err := executor.Execute(context.Background(), signedTx)
+		require.NoError(t, err)
+		mockZkEVMClientCreator.AssertExpectations(t)
+		mockZkEVMClient.AssertExpectations(t)
+	})
+
+	t.Run("Returns expected error when Batch is nil", func(t *testing.T) {
+		t.Parallel()
+
+		cfg := &config.Config{}
+		interopAdminAddr := common.HexToAddress("0x1234567890abcdef")
+		etherman := mocks.NewEthermanMock(t)
+		ethTxManager := mocks.NewEthTxManagerMock(t)
+
+		executor := New(log.WithFields("test", "test"), cfg, interopAdminAddr, etherman, ethTxManager)
+
+		// Mock the ZkEVMClientCreator.NewClient method
+		mockZkEVMClientCreator := mocks.NewZkEVMClientClientCreatorMock(t)
+		mockZkEVMClient := mocks.NewZkEVMClientMock(t)
+
+		mockZkEVMClientCreator.On("NewClient", mock.Anything).Return(mockZkEVMClient).Once()
+		mockZkEVMClient.On("BatchByNumber", mock.Anything, big.NewInt(int64(signedTx.Tx.NewVerifiedBatch))).
+			Return(nil, nil).Once()
+
+		// Set the ZkEVMClientCreator to return the mock ZkEVMClient
+		executor.ZkEVMClientCreator = mockZkEVMClientCreator
+
+		err := executor.Execute(context.Background(), signedTx)
+		require.Error(t, err)
+		expectedError := fmt.Sprintf(
+			"unable to perform soundness check because batch with number %v is undefined",
+			signedTx.Tx.NewVerifiedBatch,
+		)
+		assert.Contains(t, err.Error(), expectedError)
+		mockZkEVMClientCreator.AssertExpectations(t)
+		mockZkEVMClient.AssertExpectations(t)
+	})
 }
 
 func TestExecutor_Settle(t *testing.T) {
