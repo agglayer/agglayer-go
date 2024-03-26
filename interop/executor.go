@@ -163,15 +163,14 @@ func (e *Executor) Execute(ctx context.Context, signedTx tx.SignedTx) error {
 	}
 	log.Debugf("get batch by number: %v", batch)
 
-	if batch == nil && (signedTx.Tx.ZKP.NewStateRoot != common.Hash{} || signedTx.Tx.ZKP.NewLocalExitRoot != common.Hash{}) {
+	if batch == nil {
 		return fmt.Errorf(
-			"Mismatch detected, expected local exit root: %s actual: %s. expected state root: %s actual: %s",
-			signedTx.Tx.ZKP.NewLocalExitRoot.Hex(),
-			common.Hash{}.Hex(),
-			signedTx.Tx.ZKP.NewStateRoot.Hex(),
-			common.Hash{}.Hex(),
+			"unable to perform soundness check because batch number %v is undefined",
+			signedTx.Tx.NewVerifiedBatch,
 		)
-	} else if batch != nil && (batch.StateRoot != signedTx.Tx.ZKP.NewStateRoot || batch.LocalExitRoot != signedTx.Tx.ZKP.NewLocalExitRoot) {
+	}
+
+	if batch.StateRoot != signedTx.Tx.ZKP.NewStateRoot || batch.LocalExitRoot != signedTx.Tx.ZKP.NewLocalExitRoot {
 		return fmt.Errorf(
 			"Mismatch detected, expected local exit root: %s actual: %s. expected state root: %s actual: %s",
 			signedTx.Tx.ZKP.NewLocalExitRoot.Hex(),
