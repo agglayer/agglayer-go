@@ -234,7 +234,7 @@ func TestExecutor_Execute(t *testing.T) {
 		err := executor.Execute(context.Background(), signedTx)
 		require.Error(t, err)
 		expectedError := fmt.Sprintf(
-			"unable to perform soundness check because batch with number %v is undefined",
+			"unable to perform soundness check because batch with number %d is undefined",
 			signedTx.Tx.NewVerifiedBatch,
 		)
 		assert.Contains(t, err.Error(), expectedError)
