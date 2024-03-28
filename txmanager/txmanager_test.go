@@ -789,7 +789,7 @@ func TestFailedToEstimateTxWithForcedGasGetMined(t *testing.T) {
 	require.Equal(t, "", result.Txs[signedTx.Hash()].RevertMessage)
 }
 
-func TestTxRetryFailed(t *testing.T) {
+func TestTxRetry_MaxRetriesReached(t *testing.T) {
 	dbCfg := newStateDBConfig(t)
 
 	etherman := mocks.NewEthermanMock(t)
