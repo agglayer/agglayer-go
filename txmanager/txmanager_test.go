@@ -807,6 +807,7 @@ func TestTxRetry_MaxRetriesReached(t *testing.T) {
 	}
 
 	ethTxManagerClient := New(config, etherman, storage, etherman)
+	defer ethTxManagerClient.Stop()
 
 	ctx := context.Background()
 
@@ -915,4 +916,5 @@ func TestTxRetry_MaxRetriesReached(t *testing.T) {
 	result, err := ethTxManagerClient.Result(ctx, owner, id, nil)
 	require.NoError(t, err)
 	require.Equal(t, txmTypes.MonitoredTxStatusFailed, result.Status)
+
 }
