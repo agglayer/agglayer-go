@@ -106,6 +106,8 @@ func (s *PostgresStorage) GetByStatus(ctx context.Context, owner *string, status
 		rows, err = conn.Query(ctx, cmd, owner)
 	}
 
+	defer rows.Close()
+
 	if errors.Is(err, pgx.ErrNoRows) {
 		return []txmTypes.MonitoredTx{}, nil
 	} else if err != nil {
@@ -151,6 +153,8 @@ func (s *PostgresStorage) GetBySenderAndStatus(
 	} else {
 		rows, err = conn.Query(ctx, cmd, sender.String())
 	}
+
+	defer rows.Close()
 
 	if errors.Is(err, pgx.ErrNoRows) {
 		return []txmTypes.MonitoredTx{}, nil
