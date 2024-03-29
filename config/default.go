@@ -19,6 +19,10 @@ const DefaultValues = `
 	WriteTimeout = "60s"
 	MaxRequestsPerIPAndSecond = 5000
 
+# Address should be adjusted
+[ProofSigners]
+#	1 = "0x0000000000000000000000000000000000000000"
+
 [Log]
 	Environment = "development" # "production" or "development"
 	Level = "debug"

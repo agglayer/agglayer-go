@@ -144,23 +144,72 @@ func TestExecutor_VerifySignature(t *testing.T) {
 		RollupID: 1,
 	}
 
-	pk, err := crypto.GenerateKey()
+	sequencerKey, err := crypto.GenerateKey()
 	require.NoError(t, err)
 
-	signedTx, err := txn.Sign(pk)
-	require.NoError(t, err)
+	t.Run("use sequencer key, correct signature", func(t *testing.T) {
+		etherman.On(
+			"GetSequencerAddr",
+			uint32(1),
+		).Return(
+			crypto.PubkeyToAddress(sequencerKey.PublicKey),
+			nil,
+		).Once()
 
-	etherman.On(
-		"GetSequencerAddr",
-		uint32(1),
-	).Return(
-		crypto.PubkeyToAddress(pk.PublicKey),
-		nil,
-	).Once()
+		signedTx, err := txn.Sign(sequencerKey)
+		require.NoError(t, err)
 
-	err = executor.verifySignature(*signedTx)
-	require.NoError(t, err)
-	etherman.AssertExpectations(t)
+		err = executor.verifySignature(*signedTx)
+		require.NoError(t, err)
+		etherman.AssertExpectations(t)
+	})
+
+	t.Run("use sequencer key, wrong signature", func(t *testing.T) {
+		etherman.On(
+			"GetSequencerAddr",
+			uint32(1),
+		).Return(
+			common.Address{0x1},
+			nil,
+		).Once()
+
+		signedTx, err := txn.Sign(sequencerKey)
+		require.NoError(t, err)
+
+		err = executor.verifySignature(*signedTx)
+		require.Error(t, err)
+		etherman.AssertExpectations(t)
+	})
+
+	t.Run("configured proof signers, correct signature", func(t *testing.T) {
+		anotherKey, err := crypto.GenerateKey()
+		require.NoError(t, err)
+
+		cfg.ProofSigners = config.ProofSigners{1: crypto.PubkeyToAddress(anotherKey.PublicKey)}
+
+		signedTx, err := txn.Sign(anotherKey)
+		require.NoError(t, err)
+
+		executor = New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
+
+		err = executor.verifySignature(*signedTx)
+		require.NoError(t, err)
+	})
+
+	t.Run("configured proof signers, wrong signature", func(t *testing.T) {
+		anotherKey, err := crypto.GenerateKey()
+		require.NoError(t, err)
+
+		cfg.ProofSigners = config.ProofSigners{1: common.Address{0x1}}
+
+		signedTx, err := txn.Sign(anotherKey)
+		require.NoError(t, err)
+
+		executor = New(nil, cfg, interopAdminAddr, etherman, ethTxManager)
+
+		err = executor.verifySignature(*signedTx)
+		require.Error(t, err)
+	})
 }
 
 func TestExecutor_Execute(t *testing.T) {
