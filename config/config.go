@@ -25,10 +25,14 @@ const (
 
 type FullNodeRPCs map[uint32]string
 
+// ProofSigners holds the address for authorized signers of proofs for a given rollup ip
+type ProofSigners map[uint32]common.Address
+
 // Config represents the full configuration of the data node
 type Config struct {
 	FullNodeRPCs FullNodeRPCs       `mapstructure:"FullNodeRPCs"`
 	RPC          jRPC.Config        `mapstructure:"RPC"`
+	ProofSigners ProofSigners       `mapstructure:"ProofSigners"`
 	Log          log.Config         `mapstructure:"Log"`
 	DB           db.Config          `mapstructure:"DB"`
 	EthTxManager EthTxManagerConfig `mapstructure:"EthTxManager"`

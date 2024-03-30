@@ -131,12 +131,25 @@ func (e *Executor) verifySignature(stx tx.SignedTx) error {
 		return errors.New("failed to get signer")
 	}
 
-	sequencer, err := e.etherman.GetSequencerAddr(stx.Tx.RollupID)
-	if err != nil {
-		return errors.New("failed to get admin from L1")
-	}
-	if sequencer != signer {
-		return errors.New("unexpected signer")
+	// Attempt to retrieve the authorized proof signer for the given rollup, if one exists
+	authorizedProofSigner, hasKey := e.config.ProofSigners[stx.Tx.RollupID]
+
+	// If an authorized proof signer is defined and matches the signer, no further checks are needed
+	if hasKey {
+		// If an authorized proof signer exists but does not match the signer, return an error.
+		if authorizedProofSigner != signer {
+			return fmt.Errorf("unexpected signer: expected authorized signer %s, but got %s", authorizedProofSigner, signer)
+		}
+	} else {
+		sequencer, err := e.etherman.GetSequencerAddr(stx.Tx.RollupID)
+		if err != nil {
+			return errors.New("failed to get admin from L1")
+		}
+
+		// If no specific authorized proof signer is defined, fall back to comparing with the sequencer
+		if sequencer != signer {
+			return fmt.Errorf("unexpected signer: expected sequencer %s but got %s", sequencer, signer)
+		}
 	}
 
 	opts := metric.WithAttributes(attribute.Key("rollup_id").Int(int(stx.Tx.RollupID)))
