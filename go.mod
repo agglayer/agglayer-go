@@ -4,7 +4,7 @@ go 1.21.3
 
 require (
 	cloud.google.com/go/kms v1.15.8
-	github.com/0xPolygon/cdk-rpc v0.0.0-20240305171901-8dbb68fe396a
+	github.com/0xPolygon/cdk-rpc v0.0.0-20240403170033-cbb6beafb3a9
 	github.com/0xPolygonHermez/zkevm-node v0.0.0-20240222104536-0204affc7436
 	github.com/ethereum/go-ethereum v1.13.11
 	github.com/hermeznetwork/tracerr v0.3.2
