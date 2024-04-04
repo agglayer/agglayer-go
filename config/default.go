@@ -46,8 +46,8 @@ const DefaultValues = `
 	PrivateKeys = [
 		{Path = "/pk/agglayer.keystore", Password = "testonly"},
 	]
-	KMSKeyName = "gcp/resource/id"
-	KMSConnectionTimeout = "30s"
+#	KMSKeyName = "gcp/resource/id"
+#	KMSConnectionTimeout = "30s"
 	GasOffset = 100000
 
 [L1]
