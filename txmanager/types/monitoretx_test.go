@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/hex"
 	"math/big"
 	"testing"
 
@@ -92,4 +93,44 @@ func TestHistoryHashSlice(t *testing.T) {
 	result := mTx.HistoryHashSlice()
 
 	assert.Equal(t, expected, result)
+}
+
+func TestMonitoredTx_BlockNumberU64Ptr(t *testing.T) {
+	// Create a monitoredTx instance with a non-nil BlockNumber
+	mTx := MonitoredTx{
+		BlockNumber: big.NewInt(123),
+	}
+
+	// Call the BlockNumberU64Ptr method
+	result := mTx.BlockNumberU64Ptr()
+
+	// Assert that the result is not nil
+	assert.NotNil(t, result)
+
+	// Assert that the value pointed by result is equal to the expected value
+	expected := uint64(123)
+	assert.Equal(t, expected, *result)
+
+	// Create a monitoredTx instance with a nil BlockNumber
+	mTx2 := MonitoredTx{
+		BlockNumber: nil,
+	}
+
+	// Call the BlockNumberU64Ptr method
+	result2 := mTx2.BlockNumberU64Ptr()
+
+	// Assert that the result is nil
+	assert.Nil(t, result2)
+}
+
+func TestMonitoredTx_DataStringPtr(t *testing.T) {
+	mTx := MonitoredTx{
+		Data: []byte("data"),
+	}
+
+	expected := hex.EncodeToString(mTx.Data)
+	actual := mTx.DataStringPtr()
+
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, *actual)
 }
