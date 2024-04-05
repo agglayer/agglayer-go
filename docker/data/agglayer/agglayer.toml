@@ -38,6 +38,7 @@
 	GasOffset = 100000
 	KMSKeyName = ""
 	KMSConnectionTimeout = "30s"
+	MaxRetries = 10
 
 [L1]
 	ChainID = 1337

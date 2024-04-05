@@ -12,7 +12,6 @@ import (
 
 	jRPC "github.com/0xPolygon/cdk-rpc/rpc"
 	dbConf "github.com/0xPolygonHermez/zkevm-node/db"
-	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -35,6 +34,7 @@ import (
 	"github.com/0xPolygon/agglayer/log"
 	"github.com/0xPolygon/agglayer/network"
 	"github.com/0xPolygon/agglayer/rpc"
+	"github.com/0xPolygon/agglayer/txmanager"
 )
 
 const appName = "cdk-agglayer"
@@ -131,11 +131,11 @@ func start(cliCtx *cli.Context) error {
 	}
 
 	// Prepare EthTxMan client
-	ethTxManagerStorage, err := ethtxmanager.NewPostgresStorage(c.DB)
+	ethTxManagerStorage, err := txmanager.NewPostgresStorage(c.DB)
 	if err != nil {
 		return err
 	}
-	etm := ethtxmanager.New(c.EthTxManager.Config, &ethMan, ethTxManagerStorage, &ethMan)
+	etm := txmanager.New(c.EthTxManager, &ethMan, ethTxManagerStorage, &ethMan)
 
 	// Create opentelemetry metric provider
 	meterProvider, err := createMeterProvider()

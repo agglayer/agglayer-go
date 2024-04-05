@@ -8,10 +8,10 @@ import (
 	"github.com/0xPolygon/agglayer/config"
 	"github.com/0xPolygon/agglayer/interop"
 	"github.com/0xPolygon/agglayer/mocks"
+	txmTypes "github.com/0xPolygon/agglayer/txmanager/types"
 
 	"github.com/0xPolygon/agglayer/log"
 	agglayerTypes "github.com/0xPolygon/agglayer/rpc/types"
-	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	validiumTypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -62,7 +62,7 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 
 		txManagerMock := mocks.NewEthTxManagerMock(t)
 		txManagerMock.On("Result", mock.Anything, ethTxManOwner, txHash.Hex(), txMock).
-			Return(ethtxmanager.MonitoredTxResult{}, errors.New("error")).Once()
+			Return(txmTypes.MonitoredTxResult{}, errors.New("error")).Once()
 
 		cfg := &config.Config{}
 		e := interop.New(
@@ -89,10 +89,10 @@ func TestInteropEndpointsGetTxStatus(t *testing.T) {
 
 		to := common.HexToAddress("0xreceiver")
 		txHash := common.HexToHash("0xsomeTxHash")
-		result := ethtxmanager.MonitoredTxResult{
+		result := txmTypes.MonitoredTxResult{
 			ID:     "1",
-			Status: ethtxmanager.MonitoredTxStatusConfirmed,
-			Txs: map[common.Hash]ethtxmanager.TxResult{
+			Status: txmTypes.MonitoredTxStatusConfirmed,
+			Txs: map[common.Hash]txmTypes.TxResult{
 				txHash: {
 					Tx: types.NewTransaction(1, to, big.NewInt(100_000), 21000, big.NewInt(10_000), nil),
 				},
@@ -579,7 +579,7 @@ func TestInteropEndpointsSendTx(t *testing.T) {
 			isSignerValid:     true,
 			canGetBatch:       true,
 			isBatchValid:      false,
-			expectedError:     "Mismatch detected",
+			expectedError:     "mismatch detected",
 		})
 	})
 

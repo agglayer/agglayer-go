@@ -49,6 +49,7 @@ const DefaultValues = `
 #	KMSKeyName = "gcp/resource/id"
 #	KMSConnectionTimeout = "30s"
 	GasOffset = 100000
+	MaxRetries = 10
 
 [L1]
 	ChainID = 1337

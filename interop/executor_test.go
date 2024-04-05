@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/0xPolygon/agglayer/log"
+	txmTypes "github.com/0xPolygon/agglayer/txmanager/types"
 	jRPC "github.com/0xPolygon/cdk-rpc/rpc"
-	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
 	rpctypes "github.com/0xPolygonHermez/zkevm-node/jsonrpc/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -362,9 +362,9 @@ func TestExecutor_GetTxStatus(t *testing.T) {
 	expectedError := jRPC.NewRPCError(rpctypes.DefaultErrorCode, "failed to get tx, error: sampleError")
 
 	ethTxManager.On("Result", mock.Anything, ethTxManOwner, hash.Hex(), dbTx).
-		Return(ethtxmanager.MonitoredTxResult{
+		Return(txmTypes.MonitoredTxResult{
 			ID:     "0x1",
-			Status: ethtxmanager.MonitoredTxStatus("0x1"),
+			Status: txmTypes.MonitoredTxStatus("0x1"),
 		}, nil).Once()
 
 	result, err := executor.GetTxStatus(context.Background(), hash, dbTx)
@@ -373,9 +373,9 @@ func TestExecutor_GetTxStatus(t *testing.T) {
 	assert.NoError(t, err)
 
 	ethTxManager.On("Result", mock.Anything, ethTxManOwner, hash.Hex(), dbTx).
-		Return(ethtxmanager.MonitoredTxResult{
+		Return(txmTypes.MonitoredTxResult{
 			ID:     "0x0",
-			Status: ethtxmanager.MonitoredTxStatus("0x1"),
+			Status: txmTypes.MonitoredTxStatus("0x1"),
 		}, errors.New("sampleError")).Once()
 
 	result, err = executor.GetTxStatus(context.Background(), hash, dbTx)

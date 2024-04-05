@@ -55,6 +55,7 @@ type EthTxManagerConfig struct {
 	GasOffset            uint64         `mapstructure:"GasOffset"`
 	KMSKeyName           string         `mapstructure:"KMSKeyName"`
 	KMSConnectionTimeout types.Duration `mapstructure:"KMSConnectionTimeout"`
+	MaxRetries           uint64         `mapstructure:"MaxRetries"`
 }
 
 // Load loads the configuration baseed on the cli context
