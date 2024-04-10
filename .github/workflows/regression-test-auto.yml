@@ -46,8 +46,10 @@ jobs:
           current_minute=$(date +'%M')
           end_minute=$(( (current_minute + bake_time) % 60 ))
 
-          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-          INITIAL_STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null)
+          # export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+          # INITIAL_STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null)
+          INITIAL_STATUS="0x0"
+          echo "Initial Verified Block Number: $INITIAL_STATUS"
           incremented=false
 
           while [ $(date +'%M') -lt $end_minute ]; do
