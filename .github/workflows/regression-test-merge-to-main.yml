@@ -19,8 +19,8 @@ jobs:
         run: |
           git clone https://github.com/0xPolygon/agglayer.git
           cd agglayer
-          git checkout "${{ github.event.before }}"
-          echo "Containerizing and testing commit: ${{ github.event.before }}"
+          git checkout $(git rev-parse --short "$GITHUB_SHA")
+          echo 'Containerizing and testing commit: $(git rev-parse --short "$GITHUB_SHA")'
           docker compose -f docker/docker-compose.yaml build --no-cache agglayer
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
