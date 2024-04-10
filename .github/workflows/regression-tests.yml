@@ -19,7 +19,7 @@ jobs:
           ref: '${{ github.event.before }}'
       - name: Set up Docker
         uses: docker/setup-buildx-action@v1
-      - name: Clone and build agglayer
+      - name: Clone and build agglayer image locally
         run: |
           git clone https://github.com/0xPolygon/agglayer.git
           cd agglayer
