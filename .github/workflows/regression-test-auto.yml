@@ -13,14 +13,18 @@ jobs:
   deploy_devnet:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.sha }}
       - name: Set up Docker
         uses: docker/setup-buildx-action@v1
       - name: Clone and build agglayer image locally
         run: |
           git clone https://github.com/0xPolygon/agglayer.git
           cd agglayer
-          git checkout ${CI_COMMIT_SHA:0:8}
-          echo 'Containerizing and testing commit: "${CI_COMMIT_SHA:0:8}"'
+          git checkout ${GITHUB_SHA::8}
+          echo "Containerizing and testing commit: ${GITHUB_SHA::8}"
           docker compose -f docker/docker-compose.yaml build --no-cache agglayer
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
