@@ -17,6 +17,13 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.sha }}
+      - name: Expose git commit data
+        uses: rlespinasse/git-commit-data-action@v1
+      - name: Print git commit data
+        run: |
+          echo "Get commit info"
+          echo " - ${{ env.GIT_COMMIT_SHA }}"
+          echo " - ${{ env.GIT_COMMIT_SHORT_SHA }}"
       - name: Set up Docker
         uses: docker/setup-buildx-action@v1
       - name: Clone and build agglayer image locally
