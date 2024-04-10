@@ -1,6 +1,7 @@
 name: Regression Tests - Auto Merge to Main
 'on':
-  push:
+  pull_request:
+    types: [opened, synchronize]  # Trigger on new pull requests and when existing ones are synchronized
     branches:
       - main
     inputs:
