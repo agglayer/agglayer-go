@@ -54,12 +54,13 @@ jobs:
 
           export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
           INITIAL_STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null)
+          echo "Initial verifiedBatchNumber: $INITIAL_STATUS"
           incremented=false
 
           while [ $(date +'%M') -lt $end_minute ]; do
             # Attempt to connect to the service
             if STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null); then
-              echo "ZKEVM_VERIFIED_BATCH_NUMBER: $STATUS"
+              echo "Current ZKEVM_VERIFIED_BATCH_NUMBER: $STATUS, continue polling.."
               
               # Check if STATUS has incremented
               if [ "$STATUS" != "$INITIAL_STATUS" ]; then
