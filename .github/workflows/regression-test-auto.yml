@@ -14,9 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.sha }}
+        uses: actions/checkout@v3
       - name: Set outputs
         id: vars
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
@@ -28,8 +26,8 @@ jobs:
         run: |
           git clone https://github.com/0xPolygon/agglayer.git
           cd agglayer
-          git checkout ${{ github.sha }}
-          echo "Containerizing and testing commit: ${{ github.sha }}"
+          git checkout ${{ steps.vars.outputs.sha_short }}
+          echo "Containerizing and testing commit: ${{ steps.vars.outputs.sha_short }}"
           docker compose -f docker/docker-compose.yaml build --no-cache agglayer
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
