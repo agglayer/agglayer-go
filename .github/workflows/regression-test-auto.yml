@@ -4,11 +4,7 @@ name: Regression Tests - Auto Merge to Main
     types: [opened, synchronize]  # Trigger on new pull requests and when existing ones are synchronized
     branches:
       - main
-    inputs:
-      bake_time:
-        description: bake time (minutes)
-        required: false
-        default: 20
+
 jobs:
   deploy_devnet:
     runs-on: ubuntu-latest
@@ -46,8 +42,9 @@ jobs:
           kurtosis run --enclave cdk-v1 --args-file params.yml .
       - name: Monitor and report any potential regressions to CI logs
         run: |
-          bake_time="${{ inputs.bake_time }}"
-          end_minute=$(( $(date +'%M') + bake_time))
+          bake_time=20
+          current_minute=$(date +'%M')
+          end_minute=$(( (current_minute + bake_time) % 60 ))
 
           export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
           INITIAL_STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null)
