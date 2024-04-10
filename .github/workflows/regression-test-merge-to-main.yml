@@ -1,22 +1,9 @@
-name: Regression Tests
+name: Regression Tests - Auto Merge to Main
 'on':
-  workflow_dispatch:
-    inputs:
-      zkevm_agglayer_commit_id:
-        description: 0xPolygon/agglayer (commit id)
-        required: true
-      bake_time:
-        description: bake time (minutes)
-        required: false
-        default: 20
   push:
     branches:
       - main
     inputs:
-      zkevm_agglayer_commit_id:
-        description: 0xPolygon/agglayer commit id
-        required: false
-        default: '${{ github.event.before }}' # Set default value to commit ID being merged to main
       bake_time:
         description: bake time (minutes)
         required: false
@@ -25,17 +12,14 @@ jobs:
   deploy_devnet:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          ref: '${{ github.event.before }}'
       - name: Set up Docker
         uses: docker/setup-buildx-action@v1
       - name: Clone and build agglayer image locally
         run: |
           git clone https://github.com/0xPolygon/agglayer.git
           cd agglayer
-          git checkout "${{ github.event.inputs.zkevm_agglayer_commit_id }}"
+          git checkout "${{ github.event.before }}"
+          echo "Containerizing and testing commit: ${{ github.event.before }}"
           docker compose -f docker/docker-compose.yaml build --no-cache agglayer
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
