@@ -70,6 +70,7 @@ collectd.org v0.3.0/go.mod h1:A/8DzQBkF6abtvrT2j/AU/4tiBgJWYyh0y/oB/4MlWE=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/0xPolygon/cdk-rpc v0.0.0-20240403170033-cbb6beafb3a9 h1:u/29q2qn/YE2pmBdsK435dad6/BD/DEcasc4kCE8ddo=
 github.com/0xPolygon/cdk-rpc v0.0.0-20240403170033-cbb6beafb3a9/go.mod h1:2scWqMMufrQXu7TikDgQ3BsyaKoX8qP26D6E262vSOg=
+github.com/0xPolygon/cdk-rpc v0.0.0-20240412163301-aa1b57e87e29/go.mod h1:2scWqMMufrQXu7TikDgQ3BsyaKoX8qP26D6E262vSOg=
 github.com/0xPolygonHermez/zkevm-data-streamer v0.1.19 h1:wRFA6uF0sqihWKaxKsk+hEkxcQeOU1eKhVzZy90otZ8=
 github.com/0xPolygonHermez/zkevm-data-streamer v0.1.19/go.mod h1:0QkAXcFa92mFJrCbN3UPUJGJYes851yEgYHLONnaosE=
 github.com/0xPolygonHermez/zkevm-node v0.0.0-20240222104536-0204affc7436 h1:7VzMlnx+SHXkkoKUIIMuJ2pcby4ngVF8vmEtlSuAZRk=

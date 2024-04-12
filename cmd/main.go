@@ -162,6 +162,7 @@ func start(cliCtx *cli.Context) error {
 			},
 		},
 		jRPC.WithHealthHandler(http.HandlerFunc(healthHandler(storage))),
+		jRPC.WithLoggerConfig(log.WithFields("module", "rpc")),
 	)
 
 	// Run RPC
