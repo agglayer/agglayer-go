@@ -34,7 +34,7 @@ var defaultEthTxmanagerConfigForTests = config.EthTxManagerConfig{
 func TestTxGetMined(t *testing.T) {
 	dbCfg := newStateDBConfig(t)
 	etherman := mocks.NewEthermanMock(t)
-	storage, err := NewPostgresStorage(dbCfg)
+	storage, err := NewPostgresStorageWithCfg(dbCfg)
 	require.NoError(t, err)
 
 	ethTxManagerClient := New(defaultEthTxmanagerConfigForTests, etherman, storage, etherman)
@@ -149,7 +149,7 @@ func TestTxGetMinedAfterReviewed(t *testing.T) {
 	dbCfg := newStateDBConfig(t)
 
 	etherman := mocks.NewEthermanMock(t)
-	storage, err := NewPostgresStorage(dbCfg)
+	storage, err := NewPostgresStorageWithCfg(dbCfg)
 	require.NoError(t, err)
 
 	ethTxManagerClient := New(defaultEthTxmanagerConfigForTests, etherman, storage, etherman)
@@ -312,7 +312,7 @@ func TestTxGetMinedAfterReviewed(t *testing.T) {
 func TestExecutionReverted(t *testing.T) {
 	dbCfg := newStateDBConfig(t)
 	etherman := mocks.NewEthermanMock(t)
-	storage, err := NewPostgresStorage(dbCfg)
+	storage, err := NewPostgresStorageWithCfg(dbCfg)
 	require.NoError(t, err)
 
 	ethTxManagerClient := New(defaultEthTxmanagerConfigForTests, etherman, storage, etherman)
@@ -533,7 +533,7 @@ func TestGasPriceMarginAndLimit(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			dbCfg := newStateDBConfig(t)
 			etherman := mocks.NewEthermanMock(t)
-			storage, err := NewPostgresStorage(dbCfg)
+			storage, err := NewPostgresStorageWithCfg(dbCfg)
 			require.NoError(t, err)
 
 			var cfg = config.EthTxManagerConfig{
@@ -618,7 +618,7 @@ func TestGasOffset(t *testing.T) {
 			dbCfg := newStateDBConfig(t)
 
 			etherman := mocks.NewEthermanMock(t)
-			storage, err := NewPostgresStorage(dbCfg)
+			storage, err := NewPostgresStorageWithCfg(dbCfg)
 			require.NoError(t, err)
 
 			var cfg = config.EthTxManagerConfig{
@@ -673,7 +673,7 @@ func TestGasOffset(t *testing.T) {
 func TestFailedToEstimateTxWithForcedGasGetMined(t *testing.T) {
 	dbCfg := newStateDBConfig(t)
 	etherman := mocks.NewEthermanMock(t)
-	storage, err := NewPostgresStorage(dbCfg)
+	storage, err := NewPostgresStorageWithCfg(dbCfg)
 	require.NoError(t, err)
 
 	// set forced gas
@@ -793,7 +793,7 @@ func TestTxRetry_MaxRetriesReached(t *testing.T) {
 	dbCfg := newStateDBConfig(t)
 
 	etherman := mocks.NewEthermanMock(t)
-	storage, err := NewPostgresStorage(dbCfg)
+	storage, err := NewPostgresStorageWithCfg(dbCfg)
 	require.NoError(t, err)
 
 	config := config.EthTxManagerConfig{

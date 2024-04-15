@@ -53,7 +53,7 @@ func newStateDBConfig(t *testing.T) db.Config {
 
 func TestAddGetAndUpdate(t *testing.T) {
 	dbCfg := newStateDBConfig(t)
-	storage, err := NewPostgresStorage(dbCfg)
+	storage, err := NewPostgresStorageWithCfg(dbCfg)
 	require.NoError(t, err)
 
 	owner := "owner"
@@ -137,7 +137,7 @@ func TestAddGetAndUpdate(t *testing.T) {
 
 func TestAddAndGetByStatus(t *testing.T) {
 	dbCfg := newStateDBConfig(t)
-	storage, err := NewPostgresStorage(dbCfg)
+	storage, err := NewPostgresStorageWithCfg(dbCfg)
 	require.NoError(t, err)
 
 	to := common.HexToAddress("0x2")
@@ -208,7 +208,7 @@ func TestAddAndGetByStatus(t *testing.T) {
 
 func TestAddAndGetBySenderAndStatus(t *testing.T) {
 	dbCfg := newStateDBConfig(t)
-	storage, err := NewPostgresStorage(dbCfg)
+	storage, err := NewPostgresStorageWithCfg(dbCfg)
 	require.NoError(t, err)
 
 	from := common.HexToAddress("0x1")
@@ -280,7 +280,7 @@ func TestAddAndGetBySenderAndStatus(t *testing.T) {
 
 func TestAddRepeated(t *testing.T) {
 	dbCfg := newStateDBConfig(t)
-	storage, err := NewPostgresStorage(dbCfg)
+	storage, err := NewPostgresStorageWithCfg(dbCfg)
 	require.NoError(t, err)
 
 	owner := "owner"
@@ -320,7 +320,7 @@ func TestAddRepeated(t *testing.T) {
 
 func TestGetNotFound(t *testing.T) {
 	dbCfg := newStateDBConfig(t)
-	storage, err := NewPostgresStorage(dbCfg)
+	storage, err := NewPostgresStorageWithCfg(dbCfg)
 	require.NoError(t, err)
 
 	_, err = storage.Get(context.Background(), "not found owner", "not found id", nil)
@@ -329,7 +329,7 @@ func TestGetNotFound(t *testing.T) {
 
 func TestGetByStatusNoRows(t *testing.T) {
 	dbCfg := newStateDBConfig(t)
-	storage, err := NewPostgresStorage(dbCfg)
+	storage, err := NewPostgresStorageWithCfg(dbCfg)
 	require.NoError(t, err)
 
 	mTxs, err := storage.GetByStatus(context.Background(), nil, []txmTypes.MonitoredTxStatus{}, nil)
