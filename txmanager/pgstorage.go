@@ -8,7 +8,6 @@ import (
 	"time"
 
 	txmTypes "github.com/0xPolygon/agglayer/txmanager/types"
-	"github.com/0xPolygonHermez/zkevm-node/db"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
@@ -22,15 +21,8 @@ type PostgresStorage struct {
 
 // NewPostgresStorage creates a new instance of storage that use
 // postgres to store data
-func NewPostgresStorage(dbCfg db.Config) (*PostgresStorage, error) {
-	db, err := db.NewSQLDB(dbCfg)
-	if err != nil {
-		return nil, err
-	}
-
-	return &PostgresStorage{
-		db,
-	}, nil
+func NewPostgresStorage(db *pgxpool.Pool) *PostgresStorage {
+	return &PostgresStorage{db}
 }
 
 // Add persist a monitored tx
