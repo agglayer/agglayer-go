@@ -84,15 +84,12 @@ func TestHistoryHashSlice(t *testing.T) {
 		},
 	}
 
-	expected := []common.Hash{
-		common.HexToHash("0x1"),
-		common.HexToHash("0x2"),
-		common.HexToHash("0x3"),
-	}
-
 	result := mTx.HistoryHashSlice()
+	assert.Equal(t, len(mTx.History), len(result))
 
-	assert.Equal(t, expected, result)
+	for _, hash := range result {
+		assert.True(t, mTx.History[hash])
+	}
 }
 
 func TestMonitoredTx_BlockNumberU64Ptr(t *testing.T) {
