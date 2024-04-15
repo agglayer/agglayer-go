@@ -65,14 +65,12 @@ func TestMonitoredTx_HistoryStringSlice(t *testing.T) {
 		},
 	}
 
-	expected := []string{
-		"0x0000000000000000000000000000000000000000000000000000000000000001",
-		"0x0000000000000000000000000000000000000000000000000000000000000002",
-		"0x0000000000000000000000000000000000000000000000000000000000000003",
-	}
 	result := mTx.HistoryStringSlice()
+	assert.Equal(t, len(mTx.History), len(result))
 
-	assert.Equal(t, expected, result)
+	for _, hash := range result {
+		assert.True(t, mTx.History[common.HexToHash(hash)])
+	}
 }
 
 func TestHistoryHashSlice(t *testing.T) {
