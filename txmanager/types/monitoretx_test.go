@@ -65,14 +65,12 @@ func TestMonitoredTx_HistoryStringSlice(t *testing.T) {
 		},
 	}
 
-	expected := []string{
-		"0x0000000000000000000000000000000000000000000000000000000000000001",
-		"0x0000000000000000000000000000000000000000000000000000000000000002",
-		"0x0000000000000000000000000000000000000000000000000000000000000003",
-	}
 	result := mTx.HistoryStringSlice()
+	assert.Equal(t, len(mTx.History), len(result))
 
-	assert.Equal(t, expected, result)
+	for _, hash := range result {
+		assert.True(t, mTx.History[common.HexToHash(hash)])
+	}
 }
 
 func TestHistoryHashSlice(t *testing.T) {
@@ -84,15 +82,12 @@ func TestHistoryHashSlice(t *testing.T) {
 		},
 	}
 
-	expected := []common.Hash{
-		common.HexToHash("0x1"),
-		common.HexToHash("0x2"),
-		common.HexToHash("0x3"),
-	}
-
 	result := mTx.HistoryHashSlice()
+	assert.Equal(t, len(mTx.History), len(result))
 
-	assert.Equal(t, expected, result)
+	for _, hash := range result {
+		assert.True(t, mTx.History[hash])
+	}
 }
 
 func TestMonitoredTx_BlockNumberU64Ptr(t *testing.T) {

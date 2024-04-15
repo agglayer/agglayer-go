@@ -22,7 +22,12 @@ type PostgresStorage struct {
 
 // NewPostgresStorage creates a new instance of storage that use
 // postgres to store data
-func NewPostgresStorage(dbCfg db.Config) (*PostgresStorage, error) {
+func NewPostgresStorage(db *pgxpool.Pool) *PostgresStorage {
+	return &PostgresStorage{db}
+}
+
+// NewPostgresStorageWithCfg creates a new instance of storage that use based on provided config
+func NewPostgresStorageWithCfg(dbCfg db.Config) (*PostgresStorage, error) {
 	db, err := db.NewSQLDB(dbCfg)
 	if err != nil {
 		return nil, err

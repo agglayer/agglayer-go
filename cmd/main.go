@@ -131,10 +131,7 @@ func start(cliCtx *cli.Context) error {
 	}
 
 	// Prepare EthTxMan client
-	ethTxManagerStorage, err := txmanager.NewPostgresStorage(c.DB)
-	if err != nil {
-		return err
-	}
+	ethTxManagerStorage := txmanager.NewPostgresStorage(pg)
 	etm := txmanager.New(c.EthTxManager, &ethMan, ethTxManagerStorage, &ethMan)
 
 	// Create opentelemetry metric provider
