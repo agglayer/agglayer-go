@@ -65,35 +65,38 @@ func (i *InteropEndpoints) SendTx(signedTx tx.SignedTx) (interface{}, jRPC.Error
 	c.Add(ctx, 1, opts)
 
 	// Check if the RPC is actually registered, if not it won't be possible to assert soundness (in the future once we are stateless won't be needed)
-	if err := i.executor.CheckTx(signedTx); err != nil {
+	if err = i.executor.CheckTx(signedTx); err != nil {
 		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("there is no RPC registered for %d", signedTx.Tx.RollupID))
 	}
 
 	// Verify ZKP using eth_call
-	if err := i.executor.Verify(ctx, signedTx); err != nil {
+	if err = i.executor.Verify(ctx, signedTx); err != nil {
 		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to verify tx: %s", err))
 	}
 
-	if err := i.executor.Execute(ctx, signedTx); err != nil {
+	if err = i.executor.Execute(ctx, signedTx); err != nil {
 		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to execute tx: %s", err))
 	}
 
 	// Send L1 tx
 	dbTx, err := i.db.BeginStateTransaction(ctx)
 	if err != nil {
-		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", err))
+		log.Errorf("failed to begin dbTx, error: %s", err)
+		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, "failed to begin dbTx")
 	}
 
-	_, err = i.executor.Settle(ctx, signedTx, dbTx)
-	if err != nil {
+	if _, err = i.executor.Settle(ctx, signedTx, dbTx); err != nil {
 		if errRollback := dbTx.Rollback(ctx); errRollback != nil {
 			log.Error("rollback err: ", errRollback)
 		}
 		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to add tx to ethTxMan, error: %s", err))
 	}
-	if err := dbTx.Commit(ctx); err != nil {
-		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to commit dbTx, error: %s", err))
+
+	if err = dbTx.Commit(ctx); err != nil {
+		log.Errorf("failed to commit dbTx, error: %s", err)
+		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, "failed to commit dbTx")
 	}
+
 	log.Debugf("successfuly added tx %s to ethTxMan", signedTx.Tx.Hash().Hex())
 
 	return signedTx.Tx.Hash(), nil
@@ -111,26 +114,23 @@ func (i *InteropEndpoints) GetTxStatus(hash common.Hash) (result interface{}, er
 
 	dbTx, innerErr := i.db.BeginStateTransaction(ctx)
 	if innerErr != nil {
-		result = "0x0"
-		err = jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to begin dbTx, error: %s", innerErr))
-
-		return
+		log.Errorf("failed to begin dbTx, error: %s", innerErr)
+		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, "failed to begin dbTx")
 	}
 
 	defer func() {
 		if innerErr := dbTx.Rollback(ctx); innerErr != nil {
+			log.Errorf("failed to rollback dbTx, error: %s", innerErr)
+
 			result = "0x0"
-			err = jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to rollback dbTx, error: %s", innerErr))
+			err = jRPC.NewRPCError(jRPC.DefaultErrorCode, "failed to rollback dbTx")
 		}
 	}()
 
 	result, innerErr = i.executor.GetTxStatus(ctx, hash, dbTx)
 	if innerErr != nil {
-		result = "0x0"
-		err = jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", innerErr))
-
-		return
+		return "0x0", jRPC.NewRPCError(jRPC.DefaultErrorCode, fmt.Sprintf("failed to get tx, error: %s", innerErr))
 	}
 
-	return
+	return result, nil
 }
