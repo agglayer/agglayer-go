@@ -24,6 +24,7 @@ jobs:
           fi
           git checkout $GITHUB_SHA
           echo "Containerizing and testing commit: $GITHUB_SHA"
+          docker compose -f docker/docker-compose.yaml build --no-cache agglayer
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
       - name: Clone internal kurtosis-cdk repo
