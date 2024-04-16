@@ -34,13 +34,10 @@ jobs:
           echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
           sudo apt update
           sudo apt install kurtosis-cli
-      - name: Run kurtosis agent in background, may remove
-        run: |
-          kurtosis gateway &  # Run cmd in background
+          kurtosis analytics disable
       - name: Deploy CDK devnet on local github runner
         run: |
           cd kurtosis-cdk
-          kurtosis engine restart
           kurtosis run --enclave cdk-v1 --args-file params.yml .
       - name: Monitor and report any potential regressions to CI logs
         run: |
@@ -74,7 +71,3 @@ jobs:
             echo "ZKEVM_VERIFIED_BATCH_NUMBER did not increment. This may indicate chain experienced a regression. Please investigate."
             exit 1
           fi
-      - name: Finally, remove all devnet resources locally
-        run: |
-          cd kurtosis-cdk
-          kurtosis clean -a
