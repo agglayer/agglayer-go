@@ -40,6 +40,7 @@ jobs:
       - name: Deploy CDK devnet on local github runner
         run: |
           cd kurtosis-cdk
+          kurtosis engine restart
           kurtosis run --enclave cdk-v1 --args-file params.yml .
       - name: Monitor and report any potential regressions to CI logs
         run: |
