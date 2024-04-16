@@ -19,9 +19,11 @@ jobs:
         run: |
           git clone https://github.com/0xPolygon/agglayer.git
           cd agglayer
-          git checkout $(git rev-parse --short "$GITHUB_SHA")
-          echo 'Containerizing and testing commit: $(git rev-parse --short "$GITHUB_SHA")'
-          docker compose -f docker/docker-compose.yaml build --no-cache agglayer
+          if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+              GITHUB_SHA=$(cat $GITHUB_EVENT_PATH | jq -r .pull_request.head.sha)
+          fi
+          git checkout $GITHUB_SHA
+          echo "Containerizing and testing commit: $GITHUB_SHA"
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
       - name: Clone internal kurtosis-cdk repo
