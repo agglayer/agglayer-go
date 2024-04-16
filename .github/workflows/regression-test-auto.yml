@@ -41,11 +41,10 @@ jobs:
       - name: Deploy CDK devnet on local github runner
         run: |
           cd kurtosis-cdk
-          kurtosis engine restart
           kurtosis run --enclave cdk-v1 --args-file params.yml .
       - name: Monitor and report any potential regressions to CI logs
         run: |
-          bake_time=30
+          bake_time=30  # minutes
           end_minute=$(( $(date +'%M') + bake_time))
 
           export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
