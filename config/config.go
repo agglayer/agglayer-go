@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/0xPolygon/agglayer/log"
-	jRPC "github.com/0xPolygon/cdk-rpc/rpc"
+	cdkrpc "github.com/0xPolygon/cdk-rpc/rpc"
 	"github.com/0xPolygonHermez/zkevm-node/config/types"
 	"github.com/0xPolygonHermez/zkevm-node/db"
 	"github.com/0xPolygonHermez/zkevm-node/ethtxmanager"
@@ -31,7 +31,7 @@ type ProofSigners map[uint32]common.Address
 // Config represents the full configuration of the data node
 type Config struct {
 	FullNodeRPCs FullNodeRPCs       `mapstructure:"FullNodeRPCs"`
-	RPC          jRPC.Config        `mapstructure:"RPC"`
+	RPC          cdkrpc.Config      `mapstructure:"RPC"`
 	ProofSigners ProofSigners       `mapstructure:"ProofSigners"`
 	Log          log.Config         `mapstructure:"Log"`
 	DB           db.Config          `mapstructure:"DB"`
