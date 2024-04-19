@@ -158,7 +158,7 @@ func start(cliCtx *cli.Context) error {
 				Service: rpc.NewInteropEndpoints(log.WithFields("module", "rpc"), executor, storage, c),
 			},
 		},
-		jRPC.WithHealthHandler(http.HandlerFunc(healthHandler(storage))),
+		jRPC.WithHealthHandler(healthHandler(storage)),
 		jRPC.WithLogger(log.WithFields("module", "rpc")),
 	)
 
