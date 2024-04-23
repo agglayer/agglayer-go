@@ -133,11 +133,11 @@ jobs:
           
           cat params.yml
 
-          yq -Y --in-place ".args.zkevm_agglayer_image = \"zkevm-agglayer:$agglayer_tag\"" params.yml
-          yq -Y --in-place ".args.zkevm_bridge_service_image = \"zkevm-bridge-service:$bridge_service_tag\"" params.yml
-          yq -Y --in-place ".args.zkevm_bridge_ui_image = \"zkevm-bridge-ui:$bridge_ui_tag\"" params.yml
-          yq -Y --in-place ".args.zkevm_da_image = \"cdk-data-availability:$dac_tag\"" params.yml
-          yq -Y --in-place ".args.zkevm_node_image = \"cdk-validium-node:$node_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_agglayer_image = \"0xpolygon/agglayer:$agglayer_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_bridge_service_image = \"hermeznetwork/zkevm-bridge-service:$bridge_service_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_bridge_ui_image = \"hermeznetwork/zkevm-bridge-ui:$bridge_ui_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_da_image = \"0xpolygon/cdk-data-availability:$dac_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_node_image = \"0xpolygon/cdk-validium-node:$node_tag\"" params.yml
           
           cat params.yml
       - name: Deploy CDK devnet on local github runner
