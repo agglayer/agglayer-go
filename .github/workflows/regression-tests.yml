@@ -135,7 +135,7 @@ jobs:
           yq -Y --in-place ".zkevm_bridge_service_image = \"zkevm-bridge-service:$bridge_service_tag\"" params.yml
           yq -Y --in-place ".zkevm_bridge_ui_image = \"zkevm-bridge-ui:$bridge_ui_tag\"" params.yml
           yq -Y --in-place ".zkevm_da_image = \"cdk-data-availability:$dac_tag\"" params.yml
-          yq -Y --in-place ".cdk_validium_node_image = \"cdk-validium-node:$node_tag\"" params.yml
+          yq -Y --in-place ".zkevm_node_image = \"cdk-validium-node:$node_tag\"" params.yml
       - name: Deploy CDK devnet on local github runner
         run: |
           cd kurtosis-cdk
