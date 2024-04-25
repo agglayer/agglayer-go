@@ -21,7 +21,7 @@ name: Regression Tests
       zkevm_node:
         description: 0xPolygon/cdk-validium-node (short commit hash or release tag)
         required: true
-        default: 0.6.5+cdk
+        default: 0.6.2-cdk.5
       bake_time:
         description: bake time (minutes)
         required: false
@@ -103,41 +103,51 @@ jobs:
           # when short commit hash given, reference custom image built earlier tagged 'local'
           if [[ ${{ github.event.inputs.zkevm_agglayer }} =~ ^[0-9a-fA-F]{7}$ ]]; then
             agglayer_tag="local"
+            agglayer_docker_hub="agglayer"
           else
             agglayer_tag="${{ github.event.inputs.zkevm_agglayer }}"
+            agglayer_docker_hub="0xpolygon/agglayer"
           fi
 
           if [[ ${{ github.event.inputs.zkevm_bridge_service }} =~ ^[0-9a-fA-F]{7}$ ]]; then
             bridge_service_tag="local"
+            bridge_service_docker_hub="zkevm-bridge-service"
           else
             bridge_service_tag="${{ github.event.inputs.zkevm_bridge_service }}"
+            bridge_service_docker_hub="hermeznetwork/zkevm-bridge-service"
           fi
 
           if [[ ${{ github.event.inputs.zkevm_bridge_ui }} =~ ^[0-9a-fA-F]{7}$ ]]; then
             bridge_ui_tag="local"
+            bridge_ui_docker_hub="zkevm-bridge-ui"
           else
             bridge_ui_tag="${{ github.event.inputs.zkevm_bridge_ui }}"
+            bridge_ui_docker_hub="hermeznetwork/zkevm-bridge-ui"
           fi
 
           if [[ ${{ github.event.inputs.zkevm_dac }} =~ ^[0-9a-fA-F]{7}$ ]]; then
             dac_tag="local"
+            dac_docker_hub="cdk-data-availability"
           else
             dac_tag="${{ github.event.inputs.zkevm_dac }}"
+            dac_docker_hub="0xpolygon/cdk-data-availability"
           fi
 
           if [[ ${{ github.event.inputs.zkevm_node }} =~ ^[0-9a-fA-F]{7}$ ]]; then
             node_tag="local"
+            node_docker_hub="cdk-validium-node"
           else
             node_tag="${{ github.event.inputs.zkevm_node }}"
+            node_docker_hub="0xpolygon/cdk-validium-node"
           fi
           
           cat params.yml
 
-          yq -Y --in-place ".args.zkevm_agglayer_image = \"0xpolygon/agglayer:$agglayer_tag\"" params.yml
-          yq -Y --in-place ".args.zkevm_bridge_service_image = \"hermeznetwork/zkevm-bridge-service:$bridge_service_tag\"" params.yml
-          yq -Y --in-place ".args.zkevm_bridge_ui_image = \"hermeznetwork/zkevm-bridge-ui:$bridge_ui_tag\"" params.yml
-          yq -Y --in-place ".args.zkevm_da_image = \"0xpolygon/cdk-data-availability:$dac_tag\"" params.yml
-          yq -Y --in-place ".args.zkevm_node_image = \"0xpolygon/cdk-validium-node:$node_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_agglayer_image = \"$agglayer_docker_hub:$agglayer_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_bridge_service_image = \"$bridge_service_docker_hub:$bridge_service_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_bridge_ui_image = \"$bridge_ui_docker_hub:$bridge_ui_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" params.yml
           
           cat params.yml
       - name: Deploy CDK devnet on local github runner
