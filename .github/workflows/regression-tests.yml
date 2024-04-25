@@ -187,15 +187,12 @@ jobs:
             echo "ZKEVM_VERIFIED_BATCH_NUMBER did not increment. This may indicate chain experienced a regression. Please investigate."
             exit 1
           fi
-      - name: Install polycli
+      - name: Install polycli and send transaction load for further integration tests
         run: |
           git clone https://github.com/maticnetwork/polygon-cli.git
           cd polygon-cli
           make install
           export PATH="$HOME/go/bin:$PATH"
-          polycli
-      - name: Send load of transactions for further e2e tests
-        run: |
           export PK="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
           export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
           polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 5 --mode t
