@@ -19,8 +19,6 @@ jobs:
               GITHUB_SHA=$(jq -r .pull_request.head.sha "$GITHUB_EVENT_PATH")
           fi
           echo "Containerizing and testing commit: $GITHUB_SHA"
-          ls
-          cat Makefile
           make build
           mv ./dist/agglayer .
           docker build -t agglayer:local -f ./Dockerfile.release .
