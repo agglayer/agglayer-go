@@ -78,6 +78,9 @@ func start(cliCtx *cli.Context) error {
 
 	setupLog(c.Log)
 
+	agglayer.PrintVersion(os.Stdout)
+	log.Info("Starting application...")
+
 	// Prepare DB
 	pg, err := dbConf.NewSQLDB(c.DB)
 	if err != nil {
