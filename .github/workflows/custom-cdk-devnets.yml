@@ -1,0 +1,21 @@
+name: Custom CDK Devnets
+
+on:
+  push:
+
+jobs:
+  regression_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Run Regression Tests
+        uses: rebelArtists/agglayer@v1.0.0
+        with:
+          zkevm_agglayer: '0.1.4'
+          zkevm_bridge_service: 'v0.4.2'
+          zkevm_bridge_ui: '0006445'
+          zkevm_dac: '0.0.7'
+          zkevm_node: '0.6.5-cdk'
+          bake_time: 30
