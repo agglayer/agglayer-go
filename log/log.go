@@ -9,6 +9,8 @@ import (
 	"github.com/hermeznetwork/tracerr"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	"github.com/0xPolygon/agglayer"
 )
 
 // LogEnvironment represents the possible log environments.
@@ -74,7 +76,8 @@ func newLogger(cfg Config) (*zap.SugaredLogger, error) {
 	zapCfg.Level = level
 	zapCfg.OutputPaths = cfg.Outputs
 	zapCfg.InitialFields = map[string]interface{}{
-		"pid": os.Getpid(),
+		"version": agglayer.Version,
+		"pid":     os.Getpid(),
 	}
 
 	logger, err := zapCfg.Build()
