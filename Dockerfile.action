@@ -6,11 +6,7 @@ RUN apt-get update && \
     jq \
     git \
     yq \
+    python3-pip \
     sudo
-
-RUN apt-get update && \
-    apt-get install -y \
-    python3-pip && \
-    pip3 install --no-cache-dir yq
 
 WORKDIR /github/workspace
