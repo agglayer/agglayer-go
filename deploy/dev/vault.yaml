@@ -1,0 +1,9 @@
+# All secrets are in a single 1Password Item. Creating it here makes it available to all subcharts
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: op-secrets
+  annotations:
+    "helm.sh/hook": pre-install
+spec:
+  itemPath: "vaults/cdk-dev/items/agglayer"
