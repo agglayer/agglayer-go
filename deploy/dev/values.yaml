@@ -1,0 +1,13 @@
+env: dev
+image:
+  tag: 0.1.4
+
+serviceaccount:
+  annotations:
+    iam.gke.io/gcp-service-account: agglayer-dev-sa@prj-polygonlabs-cdk-dev.iam.gserviceaccount.com
+
+service:
+  domain: agglayer-svc-dev.polygon.technology
+
+autoscaling:
+  enabled: false
