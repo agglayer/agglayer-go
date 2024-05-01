@@ -13,11 +13,6 @@ RUN apt-get update && \
     
 # Update new packages
 RUN apt-get update
-
-# Get Rust
-RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-
-RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
     
 # Copies your code file from your action repository to the filesystem path `/` of the container
 COPY cdk-build-script.sh /cdk-build-script.sh

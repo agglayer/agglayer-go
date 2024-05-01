@@ -7,6 +7,12 @@ ZKEVM_DAC=$INPUT_ZKEVM_DAC
 ZKEVM_NODE=$INPUT_ZKEVM_NODE
 BAKE_TIME=$INPUT_BAKE_TIME
 
+# Get Docker
+curl -fsSL https://get.docker.com -o install-docker.sh
+cat install-docker.sh
+sh install-docker.sh --dry-run
+sudo sh install-docker.sh
+
 # Clone the repository
 git clone https://github.com/0xPolygon/agglayer.git
 cd agglayer
@@ -63,6 +69,10 @@ else
     echo "Skipping building cdk-validium-node as release tag provided: $ZKEVM_NODE"
 fi
 
+# Get Rust and cargo
+curl https://sh.rustup.rs -sSf | bash -s -- -y
+echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
+
 # Install Foundry
 cd ..
 git clone https://github.com/foundry-rs/foundry.git
@@ -81,7 +91,10 @@ sudo apt install kurtosis-cli
 kurtosis analytics disable
 
 # Install yq
-# pip3 install yq
+YQ_VERSION=v4.2.0
+YQ_BINARY=yq_linux_amd64
+wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY} -O /usr/bin/yq &&\
+    chmod +x /usr/bin/yq
 
 # Update kurtosis params.yml with custom devnet containers
 if [[ $ZKEVM_AGGLAYER =~ ^[0-9a-fA-F]{7}$ ]]; then
