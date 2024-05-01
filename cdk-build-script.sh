@@ -144,6 +144,7 @@ yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.ym
 yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" params.yml
 
 # Deploy CDK devnet on local github runner
+kurtosis engine start
 kurtosis clean --all
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
