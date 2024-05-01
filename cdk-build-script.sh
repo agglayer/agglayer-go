@@ -86,15 +86,15 @@ cd kurtosis-cdk
 
 # Install kurtosis
 echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-sudo apt update
-sudo apt install kurtosis-cli
+apt update
+apt install kurtosis-cli
 kurtosis analytics disable
 
 # Install yq
 YQ_VERSION=v4.2.0
 YQ_BINARY=yq_linux_amd64
-wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY} -O /usr/bin/yq &&\
-    chmod +x /usr/bin/yq
+curl -LJO https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}
+chmod +x /usr/bin/yq
 
 # Update kurtosis params.yml with custom devnet containers
 if [[ $ZKEVM_AGGLAYER =~ ^[0-9a-fA-F]{7}$ ]]; then
@@ -144,7 +144,7 @@ yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.ym
 yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" params.yml
 
 # Deploy CDK devnet on local github runner
-kurtosis engine start
+kurtosis engine restart
 kurtosis clean --all
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
