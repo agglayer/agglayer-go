@@ -1,70 +1,73 @@
 #!/bin/bash
 
-printf '%d args:' "$#"
-printf " '%s'" "$@"
-printf '\n'
+ZKEVM_AGGLAYER=$INPUT_ZKEVM_AGGLAYER
+ZKEVM_BRIDGE_SERVICE=$INPUT_ZKEVM_BRIDGE_SERVICE
+ZKEVM_BRIDGE_UI=$INPUT_ZKEVM_BRIDGE_UI
+ZKEVM_DAC=$INPUT_ZKEVM_DAC
+ZKEVM_NODE=$INPUT_ZKEVM_NODE
+BAKE_TIME=$INPUT_BAKE_TIME
 
 # Clone the repository
 git clone https://github.com/0xPolygon/agglayer.git
 cd agglayer
 
 # Build agglayer if no release tag is given
-if [[ $1 =~ ^[0-9a-fA-F]{7}$ ]]; then
-    git checkout "$1"
+if [[ $ZKEVM_AGGLAYER =~ ^[0-9a-fA-F]{7}$ ]]; then
+    git checkout "$ZKEVM_AGGLAYER"
     docker compose -f docker/docker-compose.yaml build --no-cache agglayer
 else
-    echo "Skipping building agglayer as release tag provided: $1"
+    echo "Skipping building agglayer as release tag provided: $ZKEVM_AGGLAYER"
 fi
 
 # Clone and build zkevm-bridge-service if no release tag is given
 cd ..
 git clone https://github.com/0xPolygonHermez/zkevm-bridge-service.git
 cd zkevm-bridge-service
-if [[ $2 =~ ^[0-9a-fA-F]{7}$ ]]; then
-    git checkout "$2"
+if [[ $ZKEVM_BRIDGE_SERVICE =~ ^[0-9a-fA-F]{7}$ ]]; then
+    git checkout "$ZKEVM_BRIDGE_SERVICE"
     docker build -t zkevm-bridge-service:local -f ./Dockerfile .
 else
-    echo "Skipping building zkevm-bridge-service as release tag provided: $2"
+    echo "Skipping building zkevm-bridge-service as release tag provided: $ZKEVM_BRIDGE_SERVICE"
 fi
 
 # Clone and build zkevm-bridge-ui if no release tag is given
 cd ..
 git clone https://github.com/0xPolygonHermez/zkevm-bridge-ui.git
 cd zkevm-bridge-ui
-if [[ $3 =~ ^[0-9a-fA-F]{7}$ ]]; then
-    git checkout "$3"
+if [[ $ZKEVM_BRIDGE_UI =~ ^[0-9a-fA-F]{7}$ ]]; then
+    git checkout "$ZKEVM_BRIDGE_UI"
     docker build -t zkevm-bridge-ui:local -f ./Dockerfile .
 else
-    echo "Skipping building zkevm-bridge-ui as release tag provided: $3"
+    echo "Skipping building zkevm-bridge-ui as release tag provided: $ZKEVM_BRIDGE_UI"
 fi
 
 # Clone and build cdk-data-availability if no release tag is given
 cd ..
 git clone https://github.com/0xPolygon/cdk-data-availability.git
 cd cdk-data-availability
-if [[ $4 =~ ^[0-9a-fA-F]{7}$ ]]; then
-    git checkout "$4"
+if [[ $ZKEVM_DAC =~ ^[0-9a-fA-F]{7}$ ]]; then
+    git checkout "$ZKEVM_DAC"
     docker build -t cdk-data-availability:local -f ./Dockerfile .
 else
-    echo "Skipping building cdk-data-availability as release tag provided: $4"
+    echo "Skipping building cdk-data-availability as release tag provided: $ZKEVM_DAC"
 fi
 
 # Clone and build cdk-validium-node if no release tag is given
 cd ..
 git clone https://github.com/0xPolygon/cdk-validium-node.git
 cd cdk-validium-node
-if [[ $5 =~ ^[0-9a-fA-F]{7}$ ]]; then
-    git checkout "$5"
+if [[ $ZKEVM_NODE =~ ^[0-9a-fA-F]{7}$ ]]; then
+    git checkout "$ZKEVM_NODE"
     docker build -t cdk-validium-node:local -f ./Dockerfile .
 else
-    echo "Skipping building cdk-validium-node as release tag provided: $5"
+    echo "Skipping building cdk-validium-node as release tag provided: $ZKEVM_NODE"
 fi
 
 # Install Foundry
 cd ..
-git clone https://github.com/foundry-rs/foundry-toolchain.git
-cd foundry-toolchain
-make install
+git clone https://github.com/foundry-rs/foundry.git
+cd foundry
+cargo install --path ./crates/cast --profile local --force --locked
 
 # Clone internal kurtosis-cdk repo
 cd ..
@@ -81,43 +84,43 @@ kurtosis analytics disable
 # pip3 install yq
 
 # Update kurtosis params.yml with custom devnet containers
-if [[ $1 =~ ^[0-9a-fA-F]{7}$ ]]; then
+if [[ $ZKEVM_AGGLAYER =~ ^[0-9a-fA-F]{7}$ ]]; then
     agglayer_tag="local"
     agglayer_docker_hub="agglayer"
 else
-    agglayer_tag="$1"
+    agglayer_tag="$ZKEVM_AGGLAYER"
     agglayer_docker_hub="0xpolygon/agglayer"
 fi
 
-if [[ $2 =~ ^[0-9a-fA-F]{7}$ ]]; then
+if [[ $ZKEVM_BRIDGE_SERVICE =~ ^[0-9a-fA-F]{7}$ ]]; then
     bridge_service_tag="local"
     bridge_service_docker_hub="zkevm-bridge-service"
 else
-    bridge_service_tag="$2"
+    bridge_service_tag="$ZKEVM_BRIDGE_SERVICE"
     bridge_service_docker_hub="hermeznetwork/zkevm-bridge-service"
 fi
 
-if [[ $3 =~ ^[0-9a-fA-F]{7}$ ]]; then
+if [[ $ZKEVM_BRIDGE_UI =~ ^[0-9a-fA-F]{7}$ ]]; then
     bridge_ui_tag="local"
     bridge_ui_docker_hub="zkevm-bridge-ui"
 else
-    bridge_ui_tag="$3"
+    bridge_ui_tag="$ZKEVM_BRIDGE_UI"
     bridge_ui_docker_hub="hermeznetwork/zkevm-bridge-ui"
 fi
 
-if [[ $4 =~ ^[0-9a-fA-F]{7}$ ]]; then
+if [[ $ZKEVM_DAC =~ ^[0-9a-fA-F]{7}$ ]]; then
     dac_tag="local"
     dac_docker_hub="cdk-data-availability"
 else
-    dac_tag="$4"
+    dac_tag="$ZKEVM_DAC"
     dac_docker_hub="0xpolygon/cdk-data-availability"
 fi
 
-if [[ $5 =~ ^[0-9a-fA-F]{7}$ ]]; then
+if [[ $ZKEVM_NODE =~ ^[0-9a-fA-F]{7}$ ]]; then
     node_tag="local"
     node_docker_hub="cdk-validium-node"
 else
-    node_tag="$5"
+    node_tag="$ZKEVM_NODE"
     node_docker_hub="0xpolygon/cdk-validium-node"
 fi
 
@@ -132,7 +135,7 @@ kurtosis clean --all
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
 # Monitor and report any potential regressions to CI logs
-bake_time="$6"
+bake_time="$BAKE_TIME"
 end_minute=$(( $(date +'%M') + bake_time))
 
 export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
