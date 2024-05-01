@@ -13,13 +13,6 @@ jobs:
         uses: docker/setup-buildx-action@v1
       - name: Clone and build agglayer, if no release tag given
         run: |
-          echo "Running regression tests with the following inputs:"
-          echo "zkevm_agglayer: ${{ github.event.inputs.zkevm_agglayer }}"
-          echo "zkevm_bridge_service: ${{ github.event.inputs.zkevm_bridge_service }}"
-          echo "zkevm_bridge_ui: ${{ github.event.inputs.zkevm_bridge_ui }}"
-          echo "zkevm_dac: ${{ github.event.inputs.zkevm_dac }}"
-          echo "zkevm_node: ${{ github.event.inputs.zkevm_node }}"
-          echo "bake_time: ${{ github.event.inputs.bake_time }}"
           if [[ ${{ github.event.inputs.zkevm_agglayer }} =~ ^[0-9a-fA-F]{7}$ ]]; then
             git clone https://github.com/0xPolygon/agglayer.git
             cd agglayer
