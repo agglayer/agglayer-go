@@ -29,11 +29,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Set up Docker
-      shell: bash
-      run: |
-        curl -fsSL https://get.docker.com -o install-docker.sh
-        sudo sh install-docker.sh
     - name: Clone and build agglayer, if no release tag given
       shell: bash
       run: |
@@ -92,9 +87,9 @@ runs:
     - name: Install Foundry
       shell: bash
       run: |
-        curl https://sh.rustup.rs -sSf | bash -s -- -y
-        echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
-        cargo install --git https://github.com/foundry-rs/foundry --profile local --locked cast   
+        curl -L https://foundry.paradigm.xyz | bash
+        source /home/degen/. bashrc
+        foundryup
     - name: Clone internal kurtosis-cdk repo
       shell: bash
       run: |
