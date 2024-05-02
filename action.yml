@@ -94,9 +94,7 @@ runs:
       run: |
         curl https://sh.rustup.rs -sSf | bash -s -- -y
         echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
-        git clone https://github.com/foundry-rs/foundry.git
-        cd foundry
-        cargo install --path ./crates/cast --profile local --force --locked        
+        cargo install --git https://github.com/foundry-rs/foundry --profile local --locked cast   
     - name: Clone internal kurtosis-cdk repo
       shell: bash
       run: |
@@ -106,7 +104,7 @@ runs:
       run: |
         echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
         sudo apt update
-        sudo apt install kurtosis-cli
+        sudo apt install kurtosis-cli=0.88.19
         kurtosis analytics disable
     - name: Install yq
       shell: bash
