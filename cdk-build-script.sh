@@ -145,7 +145,9 @@ yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" param
 
 cat params.yml
 
-mkdir -p /github/home/.kube/config
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
+        && sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl 
+mkdir -p ~/.kube && touch ~/.kube/config
 kurtosis gateway &  # Run cmd in background
 sleep 10
 
