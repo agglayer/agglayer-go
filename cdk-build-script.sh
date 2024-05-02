@@ -86,8 +86,8 @@ cd kurtosis-cdk
 
 # Install kurtosis
 echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-apt update
-apt install kurtosis-cli=v2.1.0
+sudo apt update
+sudo apt install kurtosis-cli
 kurtosis analytics disable
 
 # Install yq
