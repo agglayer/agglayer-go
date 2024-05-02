@@ -87,7 +87,7 @@ cd kurtosis-cdk
 # Install kurtosis
 echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
 apt update
-apt install kurtosis-cli
+apt install kurtosis-cli=v2.1.0
 kurtosis analytics disable
 
 # Install yq
@@ -144,9 +144,9 @@ yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.ym
 yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" params.yml
 
 # Deploy CDK devnet on local github runner
-kurtosis engine restart
-kurtosis clean --all
-kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+sudo kurtosis engine restart
+sudo kurtosis clean --all
+sudo kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
 # Monitor and report any potential regressions to CI logs
 bake_time="$BAKE_TIME"
