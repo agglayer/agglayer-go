@@ -87,9 +87,10 @@ runs:
     - name: Install Foundry
       shell: bash
       run: |
-        curl -L https://foundry.paradigm.xyz | bash
-        source /home/runner/.bashrc
-        foundryup
+        curl -LO https://github.com/foundry-rs/foundry/releases/download/nightly-de33b6af53005037b463318d2628b5cfcaf39916/foundry_nightly_linux_amd64.tar.gz
+        tar -xzvf foundry-linux-amd64.tar.gz
+        cd foundry-linux-amd64
+        ls
     - name: Clone internal kurtosis-cdk repo
       shell: bash
       run: |
@@ -167,7 +168,7 @@ runs:
     - name: Monitor and report any potential regressions to CI logs
       shell: bash
       run: |
-        bake_time="${{ github.event.inputs.bake_time }}"
+        bake_time=30
         end_minute=$(( $(date +'%M') + bake_time))
         export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
         INITIAL_STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null)
