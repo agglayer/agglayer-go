@@ -144,9 +144,15 @@ yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.ym
 yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" params.yml
 
 # Deploy CDK devnet on local github runner
-sudo kurtosis engine restart
-sudo kurtosis clean --all
-sudo kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+mkdir -p /opt/kurtosis-engine-logs
+OUTPUT_DIRECTORY="/opt/kurtosis-engine-logs"
+kurtosis engine logs $OUTPUT_DIRECTORY
+kurtosis engine restart --log-level debug
+kurtosis engine status
+# kurtosis clean --all
+kurtosis run --cli-level-log debug --enclave cdk-v1 --args-file params.yml --image-download always .
+ls /opt/kurtosis-engine-logs
+kurtosis engine status
 
 # Monitor and report any potential regressions to CI logs
 bake_time="$BAKE_TIME"
