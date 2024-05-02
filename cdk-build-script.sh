@@ -143,7 +143,9 @@ yq -Y --in-place ".args.zkevm_bridge_ui_image = \"$bridge_ui_docker_hub:$bridge_
 yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.yml
 yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" params.yml
 
-mkdir -p /github/home/.kube/
+cat params.yml
+
+mkdir -p /github/home/.kube/config
 kurtosis gateway &  # Run cmd in background
 sleep 10
 
@@ -151,8 +153,7 @@ sleep 10
 mkdir -p /opt/kurtosis-engine-logs
 OUTPUT_DIRECTORY="/opt/kurtosis-engine-logs"
 kurtosis engine logs $OUTPUT_DIRECTORY
-kurtosis engine restart --log-level debug
-kurtosis clean --all
+# kurtosis clean --all
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 ls /opt/kurtosis-engine-logs
 kurtosis engine status
