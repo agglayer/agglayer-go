@@ -30,8 +30,10 @@ runs:
   using: "composite"
   steps:
     - name: Set up Docker
+      shell: bash
       uses: docker/setup-buildx-action@v1
     - name: Clone and build agglayer, if no release tag given
+      shell: bash
       run: |
         if [[ ${{ inputs.zkevm_agglayer }} =~ ^[0-9a-fA-F]{7}$ ]]; then
           git clone https://github.com/0xPolygon/agglayer.git
@@ -42,6 +44,7 @@ runs:
           echo "Skipping building agglayer as release tag provided: ${{ inputs.zkevm_agglayer }}"
         fi
     - name: Clone and build zkevm-bridge-service, if no release tag given
+      shell: bash
       run: |
         if [[ ${{ inputs.zkevm_bridge_service }} =~ ^[0-9a-fA-F]{7}$ ]]; then
           git clone https://github.com/0xPolygonHermez/zkevm-bridge-service.git
@@ -52,6 +55,7 @@ runs:
           echo "Skipping building zkevm-bridge-service as release tag provided: ${{ inputs.zkevm_bridge_service }}"
         fi
     - name: Clone and build zkevm-bridge-ui, if no release tag given
+      shell: bash
       run: |
         if [[ ${{ inputs.zkevm_bridge_ui }} =~ ^[0-9a-fA-F]{7}$ ]]; then
           git clone https://github.com/0xPolygonHermez/zkevm-bridge-ui.git
@@ -62,6 +66,7 @@ runs:
           echo "Skipping building zkevm-bridge-ui as release tag provided: ${{ inputs.zkevm_bridge_ui }}"
         fi
     - name: Clone and build cdk-data-availability, if no release tag given
+      shell: bash
       run: |
         if [[ ${{ inputs.zkevm_dac }} =~ ^[0-9a-fA-F]{7}$ ]]; then
           git clone https://github.com/0xPolygon/cdk-data-availability.git
@@ -72,6 +77,7 @@ runs:
           echo "Skipping building cdk-data-availability as release tag provided: ${{ inputs.zkevm_dac }}"
         fi
     - name: Clone and build cdk-validium-node, if no release tag given
+      shell: bash
       run: |
         if [[ ${{ inputs.zkevm_node }} =~ ^[0-9a-fA-F]{7}$ ]]; then
           git clone https://github.com/0xPolygon/cdk-validium-node.git
@@ -82,19 +88,24 @@ runs:
           echo "Skipping building cdk-validium-node as release tag provided: ${{ inputs.zkevm_node }}"
         fi
     - name: Install Foundry
+      shell: bash
       uses: foundry-rs/foundry-toolchain@v1
     - name: Clone internal kurtosis-cdk repo
+      shell: bash
       run: |
         git clone https://github.com/0xPolygon/kurtosis-cdk.git
     - name: Install kurtosis
+      shell: bash
       run: |
         echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
         sudo apt update
         sudo apt install kurtosis-cli
         kurtosis analytics disable
     - name: Install yq
+      shell: bash
       run: pip3 install yq
     - name: Update kurtosis params.yml with custom devnet containers
+      shell: bash
       run: |
         cd kurtosis-cdk
         # when short commit hash given, reference custom image built earlier tagged 'local'
@@ -148,15 +159,50 @@ runs:
         
         cat params.yml
     - name: Deploy CDK devnet on local github runner
+      shell: bash
       run: |
         cd kurtosis-cdk
         kurtosis clean --all
         kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
     - name: Monitor and report any potential regressions to CI logs
+      shell: bash
       run: |
-        bake_time="${{ inputs.bake_time }}"
+        bake_time="${{ github.event.inputs.bake_time }}"
         end_minute=$(( $(date +'%M') + bake_time))
-
         export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
         INITIAL_STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null)
         incremented=false
+        while [ $(date +'%M') -lt $end_minute ]; do
+          # Attempt to connect to the service
+          if STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null); then
+            echo "ZKEVM_VERIFIED_BATCH_NUMBER: $STATUS"
+            
+            # Check if STATUS has incremented
+            if [ "$STATUS" != "$INITIAL_STATUS" ]; then
+              incremented=true
+              echo "ZKEVM_VERIFIED_BATCH_NUMBER successfully incremented to $STATUS. Exiting..."
+              exit 0
+            fi
+          else
+            echo "Failed to connect, waiting and retrying..."
+            sleep 60
+            continue
+          fi
+          sleep 60
+        done
+        if ! $incremented; then
+          echo "ZKEVM_VERIFIED_BATCH_NUMBER did not increment. This may indicate chain experienced a regression. Please investigate."
+          exit 1
+        fi
+    - name: Install polycli and send transaction load for further integration tests
+      shell: bash
+      run: |
+        git clone https://github.com/maticnetwork/polygon-cli.git
+        cd polygon-cli
+        make install
+        export PATH="$HOME/go/bin:$PATH"
+        export PK="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
+        export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+        polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 5 --mode t
+        polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode t
+        polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode 2
