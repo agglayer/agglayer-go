@@ -13,6 +13,12 @@ cat install-docker.sh
 sh install-docker.sh --dry-run
 sudo sh install-docker.sh
 
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker
+sudo chown "$USER":"$USER" /home/"$USER"/.docker -R
+sudo chmod g+rwx "$HOME/.docker" -R
+
 # Clone the repository
 git clone https://github.com/0xPolygon/agglayer.git
 cd agglayer
@@ -145,20 +151,20 @@ yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" param
 
 cat params.yml
 
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
-        && sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl 
-mkdir -p ~/.kube && touch ~/.kube/config
-kurtosis gateway &  # Run cmd in background
-sleep 10
+# curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
+#         && sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl 
+# mkdir -p ~/.kube && touch ~/.kube/config
+# kurtosis gateway &  # Run cmd in background
+# sleep 10
 
 # Deploy CDK devnet on local github runner
 mkdir -p /opt/kurtosis-engine-logs
 OUTPUT_DIRECTORY="/opt/kurtosis-engine-logs"
 kurtosis engine logs $OUTPUT_DIRECTORY
+kurtosis engine status
 # kurtosis clean --all
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 ls /opt/kurtosis-engine-logs
-kurtosis engine status
 
 # Monitor and report any potential regressions to CI logs
 bake_time="$BAKE_TIME"
