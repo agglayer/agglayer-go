@@ -307,19 +307,21 @@ func useLocalAuth(c *config.Config) (*bind.TransactOpts, common.Address, error) 
 // healthHandler returns a handler that checks the health of the application
 func healthHandler(storage *db.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		txctx := context.Background()
-		dbtx, err := storage.BeginStateTransaction(txctx)
+		ctx := r.Context()
+
+		dbtx, err := storage.BeginStateTransaction(ctx)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		if err = dbtx.Rollback(txctx); err != nil {
+		if err = dbtx.Rollback(ctx); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		_, _ = w.Write([]byte("Healthy"))
-		w.WriteHeader(http.StatusOK)
+		if _, err = w.Write([]byte("Healthy")); err != nil {
+			log.Errorf("failed to write response in health check handler: %s", err)
+		}
 	}
 }
