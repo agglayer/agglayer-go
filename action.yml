@@ -91,6 +91,7 @@ runs:
         tar -xzvf foundry_nightly_linux_amd64.tar.gz
         ls
         pwd
+        echo $GITHUB_WORKSPACE
     - name: Clone internal kurtosis-cdk repo
       shell: bash
       run: |
@@ -171,11 +172,11 @@ runs:
         bake_time=30
         end_minute=$(( $(date +'%M') + bake_time))
         export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-        INITIAL_STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null)
+        INITIAL_STATUS=$($GITHUB_WORKSPACE/cast rpc zkevm_verifiedBatchNumber 2>/dev/null)
         incremented=false
         while [ $(date +'%M') -lt $end_minute ]; do
           # Attempt to connect to the service
-          if STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null); then
+          if STATUS=$($GITHUB_WORKSPACE/cast rpc zkevm_verifiedBatchNumber 2>/dev/null); then
             echo "ZKEVM_VERIFIED_BATCH_NUMBER: $STATUS"
             
             # Check if STATUS has incremented
