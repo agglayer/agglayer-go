@@ -31,7 +31,9 @@ runs:
   steps:
     - name: Set up Docker
       shell: bash
-      uses: docker/setup-buildx-action@v1
+      run: |
+        curl -fsSL https://get.docker.com -o install-docker.sh
+        sudo sh install-docker.sh
     - name: Clone and build agglayer, if no release tag given
       shell: bash
       run: |
@@ -89,7 +91,12 @@ runs:
         fi
     - name: Install Foundry
       shell: bash
-      uses: foundry-rs/foundry-toolchain@v1
+      run: |
+        curl https://sh.rustup.rs -sSf | bash -s -- -y
+        echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
+        git clone https://github.com/foundry-rs/foundry.git
+        cd foundry
+        cargo install --path ./crates/cast --profile local --force --locked        
     - name: Clone internal kurtosis-cdk repo
       shell: bash
       run: |
