@@ -88,8 +88,8 @@ runs:
       shell: bash
       run: |
         curl -LO https://github.com/foundry-rs/foundry/releases/download/nightly-de33b6af53005037b463318d2628b5cfcaf39916/foundry_nightly_linux_amd64.tar.gz
-        tar -xzvf foundry-linux-amd64.tar.gz
-        cd foundry-linux-amd64
+        tar -xzvf foundry_nightly_linux_amd64.tar.gz
+        cd foundry_nightly_linux_amd64
         ls
     - name: Clone internal kurtosis-cdk repo
       shell: bash
