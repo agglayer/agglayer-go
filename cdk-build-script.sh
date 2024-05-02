@@ -143,6 +143,7 @@ yq -Y --in-place ".args.zkevm_bridge_ui_image = \"$bridge_ui_docker_hub:$bridge_
 yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.yml
 yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" params.yml
 
+mkdir -p /github/home/.kube/
 kurtosis gateway &  # Run cmd in background
 sleep 10
 
