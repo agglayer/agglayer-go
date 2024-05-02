@@ -88,7 +88,7 @@ runs:
       shell: bash
       run: |
         curl -L https://foundry.paradigm.xyz | bash
-        source /home/degen/. bashrc
+        source /home/runner/.bashrc
         foundryup
     - name: Clone internal kurtosis-cdk repo
       shell: bash
