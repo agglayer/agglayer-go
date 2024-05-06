@@ -1,5 +1,5 @@
-name: 'Regression Tests - Agglayer'
-description: 'Runs regression tests for Agglayer.'
+name: 'Regression Tests - Polygon CDK'
+description: 'Deploys local kurtosis CDK devnet and performs series of regression tests.'
 author: 'Dan Moore'
 inputs:
   zkevm_agglayer:
@@ -89,9 +89,6 @@ runs:
       run: |
         curl -LO https://github.com/foundry-rs/foundry/releases/download/nightly-de33b6af53005037b463318d2628b5cfcaf39916/foundry_nightly_linux_amd64.tar.gz
         tar -xzvf foundry_nightly_linux_amd64.tar.gz
-        ls
-        pwd
-        echo $GITHUB_WORKSPACE
     - name: Clone internal kurtosis-cdk repo
       shell: bash
       run: |
