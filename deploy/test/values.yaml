@@ -1,13 +1,13 @@
-env: dev
+env: test
 image:
   tag: 0.1.4
 
 serviceAccount:
   annotations:
-    iam.gke.io/gcp-service-account: agglayer-dev-sa@prj-polygonlabs-shared-dev.iam.gserviceaccount.com
+    iam.gke.io/gcp-service-account: agglayer-test-sa@prj-polygonlabs-shared-test.iam.gserviceaccount.com
 
 service:
-  domain: agglayer-svc-dev.polygon.technology
+  domain: agglayer-svc-test.polygon.technology
 
 autoscaling:
   enabled: false
