@@ -2,7 +2,7 @@ name: Regression Tests - Agglayer
 
 on:
   pull_request:
-    types: [opened, synchronize]  # Trigger on new pull requests and when existing ones are synchronized
+    types: [opened, synchronize]  # Trigger on new PR's and existing ones with new commits
     branches:
       - main
 
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      GITHUB_SHA: ${{ github.event.pull_request.head.sha }}
+      GITHUB_SHA: ${{ github.sha }}
 
     steps:
       - name: Checkout
@@ -21,6 +21,6 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Run regression tests against custom user-specified images
-        uses: 0xPolygon/kurtosis-cdk@v0.1.6
+        uses: 0xPolygon/kurtosis-cdk@v0.1.7
         with:
           zkevm_agglayer: ${{ env.GITHUB_SHA }}
