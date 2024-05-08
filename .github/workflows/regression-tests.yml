@@ -1,85 +1,26 @@
 name: Regression Tests - Agglayer
-'on':
+
+on:
   pull_request:
     types: [opened, synchronize]  # Trigger on new pull requests and when existing ones are synchronized
     branches:
       - main
+
 jobs:
   deploy_devnet:
     runs-on: ubuntu-latest
+
+    env:
+      GITHUB_SHA: ${{ github.event.pull_request.head.sha }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Set up Docker
         uses: docker/setup-buildx-action@v1
-      - name: Build agglayer image locally
-        run: |
-          cd $GITHUB_WORKSPACE  # Change to the root directory of the repository
-          if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
-              GITHUB_SHA=$(jq -r .pull_request.head.sha "$GITHUB_EVENT_PATH")
-          fi
-          echo "Containerizing and testing commit: $GITHUB_SHA"
-          make build
-          mv ./dist/agglayer .
-          docker build -t agglayer:local -f ./Dockerfile.release .
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
-      - name: Clone internal kurtosis-cdk repo
-        run: |
-          git clone https://github.com/0xPolygon/kurtosis-cdk.git
-      - name: Install kurtosis
-        run: |
-          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-          sudo apt update
-          sudo apt install kurtosis-cli
-          kurtosis analytics disable
-      - name: Install yq
-        run: pip3 install yq
-      - name: Deploy CDK devnet on local github runner
-        run: |
-          cd kurtosis-cdk
-          yq -Y --in-place ".args.zkevm_agglayer_image = \"agglayer:local\"" params.yml
-          kurtosis run --enclave cdk-v1 --args-file params.yml .
-      - name: Monitor and report any potential regressions to CI logs
-        run: |
-          bake_time=30  # minutes
-          end_minute=$((10#$(date +'%M') + bake_time))
 
-          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-          INITIAL_STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null)
-          incremented=false
-
-          while [ $(date +'%M') -lt $end_minute ]; do
-            # Attempt to connect to the service
-            if STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null); then
-              echo "ZKEVM_VERIFIED_BATCH_NUMBER: $STATUS"
-              
-              # Check if STATUS has incremented
-              if [ "$STATUS" != "$INITIAL_STATUS" ]; then
-                incremented=true
-                echo "ZKEVM_VERIFIED_BATCH_NUMBER successfully incremented to $STATUS. Exiting..."
-                exit 0
-              fi
-            else
-              echo "Failed to connect, waiting and retrying..."
-              sleep 60
-              continue
-            fi
-            sleep 60
-          done
-
-          if ! $incremented; then
-            echo "ZKEVM_VERIFIED_BATCH_NUMBER did not increment. This may indicate chain experienced a regression. Please investigate."
-            exit 1
-          fi
-      - name: Install polycli and send transaction load for further integration tests
-        run: |
-          git clone https://github.com/maticnetwork/polygon-cli.git
-          cd polygon-cli
-          make install
-          export PATH="$HOME/go/bin:$PATH"
-          export PK="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
-          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-          polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 5 --mode t
-          polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode t
-          polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode 2
+      - name: Run regression tests against custom user-specified images
+        uses: 0xPolygon/kurtosis-cdk@v0.1.6
+        with:
+          zkevm_agglayer: ${{ env.GITHUB_SHA }}
