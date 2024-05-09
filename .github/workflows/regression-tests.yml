@@ -27,7 +27,7 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Run regression tests against custom user-specified images
-        uses: 0xPolygon/kurtosis-cdk@v0.1.7
+        uses: 0xPolygon/kurtosis-cdk@v0.1.8
         with:
           zkevm_agglayer: ${{ steps.build_agglayer.outputs.GITHUB_SHA_SHORT }}
           kurtosis_cli: 0.89.3
