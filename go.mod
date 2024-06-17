@@ -5,7 +5,7 @@ go 1.21.3
 require (
 	cloud.google.com/go/kms v1.15.8
 	github.com/0xPolygon/cdk-rpc v0.0.0-20240419104226-c0a62ba0f49d
-	github.com/0xPolygonHermez/zkevm-node v0.0.0-20240222104536-0204affc7436
+	github.com/0xPolygonHermez/zkevm-node v0.7.0
 	github.com/ethereum/go-ethereum v1.13.11
 	github.com/hermeznetwork/tracerr v0.3.2
 	github.com/jackc/pgconn v1.14.3
@@ -28,7 +28,7 @@ require (
 	cloud.google.com/go/compute v1.24.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.6 // indirect
-	github.com/0xPolygonHermez/zkevm-data-streamer v0.1.19 // indirect
+	github.com/0xPolygonHermez/zkevm-data-streamer v0.2.3-RC4 // indirect
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
